@@ -2,7 +2,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/Altium.Auth.svg)](https://www.nuget.org/packages/Altium.Auth)
 [![CI](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/dotnet-ci.yml/badge.svg)](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/dotnet-ci.yml)
-[![license](https://img.shields.io/badge/license-MIT-blue.svg)](../../LICENSE)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AltiumDeveloper/a365-auth/blob/main/LICENSE)
 
 Altium 365 OAuth2 / OpenID Connect authentication client for .NET. Supports both
 client types and both clouds:
@@ -15,7 +15,7 @@ client types and both clouds:
 - **Workspace tokens**, **token refresh / revocation**, and first-class **Gov Cloud** support.
 
 **Zero dependencies**, `net8.0`. Validated against the same language-neutral
-[conformance vectors](../../spec/conformance/vectors.json) as the TypeScript library —
+[conformance vectors](https://github.com/AltiumDeveloper/a365-auth/blob/main/spec/conformance/vectors.json) as the TypeScript library —
 see [How it's built](#how-its-built).
 
 ## Installation
@@ -29,12 +29,12 @@ dotnet add package Altium.Auth
 The client implements the flow described in these protocol-level guides (independent of
 this package):
 
-- [Authentication overview](../../docs/overview.md) — endpoints, key terms, recommended flow
-- [Register your application](../../docs/register-your-application.md) — client types, redirect URLs, credentials
-- [Web / server apps](../../docs/web-and-server-apps.md) — authorization-code redirect flow (confidential)
-- [Desktop / on-prem apps](../../docs/desktop-and-onprem-apps.md) — the ActionWait pattern (public)
-- [Gov Cloud](../../docs/gov-cloud.md) — Commercial vs Gov and the `secure=1` two-token model
-- [Access token claims](../../docs/token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
+- [Authentication overview](../../docs/guides/overview.md) — endpoints, key terms, recommended flow
+- [Register your application](../../docs/guides/register-your-application.md) — client types, redirect URLs, credentials
+- [Web / server apps](../../docs/guides/web-and-server-apps.md) — authorization-code redirect flow (confidential)
+- [Desktop / on-prem apps](../../docs/guides/desktop-and-onprem-apps.md) — the ActionWait pattern (public)
+- [Gov Cloud](../../docs/guides/gov-cloud.md) — Commercial vs Gov and the `secure=1` two-token model
+- [Access token claims](../../docs/guides/token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
 
 ## Quick start
 
@@ -114,7 +114,7 @@ var options = new AltiumAuthOptions
 Commercial and Gov are kept strictly separate: a global token can only be exchanged for a
 workspace of the matching kind. `secure=1` is driven by which token endpoint you use, so
 pointing the token endpoint at the Gov host is all it takes to exchange a Commercial token
-for a Gov workspace token. See [docs/gov-cloud.md](../../docs/gov-cloud.md).
+for a Gov workspace token. See [docs/gov-cloud.md](../../docs/guides/gov-cloud.md).
 
 ### Refresh & sign-out
 
@@ -181,7 +181,7 @@ public sealed class TokenSet
 ```
 
 > `AccessToken` is a signed JWT — decode it to read `iss`, `workspaceId`, `secure`, and
-> scopes. See [Access token claims](../../docs/token-claims.md).
+> scopes. See [Access token claims](../../docs/guides/token-claims.md).
 
 ## Error handling
 
@@ -200,9 +200,9 @@ message (timeout, cancellation, or a CSRF `state` mismatch).
 
 `Altium.Auth` is **dependency-free by design**: it acquires tokens and never validates
 JWTs, so it needs no OIDC/JWT library. Its behavior is pinned by
-the shared, language-neutral vectors in [`spec/conformance/vectors.json`](../../spec/conformance/vectors.json) —
+the shared, language-neutral vectors in [`spec/conformance/vectors.json`](https://github.com/AltiumDeveloper/a365-auth/blob/main/spec/conformance/vectors.json) —
 the exact contract the TypeScript library passes. This proves the two implementations are
-behavior-identical. Spec: [`spec/SPEC.md`](../../spec/SPEC.md).
+behavior-identical. Spec: [`spec/SPEC.md`](https://github.com/AltiumDeveloper/a365-auth/blob/main/spec/SPEC.md).
 
 ## Development
 
@@ -235,13 +235,13 @@ Options mirror the TS harness: `--env prod|dev|gov|dev-gov`, `--workspace-env`,
 and `--authorize-url`/`--exchange-code`/`--code-verifier`/`--redirect-uri` for
 confidential/custom-callback clients.
 
-See [CONTRIBUTING.md](../../CONTRIBUTING.md) and [AGENTS.md](../../AGENTS.md) for the
+See [CONTRIBUTING.md](https://github.com/AltiumDeveloper/a365-auth/blob/main/CONTRIBUTING.md) and [AGENTS.md](https://github.com/AltiumDeveloper/a365-auth/blob/main/AGENTS.md) for the
 repo-wide, spec-first contribution model.
 
 ## Security
 
-Please report vulnerabilities privately — see [SECURITY.md](../../SECURITY.md).
+Please report vulnerabilities privately — see [SECURITY.md](https://github.com/AltiumDeveloper/a365-auth/blob/main/SECURITY.md).
 
 ## License
 
-[MIT](../../LICENSE) © Altium Limited
+[MIT](https://github.com/AltiumDeveloper/a365-auth/blob/main/LICENSE) © Altium Limited

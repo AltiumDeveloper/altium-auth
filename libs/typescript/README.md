@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/@altium-developer/a365-auth.svg)](https://www.npmjs.com/package/@altium-developer/a365-auth)
 [![CI](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/typescript-ci.yml/badge.svg)](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/typescript-ci.yml)
-[![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AltiumDeveloper/a365-auth/blob/main/libs/typescript/LICENSE)
 
 Altium 365 OAuth2 / OpenID Connect authentication library. Supports both client types and both clouds:
 
@@ -22,12 +22,12 @@ npm i @altium-developer/a365-auth
 
 The library implements the flow described in these guides (protocol-level, independent of this package) — start here if you're new to Altium Identity:
 
-- [Authentication overview](../../docs/overview.md) — endpoints, key terms, and the recommended flow
-- [Register your application](../../docs/register-your-application.md) — client types, redirect URLs, credentials
-- [Web / server apps](../../docs/web-and-server-apps.md) — authorization-code redirect flow (confidential clients)
-- [Desktop / on-prem apps](../../docs/desktop-and-onprem-apps.md) — the ActionWait pattern (public clients)
-- [Gov Cloud](../../docs/gov-cloud.md) — Commercial vs Gov and the `secure=1` two-token model
-- [Access token claims](../../docs/token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
+- [Authentication overview](../../docs/guides/overview.md) — endpoints, key terms, and the recommended flow
+- [Register your application](../../docs/guides/register-your-application.md) — client types, redirect URLs, credentials
+- [Web / server apps](../../docs/guides/web-and-server-apps.md) — authorization-code redirect flow (confidential clients)
+- [Desktop / on-prem apps](../../docs/guides/desktop-and-onprem-apps.md) — the ActionWait pattern (public clients)
+- [Gov Cloud](../../docs/guides/gov-cloud.md) — Commercial vs Gov and the `secure=1` two-token model
+- [Access token claims](../../docs/guides/token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
 
 ## Quick Start
 
@@ -35,7 +35,7 @@ Only `clientId` and `scopes` are required — the endpoints default to the Altiu
 
 ### Public apps (desktop / on-prem — ActionWait sign-in)
 
-For desktop, on-prem, and native clients that **can't host a public redirect**. `signIn` opens the browser, waits for the callback over Altium's ActionWait long-poll, and returns tokens. See [Desktop / on-prem apps](../../docs/desktop-and-onprem-apps.md).
+For desktop, on-prem, and native clients that **can't host a public redirect**. `signIn` opens the browser, waits for the callback over Altium's ActionWait long-poll, and returns tokens. See [Desktop / on-prem apps](../../docs/guides/desktop-and-onprem-apps.md).
 
 ```typescript
 import { signIn, signIntoWorkspace } from "@altium-developer/a365-auth";
@@ -59,7 +59,7 @@ sign-out are entirely yours to manage.
 
 ### Confidential apps (web / server — authorization-code redirect)
 
-For web/server backends that **host their own redirect endpoint**. Set `clientSecret` on the config to authenticate as a confidential client (HTTP Basic), and drive the flow with two composable steps. See [Web / server apps](../../docs/web-and-server-apps.md).
+For web/server backends that **host their own redirect endpoint**. Set `clientSecret` on the config to authenticate as a confidential client (HTTP Basic), and drive the flow with two composable steps. See [Web / server apps](../../docs/guides/web-and-server-apps.md).
 
 ```typescript
 import { createAuthorizationUrl, exchangeCode } from "@altium-developer/a365-auth";
@@ -110,7 +110,7 @@ const tokens = await signIn({
 
 Commercial and Gov are kept strictly separate: a global token can only be exchanged for a workspace of the matching kind. `secure=1` is driven by which token endpoint you use — Gov endpoint → sent, Commercial endpoint → omitted — so pointing `tokenEndpoint` at the Gov host is all it takes to exchange a Commercial token for a Gov workspace token.
 
-> Gov tokens must never be used against Commercial (non-Gov) services, and vice versa. For Dev Gov testing, swap the host for `https://auth.dev-365-gov.altium.com`. See [docs/gov-cloud.md](../../docs/gov-cloud.md).
+> Gov tokens must never be used against Commercial (non-Gov) services, and vice versa. For Dev Gov testing, swap the host for `https://auth.dev-365-gov.altium.com`. See [docs/gov-cloud.md](../../docs/guides/gov-cloud.md).
 
 ### Non-production environments
 
@@ -285,7 +285,7 @@ interface TokenSet {
 }
 ```
 
-> `access_token` is a signed JWT — decode it to read `iss`, `workspaceId`, `secure`, and scopes. See [Access token claims](../../docs/token-claims.md).
+> `access_token` is a signed JWT — decode it to read `iss`, `workspaceId`, `secure`, and scopes. See [Access token claims](../../docs/guides/token-claims.md).
 
 ## Error Handling
 
@@ -336,14 +336,14 @@ npm run test:e2e -- --workspace <authId> --refresh YOUR_CLIENT_ID
 A365_CLIENT_SECRET=... npm run test:e2e -- YOUR_CLIENT_ID
 ```
 
-Options include `--env prod|dev|gov|dev-gov`, `--workspace-env`, `--secure`/`--no-secure`, `--scopes`, `--workspace`, `--refresh`, `--userinfo`, `--revoke`, plus `--authorize-url`/`--exchange-code`/`--redirect-uri` for confidential (custom-callback) clients — see the header of [`scripts/test-signin.ts`](./scripts/test-signin.ts). The client secret is read from `A365_CLIENT_SECRET` so it never appears in shell history or the process list.
+Options include `--env prod|dev|gov|dev-gov`, `--workspace-env`, `--secure`/`--no-secure`, `--scopes`, `--workspace`, `--refresh`, `--userinfo`, `--revoke`, plus `--authorize-url`/`--exchange-code`/`--redirect-uri` for confidential (custom-callback) clients — see the header of [`scripts/test-signin.ts`](https://github.com/AltiumDeveloper/a365-auth/blob/main/libs/typescript/scripts/test-signin.ts). The client secret is read from `A365_CLIENT_SECRET` so it never appears in shell history or the process list.
 
-See [CONTRIBUTING.md](../../CONTRIBUTING.md) and [AGENTS.md](../../AGENTS.md) for the full contributor guide.
+See [CONTRIBUTING.md](https://github.com/AltiumDeveloper/a365-auth/blob/main/CONTRIBUTING.md) and [AGENTS.md](https://github.com/AltiumDeveloper/a365-auth/blob/main/AGENTS.md) for the full contributor guide.
 
 ## Security
 
-Please report vulnerabilities privately — see [SECURITY.md](../../SECURITY.md).
+Please report vulnerabilities privately — see [SECURITY.md](https://github.com/AltiumDeveloper/a365-auth/blob/main/SECURITY.md).
 
 ## License
 
-[MIT](./LICENSE) © Altium Limited
+[MIT](https://github.com/AltiumDeveloper/a365-auth/blob/main/libs/typescript/LICENSE) © Altium Limited

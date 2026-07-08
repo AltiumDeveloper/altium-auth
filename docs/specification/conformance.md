@@ -6,6 +6,6 @@
     [`spec/conformance/vectors.json`](https://github.com/AltiumDeveloper/a365-auth/blob/main/spec/conformance/vectors.json).
 
 {%
-   include-markdown "../spec/conformance/README.md"
+   include-markdown "../../spec/conformance/README.md"
    heading-offset=1
 %}

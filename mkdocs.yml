@@ -68,12 +68,15 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Guides:
-      - Overview: overview.md
-      - Web & server apps: web-and-server-apps.md
-      - Desktop & on-prem apps: desktop-and-onprem-apps.md
-      - Gov Cloud: gov-cloud.md
-      - Access token claims: token-claims.md
-      - Register your application: register-your-application.md
+      - Overview: guides/overview.md
+      - Web & server apps: guides/web-and-server-apps.md
+      - Desktop & on-prem apps: guides/desktop-and-onprem-apps.md
+      - Gov Cloud: guides/gov-cloud.md
+      - Access token claims: guides/token-claims.md
+      - Register your application: guides/register-your-application.md
   - Specification:
-      - Integration spec: spec.md
-      - Conformance vectors: conformance.md
+      - Integration spec: specification/spec.md
+      - Conformance vectors: specification/conformance.md
+  - Libraries:
+      - TypeScript: libraries/typescript.md
+      - .NET: libraries/dotnet.md
