@@ -34,7 +34,7 @@ as the shared spec and sibling libraries evolve.
   to the Commercial Cloud and can be overridden individually for Dev/UAT or on-prem.
 - `OAuthConfig`, `TokenSet`, and flow types (`SignInOptions`,
   `AuthorizationUrlOptions`, `AuthorizationRequest`, `ExchangeCodeParams`).
-- Zero runtime dependencies. Runs on Node ≥18, Bun, and Deno.
+- Zero runtime dependencies. Runs on Node ≥20, Bun, and Deno.
 - Conforms to the shared, language-neutral vectors in `spec/conformance/vectors.json`.
 
 [0.1.0]: https://github.com/AltiumDeveloper/a365-auth/releases/tag/ts-v0.1.0

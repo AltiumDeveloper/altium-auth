@@ -1,7 +1,7 @@
 /**
  * Minimal POST helpers over the global `fetch`.
  *
- * `fetch` is available in every supported runtime (Node ≥18, browsers, Bun,
+ * `fetch` is available in every supported runtime (Node ≥20, browsers, Bun,
  * Deno, bundlers), so no fallback transport is needed. The response body is
  * read once and buffered so callers can inspect it as both text and JSON —
  * useful for error paths that fall back from `json()` to the raw body.

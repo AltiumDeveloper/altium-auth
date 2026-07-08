@@ -2,7 +2,7 @@
 
 [![npm](https://img.shields.io/npm/v/@altium-developer/a365-auth.svg)](https://www.npmjs.com/package/@altium-developer/a365-auth)
 [![CI](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/typescript-ci.yml/badge.svg)](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/typescript-ci.yml)
-[![license](https://img.shields.io/npm/l/@altium-developer/a365-auth.svg)](./LICENSE)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 Altium 365 OAuth2 / OpenID Connect authentication library. Supports both client types and both clouds:
 
@@ -10,7 +10,7 @@ Altium 365 OAuth2 / OpenID Connect authentication library. Supports both client 
 - **Confidential clients** (web/server backends with a secret) — the standard **authorization-code redirect** flow via composable steps: [`createAuthorizationUrl`](#createauthorizationurlconfig-options) + [`exchangeCode`](#exchangecodeconfig-params).
 - **Workspace tokens**, **token refresh**, and first-class **Gov Cloud** support.
 
-**Zero runtime dependencies.** Runs on Node ≥18, Bun, and Deno (and bundled apps that polyfill Node's `crypto`).
+**Zero runtime dependencies.** Runs on Node ≥20, Bun, and Deno (and bundled apps that polyfill Node's `crypto`).
 
 ## Installation
 
@@ -305,10 +305,9 @@ The library throws descriptive `Error` objects in these scenarios:
 
 ## Compatibility
 
-- **Node.js ≥18** — uses the global `fetch` and the `crypto` module (`randomBytes`, `createHash`).
+- **Node.js ≥20** — uses the global `fetch`, the global Web `crypto` (`randomUUID`), and the `crypto` module (`randomBytes`, `createHash`). Node 18 is EOL and not supported.
 - **Bun / Deno** — supported (Node-compatible `fetch` + `crypto`).
 - **Browsers / bundlers** — works where your bundler polyfills Node's `crypto` and `Buffer`.
-- **Older Node (<18)** — provide a `fetch` polyfill.
 
 ## Development
 
