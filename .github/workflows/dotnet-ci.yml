@@ -1,0 +1,35 @@
+name: .NET CI
+
+# Runs only when the .NET library or the shared spec/vectors change.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "libs/dotnet/**"
+      - "spec/**"
+      - ".github/workflows/dotnet-ci.yml"
+  pull_request:
+    paths:
+      - "libs/dotnet/**"
+      - "spec/**"
+      - ".github/workflows/dotnet-ci.yml"
+
+defaults:
+  run:
+    working-directory: libs/dotnet
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      # xUnit conformance harness against the shared vectors (17 tests).
+      - run: dotnet test tests/Altium.Auth.Tests -c Release
+
+      # The same vectors via the dependency-free console runner (also runs offline).
+      - run: dotnet run --project tests/Altium.Auth.Conformance -c Release -- ../../spec/conformance/vectors.json

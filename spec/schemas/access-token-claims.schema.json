@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://altium.com/identity/schemas/access-token-claims.schema.json",
+  "title": "Altium Identity access token claims",
+  "description": "Decoded payload of an Altium 365 access token (JWT, typ=at+jwt, alg=RS256). Verify the signature against the issuer JWKS before trusting these claims.",
+  "type": "object",
+  "required": ["iss", "sub", "client_id", "scope", "iat", "exp"],
+  "properties": {
+    "iss": {
+      "type": "string",
+      "format": "uri",
+      "description": "Issuer — identifies the environment/cloud, e.g. https://auth.altium.com (Commercial) or https://auth.365-gov.altium.com (Gov)."
+    },
+    "sub": {
+      "type": "string",
+      "description": "Subject — for user tokens, the user ID."
+    },
+    "client_id": {
+      "type": "string",
+      "description": "The application (registered OAuth client) that obtained the token."
+    },
+    "scope": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Granted scopes. A workspace token includes a365:workspace:{workspaceId}; offline_access means a refresh token was issued.",
+      "examples": [["a365:workspace:22222222-2222-2222-2222-222222222222", "openid", "profile", "offline_access"]]
+    },
+    "workspaceId": {
+      "type": "string",
+      "description": "Present on workspace tokens only — the workspace authId (matches the a365:workspace: scope)."
+    },
+    "secure": {
+      "type": "string",
+      "const": "1",
+      "description": "Present on Gov Cloud tokens only. Marks a Gov (secure) token; absent on Commercial tokens."
+    },
+    "iat": { "type": "integer", "description": "Issued-at (epoch seconds)." },
+    "exp": { "type": "integer", "description": "Expiry (epoch seconds)." },
+    "nbf": { "type": "integer" },
+    "aud": { "type": ["string", "array"] },
+    "jti": { "type": "string" },
+    "amr": { "type": "array", "items": { "type": "string" } },
+    "sid": { "type": "string" },
+    "idp": { "type": "string" }
+  },
+  "allOf": [
+    {
+      "$comment": "A workspace token (has workspaceId) must carry a matching a365:workspace scope.",
+      "if": { "required": ["workspaceId"] },
+      "then": {
+        "properties": {
+          "scope": { "contains": { "type": "string", "pattern": "^a365:workspace:" } }
+        }
+      }
+    }
+  ]
+}

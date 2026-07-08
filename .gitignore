@@ -1,0 +1,30 @@
+# Node (TypeScript lib) — at any depth (root or libs/typescript/)
+node_modules/
+dist/
+
+# .NET (libs/dotnet) build output
+[Bb]in/
+[Oo]bj/
+
+# Local tooling / editor
+.claude/
+.DS_Store
+*.log
+
+# Local-only planning doc (not part of the published repo)
+spec/TRACKER.md
+
+# Test / coverage output
+coverage/
+
+# MkDocs build output (built in CI, never committed)
+site/
+
+# Python virtualenv + caches (local docs tooling)
+.venv/
+venv/
+.env/
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/

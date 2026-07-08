@@ -1,0 +1,62 @@
+name: Docs
+
+# Builds the MkDocs site from source (docs/ + spec/) and deploys to GitHub Pages.
+# Unlike committing built HTML, the site is built fresh in CI — nothing generated is
+# checked in. PRs build with --strict to catch broken links/nav before merge; only
+# main deploys.
+#
+# One-time repo setting: Settings → Pages → Build and deployment → Source = GitHub Actions.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "spec/**"
+      - "mkdocs.yml"
+      - "requirements-docs.txt"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    paths:
+      - "docs/**"
+      - "spec/**"
+      - "mkdocs.yml"
+      - "requirements-docs.txt"
+      - ".github/workflows/docs.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+          cache: pip
+          cache-dependency-path: requirements-docs.txt
+      - run: pip install -r requirements-docs.txt
+      - run: mkdocs build --strict
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    # Deploy only from main; PRs stop after a successful --strict build.
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

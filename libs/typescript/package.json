@@ -1,0 +1,69 @@
+{
+  "name": "@altium-developer/a365-auth",
+  "version": "0.1.0",
+  "description": "Altium 365 OAuth2 authentication library with PKCE and ActionWait long-polling for browser-based sign-in.",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run",
+    "test:conformance": "vitest run --config test/conformance/vitest.config.ts",
+    "test:e2e": "tsx scripts/test-signin.ts",
+    "prepublishOnly": "npm run clean && npm run lint && npm run test && npm run build"
+  },
+  "license": "MIT",
+  "author": "Altium Limited (https://www.altium.com)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AltiumDeveloper/a365-auth.git",
+    "directory": "libs/typescript"
+  },
+  "bugs": {
+    "url": "https://github.com/AltiumDeveloper/a365-auth/issues"
+  },
+  "homepage": "https://github.com/AltiumDeveloper/a365-auth/tree/main/libs/typescript#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "altium",
+    "altium365",
+    "a365",
+    "oauth2",
+    "oidc",
+    "pkce",
+    "authentication",
+    "sso",
+    "token-exchange"
+  ],
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^20.0.0",
+    "eslint": "^9.0.0",
+    "tsx": "^4.22.4",
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^2.0.0"
+  }
+}

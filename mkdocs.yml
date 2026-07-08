@@ -1,0 +1,79 @@
+site_name: Altium 365 Auth
+site_description: >-
+  Client libraries and specification for Altium 365 authentication —
+  OAuth2/OIDC + PKCE, the ActionWait desktop flow, workspace token-exchange,
+  refresh/revocation, and Gov Cloud.
+site_url: https://altiumdeveloper.github.io/a365-auth/
+repo_url: https://github.com/AltiumDeveloper/a365-auth
+repo_name: AltiumDeveloper/a365-auth
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; Altium
+
+theme:
+  name: material
+  # To match the house style of altiumdeveloper.github.io/a365-erc-sdk, drop the
+  # Altium logo + favicon into docs/assets/ and uncomment:
+  # logo: assets/logo.svg
+  # favicon: assets/favicon.png
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs # top-level items (Home / Guides / Specification) become header tabs
+    - navigation.top
+    - navigation.tracking
+    - navigation.instant
+    - toc.integrate # no right-hand TOC — fold it into the left nav so content is wider
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+  - include-markdown # surfaces spec/*.md into the site without duplicating it
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        # Render ```mermaid blocks as diagrams (Material auto-loads Mermaid.js).
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+
+nav:
+  - Home: index.md
+  - Guides:
+      - Overview: overview.md
+      - Web & server apps: web-and-server-apps.md
+      - Desktop & on-prem apps: desktop-and-onprem-apps.md
+      - Gov Cloud: gov-cloud.md
+      - Access token claims: token-claims.md
+      - Register your application: register-your-application.md
+  - Specification:
+      - Integration spec: spec.md
+      - Conformance vectors: conformance.md

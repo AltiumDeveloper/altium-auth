@@ -1,0 +1,5 @@
+# Python dependencies for building the documentation site (MkDocs).
+# Pinned so the site builds reproducibly in CI and locally. Bump deliberately;
+# CI builds with --strict. See mkdocs.yml and .github/workflows/docs.yml.
+mkdocs-material==9.5.44
+mkdocs-include-markdown-plugin==6.2.2

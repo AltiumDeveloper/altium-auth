@@ -1,0 +1,36 @@
+name: TypeScript Release
+
+# Publishes libs/typescript to npm when a tag like `ts-v1.1.0` is pushed.
+# Requires an NPM_TOKEN secret (npm automation token with publish rights to the
+# @altium-developer scope). Provenance is attached via OIDC — no extra secret.
+on:
+  push:
+    tags:
+      - "ts-v*"
+
+defaults:
+  run:
+    working-directory: libs/typescript
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # required for npm provenance
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+          cache: npm
+          cache-dependency-path: libs/typescript/package-lock.json
+
+      - run: npm ci
+
+      # prepublishOnly runs clean + lint + test + build before packing.
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

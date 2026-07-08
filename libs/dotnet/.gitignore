@@ -1,0 +1,7 @@
+# .NET build output (created by `dotnet build`/`run`/`test`)
+bin/
+obj/
+
+# Local NuGet restore / build-offline scratch (if ever produced here)
+[Aa]rtifacts/
+*.user

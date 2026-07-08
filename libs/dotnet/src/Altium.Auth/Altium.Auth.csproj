@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <!-- Offline-friendly: use the installed runtime patch's on-disk ref pack
+         instead of fetching the latest patch from NuGet. -->
+    <TargetLatestRuntimePatch>false</TargetLatestRuntimePatch>
+    <!-- Dependency-free by design: a token-acquisition client needs no JWT/JWKS
+         validation stack, so there are no package references. -->
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+
+  <!-- NuGet package metadata (nuget.org: Altium.Auth). -->
+  <PropertyGroup>
+    <PackageId>Altium.Auth</PackageId>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <Authors>Altium</Authors>
+    <Company>Altium</Company>
+    <Product>Altium.Auth</Product>
+    <Description>Dependency-free .NET client for Altium 365 authentication (OAuth2/OIDC + PKCE, workspace token-exchange, refresh, and the Altium ActionWait desktop flow). Validated against the language-neutral conformance vectors in the a365-auth spec.</Description>
+    <PackageTags>altium;altium365;oauth2;oidc;openid-connect;authentication;pkce</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/AltiumDeveloper/a365-auth</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/AltiumDeveloper/a365-auth</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Ship the library README (libs/dotnet/README.md) as the nuget.org package page. -->
+    <None Include="../../README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+</Project>

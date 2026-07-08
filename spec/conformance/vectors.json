@@ -1,0 +1,301 @@
+{
+  "version": "0.1.0",
+  "note": "Language-neutral conformance vectors for the Altium Identity flow. See README.md for the format and matchers. Extracted from src/index.test.ts and the live Commercial/Gov/Dev captures.",
+
+  "authorizeUrl": [
+    {
+      "id": "authurl-commercial-public",
+      "description": "Commercial authorize URL with PKCE; secure must not appear on /authorize.",
+      "config": { "clientId": "test-client-id", "scopes": "openid profile" },
+      "options": { "redirectUri": "https://app.example.com/cb", "state": "state-123", "codeVerifier": "verifier-123" },
+      "expect": {
+        "origin": "https://auth.altium.com",
+        "pathname": "/connect/authorize",
+        "query": {
+          "response_type": "code",
+          "client_id": "test-client-id",
+          "redirect_uri": "https://app.example.com/cb",
+          "scope": "openid profile",
+          "code_challenge_method": "S256",
+          "code_challenge": "<any>",
+          "state": "state-123"
+        },
+        "queryAbsent": ["secure", "client_secret"]
+      }
+    },
+    {
+      "id": "authurl-gov-no-secure",
+      "description": "Gov authorize URL targets the gov host but still carries no secure param.",
+      "config": {
+        "clientId": "gov-client",
+        "scopes": "openid profile",
+        "authEndpoint": "https://auth.365-gov.altium.com/connect/authorize",
+        "tokenEndpoint": "https://auth.365-gov.altium.com/connect/token"
+      },
+      "options": { "state": "s", "codeVerifier": "v" },
+      "expect": {
+        "origin": "https://auth.365-gov.altium.com",
+        "pathname": "/connect/authorize",
+        "query": { "code_challenge_method": "S256" },
+        "queryAbsent": ["secure"]
+      }
+    }
+  ],
+
+  "tokenRequest": [
+    {
+      "id": "code-exchange-public-commercial",
+      "description": "Public client code exchange: client_id in body, no Basic header, no secure.",
+      "operation": "exchangeCode",
+      "config": { "clientId": "test-client-id", "scopes": "openid profile" },
+      "input": { "code": "auth-code", "codeVerifier": "verifier-123", "redirectUri": "https://app.example.com/cb" },
+      "expectRequest": {
+        "endpoint": "https://auth.altium.com/connect/token",
+        "method": "POST",
+        "authorization": "none",
+        "bodyParams": {
+          "grant_type": "authorization_code",
+          "code": "auth-code",
+          "code_verifier": "verifier-123",
+          "redirect_uri": "https://app.example.com/cb",
+          "client_id": "test-client-id"
+        },
+        "bodyParamsAbsent": ["secure", "client_secret"]
+      },
+      "mockResponse": { "status": 200, "json": { "access_token": "AT", "token_type": "Bearer", "expires_in": 3600, "scope": "openid profile" } },
+      "expectResult": { "access_token": "AT", "expires_at": "<any>" }
+    },
+    {
+      "id": "code-exchange-confidential-basic",
+      "description": "Confidential client code exchange: HTTP Basic, client_id NOT in body.",
+      "operation": "exchangeCode",
+      "config": { "clientId": "test-client-id", "clientSecret": "s3cret", "scopes": "openid profile" },
+      "input": { "code": "c", "codeVerifier": "v" },
+      "expectRequest": {
+        "endpoint": "https://auth.altium.com/connect/token",
+        "method": "POST",
+        "authorization": "basic(clientId:clientSecret)",
+        "bodyParams": { "grant_type": "authorization_code", "code": "c", "code_verifier": "v" },
+        "bodyParamsAbsent": ["client_id", "secure"]
+      },
+      "mockResponse": { "status": 200, "json": { "access_token": "AT", "token_type": "Bearer" } },
+      "expectResult": { "access_token": "AT" }
+    },
+    {
+      "id": "workspace-exchange-nongov",
+      "description": "Non-Gov workspace exchange on the Commercial endpoint; no secure.",
+      "operation": "signIntoWorkspace",
+      "config": { "clientId": "test-client-id", "scopes": "openid profile" },
+      "input": { "baseAccessToken": "global-AT", "workspaceAuthId": "ws-123" },
+      "expectRequest": {
+        "endpoint": "https://auth.altium.com/connect/token",
+        "method": "POST",
+        "authorization": "none",
+        "bodyParams": {
+          "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
+          "subject_token": "global-AT",
+          "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
+          "scope": "contains:a365:workspace:ws-123",
+          "client_id": "test-client-id"
+        },
+        "bodyParamsAbsent": ["secure"]
+      },
+      "mockResponse": { "status": 200, "json": { "access_token": "WS-AT", "token_type": "Bearer" } },
+      "expectResult": { "access_token": "WS-AT" }
+    },
+    {
+      "id": "workspace-exchange-gov-bridge",
+      "description": "Commercial global token → Gov workspace token at the Gov endpoint with secure=1.",
+      "operation": "signIntoWorkspace",
+      "config": {
+        "clientId": "test-client-id",
+        "scopes": "openid profile",
+        "authEndpoint": "https://auth.365-gov.altium.com/connect/authorize",
+        "tokenEndpoint": "https://auth.365-gov.altium.com/connect/token",
+        "actionWaitEndpoint": "https://actionwait.altium.com/await",
+        "redirectUri": "https://auth.altium.com/api/AuthComplete"
+      },
+      "input": { "baseAccessToken": "commercial-global-AT", "workspaceAuthId": "gov-ws" },
+      "expectRequest": {
+        "endpoint": "https://auth.365-gov.altium.com/connect/token",
+        "method": "POST",
+        "bodyParams": {
+          "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
+          "subject_token": "commercial-global-AT",
+          "scope": "contains:a365:workspace:gov-ws",
+          "secure": "1"
+        }
+      },
+      "mockResponse": { "status": 200, "json": { "access_token": "GOV-WS-AT", "token_type": "Bearer" } },
+      "expectResult": { "access_token": "GOV-WS-AT" }
+    },
+    {
+      "id": "refresh-commercial-no-scope",
+      "description": "Refresh sends grant_type + refresh_token only; no scope, no secure on Commercial.",
+      "operation": "refreshToken",
+      "config": { "clientId": "test-client-id", "scopes": "openid profile" },
+      "input": { "refreshToken": "RT" },
+      "expectRequest": {
+        "endpoint": "https://auth.altium.com/connect/token",
+        "method": "POST",
+        "authorization": "none",
+        "bodyParams": { "grant_type": "refresh_token", "refresh_token": "RT", "client_id": "test-client-id" },
+        "bodyParamsAbsent": ["scope", "secure"]
+      },
+      "mockResponse": { "status": 200, "json": { "access_token": "AT2", "token_type": "Bearer" } },
+      "expectResult": { "access_token": "AT2" }
+    },
+    {
+      "id": "refresh-gov-secure",
+      "description": "Refresh at the Gov endpoint carries secure=1; still no scope.",
+      "operation": "refreshToken",
+      "config": {
+        "clientId": "test-client-id",
+        "scopes": "openid profile",
+        "tokenEndpoint": "https://auth.365-gov.altium.com/connect/token"
+      },
+      "input": { "refreshToken": "RT" },
+      "expectRequest": {
+        "endpoint": "https://auth.365-gov.altium.com/connect/token",
+        "method": "POST",
+        "bodyParams": { "grant_type": "refresh_token", "refresh_token": "RT", "secure": "1" },
+        "bodyParamsAbsent": ["scope"]
+      },
+      "mockResponse": { "status": 200, "json": { "access_token": "AT3", "token_type": "Bearer" } },
+      "expectResult": { "access_token": "AT3" }
+    },
+    {
+      "id": "cross-partition-access-denied",
+      "description": "Gov workspace exchanged on the Commercial endpoint → access_denied surfaced as an error.",
+      "operation": "signIntoWorkspace",
+      "config": { "clientId": "test-client-id", "scopes": "openid profile" },
+      "input": { "baseAccessToken": "global-AT", "workspaceAuthId": "gov-ws" },
+      "expectRequest": {
+        "endpoint": "https://auth.altium.com/connect/token",
+        "bodyParamsAbsent": ["secure"]
+      },
+      "mockResponse": { "status": 400, "json": { "error": "access_denied" } },
+      "expectErrorContains": "access_denied"
+    },
+    {
+      "id": "token-expires-at-skew",
+      "description": "When the response omits expires_at, the client computes it as now + expires_in - 30 (clock-skew buffer).",
+      "operation": "refreshToken",
+      "config": { "clientId": "test-client-id", "scopes": "openid profile" },
+      "input": { "refreshToken": "RT" },
+      "expectRequest": { "endpoint": "https://auth.altium.com/connect/token" },
+      "mockResponse": { "status": 200, "json": { "access_token": "AT", "token_type": "Bearer", "expires_in": 3600 } },
+      "expectResult": { "access_token": "AT", "expires_at": "epochWithin:3570:5" }
+    }
+  ],
+
+  "revocation": [
+    {
+      "id": "revoke-refresh-token",
+      "description": "Revoke a refresh token: POST /connect/revocation with token + token_type_hint, client auth per client type; 200 with empty body.",
+      "config": { "clientId": "test-client-id", "scopes": "openid profile" },
+      "input": { "refreshToken": "RT" },
+      "expectRequest": {
+        "endpoint": "https://auth.altium.com/connect/revocation",
+        "method": "POST",
+        "authorization": "none",
+        "bodyParams": { "token": "RT", "token_type_hint": "refresh_token", "client_id": "test-client-id" }
+      },
+      "mockResponse": { "status": 200, "text": "" },
+      "note": "Implemented by both the TS (revokeRefreshToken) and .NET (RevokeRefreshTokenAsync) clients; both conformance runners assert this request shape."
+    },
+    {
+      "id": "revoke-then-refresh-invalid-grant",
+      "description": "After revoking a refresh token, refreshing with it returns invalid_grant (validated live on dev).",
+      "mockResponse": { "status": 400, "json": { "error": "invalid_grant" } },
+      "expectErrorContains": "invalid_grant",
+      "note": "Behavioral reference (revoke → refresh → invalid_grant). Requires a live server, so offline runners skip it. Validated live on dev."
+    }
+  ],
+
+  "userinfo": [
+    {
+      "id": "userinfo-shape",
+      "description": "GET /connect/userinfo returns these claims (see ../schemas/userinfo.schema.json). Validated live in Test B. Not a library function — reference only.",
+      "expectClaims": ["sub", "username", "email", "given_name", "family_name", "organization_id", "picture"]
+    }
+  ],
+
+  "actionWait": [
+    {
+      "id": "aw-success",
+      "description": "200 with data.code/data.state returns the code.",
+      "pollResponses": [{ "status": 200, "json": { "data": { "code": "code-1", "state": "<stateEchoesToken>" } } }],
+      "expect": { "outcome": "code", "code": "code-1" }
+    },
+    {
+      "id": "aw-reconnect-then-success",
+      "description": "408 is a normal reconnect; the next 200 succeeds.",
+      "pollResponses": [
+        { "status": 408, "text": "" },
+        { "status": 200, "json": { "data": { "code": "code-2", "state": "<stateEchoesToken>" } } }
+      ],
+      "expect": { "outcome": "code", "code": "code-2" }
+    },
+    {
+      "id": "aw-410-terminal",
+      "description": "410 is terminal (cancelled / superseded).",
+      "pollResponses": [{ "status": 410, "text": "" }],
+      "expect": { "outcome": "errorContains", "errorContains": "cancelled" }
+    },
+    {
+      "id": "aw-non-json",
+      "description": "200 with a non-JSON body is an error.",
+      "pollResponses": [{ "status": 200, "text": "not json" }],
+      "expect": { "outcome": "errorContains", "errorContains": "not JSON" }
+    },
+    {
+      "id": "aw-missing-code",
+      "description": "200 without data.code is an error.",
+      "pollResponses": [{ "status": 200, "json": { "data": {} } }],
+      "expect": { "outcome": "errorContains", "errorContains": "missing data.code" }
+    },
+    {
+      "id": "aw-state-mismatch-csrf",
+      "description": "200 whose data.state does not match the wait token is rejected (CSRF guard); the code is NOT exchanged.",
+      "pollResponses": [{ "status": 200, "json": { "data": { "code": "c", "state": "attacker-state" } } }],
+      "expect": { "outcome": "errorContains", "errorContains": "State mismatch" }
+    }
+  ],
+
+  "liveClaims": [
+    {
+      "id": "claims-global-commercial",
+      "description": "Global token from Commercial sign-in (Tests A/B).",
+      "scenario": "sign in on auth.altium.com",
+      "accessTokenClaims": {
+        "iss": "https://auth.altium.com",
+        "scopeContains": ["openid", "profile"],
+        "secure": "<absent>",
+        "workspaceId": "<absent>"
+      }
+    },
+    {
+      "id": "claims-workspace-nongov",
+      "description": "Non-Gov workspace token (Test A).",
+      "scenario": "signIntoWorkspace on auth.altium.com",
+      "accessTokenClaims": {
+        "iss": "https://auth.altium.com",
+        "scopeContains": ["a365:workspace:"],
+        "workspaceId": "<present>",
+        "secure": "<absent>"
+      }
+    },
+    {
+      "id": "claims-workspace-gov",
+      "description": "Gov workspace token via Commercial→Gov bridge (Test B).",
+      "scenario": "signIntoWorkspace on auth.365-gov.altium.com with secure=1",
+      "accessTokenClaims": {
+        "iss": "https://auth.365-gov.altium.com",
+        "scopeContains": ["a365:workspace:"],
+        "workspaceId": "<present>",
+        "secure": "1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- Requires NuGet (xUnit). Run on a networked machine / CI:
+         dotnet test ports/dotnet/tests/Altium.Auth.Tests
+       The offline console runner (tests/Altium.Auth.Conformance) covers the
+       same vectors where NuGet is unavailable. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/Altium.Auth/Altium.Auth.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The single, shared, language-neutral conformance vectors. -->
+    <None Include="../../../../spec/conformance/vectors.json" Link="vectors.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

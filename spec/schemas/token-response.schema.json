@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://altium.com/identity/schemas/token-response.schema.json",
+  "title": "OAuth token endpoint response",
+  "description": "Body of a successful POST {base}/connect/token response. Standard OAuth 2.0 / OIDC shape. Note: `scope` here is a space-delimited string (unlike the array form inside the access-token JWT).",
+  "type": "object",
+  "required": ["access_token", "token_type"],
+  "properties": {
+    "access_token": { "type": "string", "description": "The access token (a JWT — see access-token-claims.schema.json)." },
+    "token_type": { "type": "string", "examples": ["Bearer"] },
+    "expires_in": { "type": "integer", "description": "Access token lifetime in seconds." },
+    "refresh_token": { "type": "string", "description": "Present when offline_access was requested." },
+    "id_token": { "type": "string", "description": "Present when the openid scope was requested." },
+    "scope": {
+      "type": "string",
+      "description": "Space-delimited granted scopes.",
+      "examples": ["a365:workspace:22222222-2222-2222-2222-222222222222 offline_access openid profile"]
+    }
+  },
+  "$comment": "Error responses use the OAuth error shape instead: { \"error\": string, \"error_description\"?: string } with a 4xx status (e.g. access_denied, invalid_grant, invalid_client)."
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://altium.com/identity/schemas/actionwait.schema.json",
+  "title": "ActionWait long-poll messages",
+  "description": "Request/response bodies for POST {actionWaitHost}/await (Altium-proprietary; used by public clients). See SPEC.md §4.",
+  "$defs": {
+    "awaitRequest": {
+      "type": "object",
+      "description": "POST /await body (Content-Type: application/json).",
+      "required": ["token"],
+      "additionalProperties": false,
+      "properties": {
+        "token": {
+          "type": "string",
+          "description": "The wait token — the same high-entropy value used as the OAuth `state` in the authorize request."
+        }
+      }
+    },
+    "awaitSuccessResponse": {
+      "type": "object",
+      "description": "Body of a 200 response: the authorization result.",
+      "required": ["data"],
+      "properties": {
+        "data": {
+          "type": "object",
+          "required": ["code", "state"],
+          "properties": {
+            "code": { "type": "string", "minLength": 1, "description": "OAuth authorization code; exchange at the token endpoint." },
+            "state": { "type": "string", "minLength": 1, "description": "Echoes the wait token; the client MUST verify it matches before using `code`." }
+          }
+        }
+      }
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/$defs/awaitRequest" },
+    { "$ref": "#/$defs/awaitSuccessResponse" }
+  ],
+  "$comment": "Status semantics (not expressible in JSON Schema): 200 = result ready (awaitSuccessResponse); 408 = normal idle timeout, reconnect with the same token; 410 = token no longer valid, restart sign-in; other = error."
+}

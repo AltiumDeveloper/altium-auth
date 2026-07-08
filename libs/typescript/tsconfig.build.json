@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // Ship only .js + .d.ts. Source maps would reference src/, which is not
+    // published, so disable them to avoid broken-map warnings in consumers.
+    "sourceMap": false,
+    "declarationMap": false
+  },
+  "exclude": ["node_modules", "dist", "src/**/*.test.ts"]
+}

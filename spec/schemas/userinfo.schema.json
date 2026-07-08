@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://altium.com/identity/schemas/userinfo.schema.json",
+  "title": "Altium Identity userinfo response",
+  "description": "Body of GET {base}/connect/userinfo (OIDC UserInfo). Claim set depends on granted scopes and the user's profile; the fields below were observed for a user token. `sub` matches the id/access token `sub`.",
+  "type": "object",
+  "required": ["sub"],
+  "properties": {
+    "sub": { "type": "string", "description": "Stable user identifier (same as the token `sub`)." },
+    "username": { "type": "string" },
+    "email": { "type": "string" },
+    "given_name": { "type": "string" },
+    "family_name": { "type": "string" },
+    "organization_id": { "type": "string" },
+    "picture": { "type": "string", "format": "uri" }
+  },
+  "additionalProperties": true
+}
