@@ -5,7 +5,7 @@
   "authorizeUrl": [
     {
       "id": "authurl-commercial-public",
-      "description": "Commercial authorize URL with PKCE; secure and selectWorkspace must not appear on /authorize.",
+      "description": "Commercial authorize URL with PKCE; secure must not appear on /authorize and selectWorkspace is absent by default.",
       "config": { "clientId": "test-client-id", "scopes": "openid profile" },
       "options": { "redirectUri": "https://app.example.com/cb", "state": "state-123", "codeVerifier": "verifier-123" },
       "expect": {
