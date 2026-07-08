@@ -34,7 +34,17 @@ Prepend the base URL for your environment — for example, `https://auth.altium.
 - **Refresh token** — issued when you request the `offline_access` scope; use it to obtain a new access token (global or workspace) without asking the user to sign in again.
 - **Workspace context** — the workspace identity carried by the `a365:workspace:{workspaceId}` scope.
 
-## About the workspace scope
+## Login-into-workspace mode
+
+When you know at sign-in time that the user should land on a workspace, you can prompt the user to select one **as part of the authorization flow** using the optional `selectWorkspace` parameter on `/connect/authorize`. This eliminates the separate discover-and-exchange steps (steps 2–3 of the recommended flow).
+
+| `selectWorkspace` value | Behavior |
+| --- | --- |
+| omitted or `none` (default) | Workspace selection is skipped; the flow issues a global access token as usual. |
+| `strict` | Workspace selection is **mandatory** — the user must choose a workspace before authentication can complete. The returned token is already workspace-scoped. |
+| `optional` | Workspace selection is offered but may be skipped by the user. |
+
+When a workspace is selected, the authorization code exchange returns a workspace-scoped access token directly. See [Step 1](./web-and-server-apps.md#step-1--request-authorization-with-pkce) in the web guide, or the `selectWorkspace` option in the library API references.
 
 The `a365:workspace:{workspaceId}` scope plays two roles today: it transfers **workspace context** (which workspace the token is for) and grants **access to that workspace's resources**. It is the same scope across Altium 365 and Altium Enterprise Server. Additional scopes may appear in the discovery document over time; this guide uses `a365:workspace:{workspaceId}`.
 

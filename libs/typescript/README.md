@@ -146,7 +146,7 @@ Performs OAuth2 PKCE sign-in. Opens the browser to the authorization URL, long-p
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | config | `OAuthConfig` | OAuth2 configuration (`clientId` + `scopes` required; endpoints default to the Commercial Cloud) |
-| options | `SignInOptions` | Optional: `timeoutMs` (default 180s), `AbortSignal` for cancellation |
+| options | `SignInOptions` | Optional: `timeoutMs` (default 180s), `AbortSignal` for cancellation, `selectWorkspace` for login-into-workspace mode |
 
 **Returns:** `Promise<TokenSet>` — the full token response from the IdP.
 
@@ -159,7 +159,7 @@ Builds an OAuth2 authorization URL with PKCE for the redirect-based (authorizati
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | config | `OAuthConfig` | Same as signIn |
-| options | `AuthorizationUrlOptions` | Optional: `redirectUri`, `state`, `codeVerifier`, `scopes` overrides |
+| options | `AuthorizationUrlOptions` | Optional: `redirectUri`, `state`, `codeVerifier`, `scopes`, `selectWorkspace` overrides |
 
 **Returns:** `AuthorizationRequest` — `{ url, state, codeVerifier }`. Redirect the user to `url`; persist `state` and `codeVerifier` (e.g. in the session) for the callback.
 
@@ -286,6 +286,18 @@ interface TokenSet {
 ```
 
 > `access_token` is a signed JWT — decode it to read `iss`, `workspaceId`, `secure`, and scopes. See [Access token claims](../../docs/token-claims.md).
+
+### `AuthorizationUrlOptions` / `SignInOptions`
+
+Both `createAuthorizationUrl` and `signIn` accept a `selectWorkspace` option for [login-into-workspace mode](../../docs/overview.md#login-into-workspace-mode):
+
+```typescript
+// In AuthorizationUrlOptions (createAuthorizationUrl) and SignInOptions (signIn):
+selectWorkspace?: "none" | "strict" | "optional";
+// "strict"   — workspace selection mandatory; returned token is workspace-scoped.
+// "optional" — workspace selection offered; user may skip.
+// "none" or omitted (default) — no workspace prompt; issues a global access token.
+```
 
 ## Error Handling
 
