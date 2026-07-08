@@ -255,7 +255,7 @@ The `access_token` is your **workspace access token**. Use it to call the Altium
 Authorization: Bearer <workspace access token>
 ```
 
-> **Shortcut when you already know the workspace.** Request the workspace scope directly in Step 1 — set `scope=openid profile offline_access a365:workspace:<workspaceId>` in the authorize request — and the code exchange in Step 2 returns the workspace token (and refresh token) directly, skipping Steps 3–4. Run the *whole* flow on the host that matches the workspace: `auth.altium.com` for a non-Gov workspace, or `auth.365-gov.altium.com` with `secure=1` (on both the authorize and token requests) for a Gov Cloud workspace. Use the discover-then-exchange flow (Steps 3–4) when the user chooses a workspace at runtime.
+> **Shortcut when you already know the workspace.** Request the workspace scope directly in Step 1 — set `scope=openid profile offline_access a365:workspace:<workspaceId>` in the authorize request — and the code exchange in Step 2 returns the workspace token (and refresh token) directly, skipping Steps 3–4. Run the *whole* flow on the host that matches the workspace: `auth.altium.com` for a non-Gov workspace, or `auth.365-gov.altium.com` for a Gov Cloud workspace (send `secure=1` on the `/connect/token` requests only). Use the discover-then-exchange flow (Steps 3–4) when the user chooses a workspace at runtime.
 >
 > **Alternatively**, use `selectWorkspace=strict` (or `optional`) in Step 1 to have the server present workspace selection during sign-in — the user picks from their own workspaces without your app needing to enumerate them first. See [Login-into-workspace mode](./overview.md#login-into-workspace-mode).
 
