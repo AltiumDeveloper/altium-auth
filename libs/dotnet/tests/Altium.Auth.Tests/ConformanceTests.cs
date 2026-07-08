@@ -37,7 +37,7 @@ public class ConformanceTests
         var v = JsonDocument.Parse(json).RootElement;
         var sut = new AltiumAuthClient(new HttpClient(), BuildOptions(v.GetProperty("config")));
         var opt = v.GetProperty("options");
-        var authz = sut.CreateAuthorizationUrl(Opt(opt, "redirectUri"), Opt(opt, "state"), Opt(opt, "codeVerifier"));
+        var authz = sut.CreateAuthorizationUrl(Opt(opt, "redirectUri"), Opt(opt, "state"), Opt(opt, "codeVerifier"), Opt(opt, "selectWorkspace"));
 
         var u = new Uri(authz.Url);
         var q = ParseForm(u.Query.TrimStart('?'));

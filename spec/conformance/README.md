@@ -43,6 +43,7 @@ Golden decoded **access-token claims** from real runs — integration references
 ## Coverage checklist
 
 - [x] Authorize URL — Commercial + Gov host, `secure` never on `/authorize`, PKCE `S256`
+- [x] Authorize URL — `selectWorkspace` strict/optional/none (SPEC §3.1)
 - [x] Code exchange — public (client_id) vs confidential (Basic)
 - [x] Workspace exchange — non-Gov (no `secure`) vs Gov (`secure=1`, Commercial→Gov bridge)
 - [x] Refresh — no `scope` sent; Commercial vs Gov (`secure`)

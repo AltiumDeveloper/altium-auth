@@ -27,11 +27,11 @@ public sealed class TokenSet
 
 public interface IAltiumAuthClient
 {
-    AuthorizationRequest CreateAuthorizationUrl(string? redirectUri = null, string? state = null, string? codeVerifier = null);
+    AuthorizationRequest CreateAuthorizationUrl(string? redirectUri = null, string? state = null, string? codeVerifier = null, string? selectWorkspace = null);
     Task<TokenSet> ExchangeCodeAsync(string code, string? codeVerifier = null, string? redirectUri = null, CancellationToken ct = default);
     Task<TokenSet> SignIntoWorkspaceAsync(string baseAccessToken, string workspaceAuthId, CancellationToken ct = default);
     Task<TokenSet> RefreshTokenAsync(string refreshToken, CancellationToken ct = default);
-    Task<TokenSet> SignInAsync(CancellationToken ct = default);
+    Task<TokenSet> SignInAsync(string? selectWorkspace = null, CancellationToken ct = default);
     Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default);
 }
 
@@ -93,7 +93,7 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
         return tok;
     }
 
-    public AuthorizationRequest CreateAuthorizationUrl(string? redirectUri = null, string? state = null, string? codeVerifier = null)
+    public AuthorizationRequest CreateAuthorizationUrl(string? redirectUri = null, string? state = null, string? codeVerifier = null, string? selectWorkspace = null)
     {
         var verifier = codeVerifier ?? Base64Url(RandomNumberGenerator.GetBytes(32));
         var challenge = Base64Url(SHA256.HashData(Encoding.ASCII.GetBytes(verifier)));
@@ -111,6 +111,9 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
             ["code_challenge_method"] = "S256",
             ["state"] = st,
         };
+        // selectWorkspace: only sent when explicitly requested (not 'none' or omitted) (SPEC §3.1).
+        if (!string.IsNullOrEmpty(selectWorkspace) && selectWorkspace != "none")
+            query["selectWorkspace"] = selectWorkspace;
         var qs = string.Join("&", query.Select(kv => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
         return new AuthorizationRequest($"{options.Endpoints.AuthorizeEndpoint}?{qs}", st, verifier);
     }
@@ -152,11 +155,11 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
         return TokenRequestAsync(form, ct);
     }
 
-    public async Task<TokenSet> SignInAsync(CancellationToken ct = default)
+    public async Task<TokenSet> SignInAsync(string? selectWorkspace = null, CancellationToken ct = default)
     {
         // The connection token doubles as the OAuth `state` and the ActionWait token (SPEC §4.1).
         var connectionToken = Guid.NewGuid().ToString();
-        var authz = CreateAuthorizationUrl(state: connectionToken);
+        var authz = CreateAuthorizationUrl(state: connectionToken, selectWorkspace: selectWorkspace);
 
         // Start the long-poll BEFORE opening the browser so a fast callback can't race (SPEC §4.4).
         var pollTask = PollActionWaitAsync(connectionToken, ct);

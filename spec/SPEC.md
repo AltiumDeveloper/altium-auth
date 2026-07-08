@@ -56,6 +56,25 @@ The **ActionWait** service is a single Commercial-Cloud deployment per environme
 
 ---
 
+## 3.1 `selectWorkspace` — login-into-workspace mode (proprietary)
+
+The `/connect/authorize` endpoint accepts an optional `selectWorkspace` query parameter that controls whether the user is prompted to select a workspace during the authorization flow.
+
+| Value | Behavior |
+| --- | --- |
+| `none` (default) or omitted | Workspace selection is skipped; the flow issues a global access token. |
+| `strict` | Workspace selection is **mandatory** — the user must choose a workspace before authentication can complete. |
+| `optional` | Workspace selection is presented to the user but may be skipped. |
+
+When a workspace is selected during the authorization flow, the issued access token is already scoped to that workspace (`a365:workspace:<workspaceId>`), eliminating the need for a separate token-exchange step (§5.2).
+
+Rules:
+- `selectWorkspace` **MUST NOT** be sent on the token endpoint — it is an authorize-only parameter.
+- When `selectWorkspace` is `none` or omitted, the parameter **SHOULD** be omitted from the URL.
+- The `secure=1` rule (§5.4) still applies at the token endpoint regardless of which `selectWorkspace` value was used.
+
+---
+
 ## 4. ActionWait (proprietary — public clients)
 
 Public clients cannot host a redirect. ActionWait delivers the authorization result to a waiting client over an HTTP long poll.
