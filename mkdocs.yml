@@ -1,4 +1,4 @@
-site_name: Altium 365 Auth
+site_name: Altium 365 Authentication
 site_description: >-
   Client libraries and specification for Altium 365 authentication —
   OAuth2/OIDC + PKCE, the ActionWait desktop flow, workspace token-exchange,
@@ -11,6 +11,7 @@ copyright: Copyright &copy; Altium
 
 theme:
   name: material
+  custom_dir: overrides # partial overrides (e.g. the giscus comments partial)
   # To match the house style of altiumdeveloper.github.io/a365-erc-sdk, drop the
   # Altium logo + favicon into docs/assets/ and uncomment:
   # logo: assets/logo.svg
