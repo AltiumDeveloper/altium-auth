@@ -289,7 +289,7 @@ interface TokenSet {
 
 ### `AuthorizationUrlOptions` / `SignInOptions`
 
-Both `createAuthorizationUrl` and `signIn` accept a `selectWorkspace` option for [login-into-workspace mode](../../docs/overview.md#login-into-workspace-mode):
+Both `createAuthorizationUrl` and `signIn` accept a `selectWorkspace` option for [login-into-workspace mode](../../docs/guides/overview.md#login-into-workspace-mode):
 
 ```typescript
 // In AuthorizationUrlOptions (createAuthorizationUrl) and SignInOptions (signIn):

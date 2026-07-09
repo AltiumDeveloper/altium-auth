@@ -16,6 +16,7 @@
  *   --secure / --no-secure          Force secure=1 on/off (default: auto from token endpoint)
  *   --scopes "<scopes>"             Space-delimited scopes        (default: "openid profile")
  *   --workspace <authId>            After sign-in, exchange for a workspace token
+ *   --select-workspace <none|strict|optional>  Login-into-workspace mode at /authorize (default: none)
  *   --refresh                       After sign-in, exercise refreshToken (implies offline_access)
  *   --userinfo                      After sign-in, GET /connect/userinfo and print the response
  *   --revoke                        Revoke the (latest) refresh token, then prove it no longer works
@@ -59,6 +60,7 @@ interface CliArgs {
   secure?: boolean; // undefined = let the library auto-detect from the endpoint
   scopes: string;
   workspace?: string;
+  selectWorkspace?: "none" | "strict" | "optional";
   refresh: boolean;
   userinfo: boolean;
   revoke: boolean;
@@ -75,6 +77,13 @@ function parseEnv(value: string, flag: string): Env {
   return value;
 }
 
+function parseSelectWorkspace(value: string): "none" | "strict" | "optional" {
+  if (value !== "none" && value !== "strict" && value !== "optional") {
+    fail(`--select-workspace must be one of none|strict|optional (got "${value}")`);
+  }
+  return value;
+}
+
 function parseArgs(argv: string[]): CliArgs {
   let clientId: string | undefined;
   let env: Env = "prod";
@@ -82,6 +91,7 @@ function parseArgs(argv: string[]): CliArgs {
   let secure: boolean | undefined;
   let scopes = "openid profile";
   let workspace: string | undefined;
+  let selectWorkspace: "none" | "strict" | "optional" | undefined;
   let refresh = false;
   let userinfo = false;
   let revoke = false;
@@ -99,6 +109,7 @@ function parseArgs(argv: string[]): CliArgs {
       case "--no-secure": secure = false; break;
       case "--scopes": scopes = argv[++i]; break;
       case "--workspace": workspace = argv[++i]; break;
+      case "--select-workspace": selectWorkspace = parseSelectWorkspace(argv[++i]); break;
       case "--refresh": refresh = true; break;
       case "--userinfo": userinfo = true; break;
       case "--revoke": revoke = true; break;
@@ -120,7 +131,7 @@ function parseArgs(argv: string[]): CliArgs {
   }
   // Leave `secure` undefined unless explicitly forced, so the library
   // auto-detects it from the token endpoint (Gov host → secure=1).
-  return { clientId: clientId!, env, workspaceEnv, secure, scopes, workspace, refresh, userinfo, revoke, authorizeUrl, code, codeVerifier, redirectUri };
+  return { clientId: clientId!, env, workspaceEnv, secure, scopes, workspace, selectWorkspace, refresh, userinfo, revoke, authorizeUrl, code, codeVerifier, redirectUri };
 }
 
 /** GET the userinfo endpoint (derived from the authorize endpoint) and print the response. */
@@ -213,7 +224,7 @@ async function main() {
   // Authorize-URL mode: print the URL to sign in with a custom callback, then exit.
   // Use this for confidential/custom-redirect clients that can't use ActionWait.
   if (args.authorizeUrl) {
-    const authz = createAuthorizationUrl(signInConfig, { redirectUri: args.redirectUri });
+    const authz = createAuthorizationUrl(signInConfig, { redirectUri: args.redirectUri, selectWorkspace: args.selectWorkspace });
     console.log("=== a365-auth authorize URL ===\n");
     console.log(`redirect_uri : ${args.redirectUri ?? signInConfig.redirectUri}`);
     console.log(`state         : ${authz.state}`);
@@ -229,6 +240,9 @@ async function main() {
   console.log(`Client type  : ${clientSecret ? "confidential (HTTP Basic)" : "public (PKCE)"}`);
   console.log(`secure=1      : ${args.secure === undefined ? "auto (from token endpoint)" : args.secure ? "forced on" : "forced off"}`);
   console.log(`Scopes        : ${args.scopes}`);
+  if (args.selectWorkspace && args.selectWorkspace !== "none") {
+    console.log(`selectWorkspace: ${args.selectWorkspace} (login-into-workspace)`);
+  }
   console.log(`Token host (${args.env}) : ${signInConfig.tokenEndpoint}`);
   if (args.code) {
     console.log(`Mode          : exchange authorization code (redirect_uri=${args.redirectUri ?? signInConfig.redirectUri})`);
@@ -246,7 +260,7 @@ async function main() {
     // redirect) or the interactive ActionWait sign-in.
     const tokens = args.code
       ? await exchangeCode(signInConfig, { code: args.code, codeVerifier: args.codeVerifier, redirectUri: args.redirectUri })
-      : await signIn(signInConfig, { timeoutMs: 300_000 });
+      : await signIn(signInConfig, { timeoutMs: 300_000, selectWorkspace: args.selectWorkspace });
     printTokens("Global token:", tokens);
 
     if (args.userinfo) {

@@ -76,7 +76,7 @@ To prompt the user to select a workspace **during sign-in** (login-into-workspac
 TokenSet tokens = await client.SignInAsync(WorkspaceSelection.Optional);
 ```
 
-See [Login-into-workspace mode](../../docs/overview.md#login-into-workspace-mode).
+See [Login-into-workspace mode](../../docs/guides/overview.md#login-into-workspace-mode).
 
 ### Confidential apps (web / server — authorization-code redirect)
 
