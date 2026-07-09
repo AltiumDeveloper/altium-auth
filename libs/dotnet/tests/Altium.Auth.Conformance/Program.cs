@@ -41,7 +41,7 @@ void RunAuthorizeUrl(JsonElement v)
         var options = BuildOptions(v.GetProperty("config"));
         var opt = v.GetProperty("options");
         var client = new AltiumAuthClient(new HttpClient(), options);
-        var authz = client.CreateAuthorizationUrl(Opt(opt, "redirectUri"), Opt(opt, "state"), Opt(opt, "codeVerifier"));
+        var authz = client.CreateAuthorizationUrl(Opt(opt, "redirectUri"), Opt(opt, "state"), Opt(opt, "codeVerifier"), ParseWorkspaceSelection(Opt(opt, "selectWorkspace")));
 
         var u = new Uri(authz.Url);
         var q = ParseForm(u.Query.TrimStart('?'));
@@ -236,6 +236,14 @@ bool MatchString(string? actual, JsonElement matcher)
 
 string? Opt(JsonElement e, string name) =>
     e.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
+
+// Map the language-neutral vector value to the idiomatic .NET enum.
+WorkspaceSelection ParseWorkspaceSelection(string? v) => v switch
+{
+    "strict" => WorkspaceSelection.Strict,
+    "optional" => WorkspaceSelection.Optional,
+    _ => WorkspaceSelection.None,
+};
 
 (int status, string body) MockBody(JsonElement mock)
 {

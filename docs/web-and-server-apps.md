@@ -46,15 +46,7 @@ GET https://auth.altium.com/connect/authorize
 
 ### Login-into-workspace mode (`selectWorkspace`)
 
-Add the optional `selectWorkspace` parameter to prompt the user to select a workspace **during sign-in**, so the authorization code exchange returns a workspace-scoped token directly:
-
-| Value | Behavior |
-| --- | --- |
-| omitted or `none` (default) | No workspace selection prompt; issues a global access token. |
-| `strict` | Workspace selection is mandatory before authentication can complete. |
-| `optional` | Workspace selection is offered; the user may skip it. |
-
-Example with `selectWorkspace=optional`:
+Add the optional `selectWorkspace` parameter to the authorize request to have the code exchange return a workspace-scoped token directly — skipping the discover-and-exchange steps below. See [Login-into-workspace mode](./overview.md#login-into-workspace-mode) for the values (`none` / `strict` / `optional`) and behavior.
 
 ```
 GET https://auth.altium.com/connect/authorize
@@ -67,8 +59,6 @@ GET https://auth.altium.com/connect/authorize
   &state=<opaque_state>
   &selectWorkspace=optional
 ```
-
-When the user selects a workspace, the code exchange returns a workspace-scoped token directly — no separate token-exchange step (Steps 3–4) is needed.
 
 After sign-in and consent, Altium Identity redirects to your callback:
 

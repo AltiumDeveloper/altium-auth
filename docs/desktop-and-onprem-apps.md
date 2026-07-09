@@ -39,7 +39,7 @@ After your app receives the authorization code, it continues with the same logic
 
 ### Login-into-workspace mode
 
-Add `selectWorkspace=strict` (or `optional`) to the authorize URL to let the server present workspace selection during sign-in. The user picks a workspace in the browser; the ActionWait callback delivers a code that already carries a workspace-scoped token after exchange — no discover-then-exchange step needed.
+Add `selectWorkspace` to the authorize URL so the ActionWait callback delivers a code that exchanges directly into a workspace-scoped token. See [Login-into-workspace mode](./overview.md#login-into-workspace-mode) for the values and behavior.
 
 ```
 https://auth.altium.com/connect/authorize
@@ -52,8 +52,6 @@ https://auth.altium.com/connect/authorize
   &state=<wait_token>
   &selectWorkspace=optional
 ```
-
-See [Login-into-workspace mode](./overview.md#login-into-workspace-mode) for the full description of values.
 
 ### Exchange the code (public client)
 
