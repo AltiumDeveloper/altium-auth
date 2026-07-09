@@ -370,6 +370,28 @@ describe("createAuthorizationUrl", () => {
     // secure=1 is a token-endpoint concern only.
     expect(u.searchParams.get("secure")).toBeNull();
   });
+
+  it("includes selectWorkspace=strict when selectWorkspace is 'strict'", () => {
+    const { url } = createAuthorizationUrl(validConfig, { selectWorkspace: "strict" });
+    const u = new URL(url);
+    expect(u.searchParams.get("selectWorkspace")).toBe("strict");
+  });
+
+  it("includes selectWorkspace=optional when selectWorkspace is 'optional'", () => {
+    const { url } = createAuthorizationUrl(validConfig, { selectWorkspace: "optional" });
+    const u = new URL(url);
+    expect(u.searchParams.get("selectWorkspace")).toBe("optional");
+  });
+
+  it("omits selectWorkspace when not set", () => {
+    const { url } = createAuthorizationUrl(validConfig);
+    expect(new URL(url).searchParams.has("selectWorkspace")).toBe(false);
+  });
+
+  it("omits selectWorkspace when set to 'none'", () => {
+    const { url } = createAuthorizationUrl(validConfig, { selectWorkspace: "none" });
+    expect(new URL(url).searchParams.has("selectWorkspace")).toBe(false);
+  });
 });
 
 // ── exchangeCode tests (redirect-based flow) ────────────────────

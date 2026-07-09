@@ -5,6 +5,18 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Login-into-workspace mode** (`selectWorkspace` on `/connect/authorize`). Pass
+  `selectWorkspace: "strict"` or `"optional"` to `createAuthorizationUrl` /
+  `signIn` options to have the server prompt the user to select a workspace during
+  authentication. When a workspace is selected, the code exchange returns a
+  workspace-scoped token directly — no separate `signIntoWorkspace` step needed.
+  `"none"` or omitting the option (default) preserves the existing global-token
+  flow. Mirrors SPEC §3.1.
+
 ## [0.1.0] — Preview
 
 First preview release of `@altium-developer/a365-auth`. Pre-1.0: the API may change

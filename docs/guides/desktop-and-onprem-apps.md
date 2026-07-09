@@ -37,6 +37,22 @@ sequenceDiagram
 
 After your app receives the authorization code, it continues with the same logical steps as a web application — exchange the code for a global access token, discover workspaces, exchange for a workspace access token, and refresh — **but as a public client**: the token requests carry `client_id` and (for the code exchange) the PKCE `code_verifier`, and **no** `client_secret` or `Authorization: Basic` header. See [Discover the user's workspaces](./web-and-server-apps.md#step-3--discover-the-users-workspaces) onward for the workspace steps.
 
+### Login-into-workspace mode
+
+Add `selectWorkspace` to the authorize URL so the ActionWait callback delivers a code that exchanges directly into a workspace-scoped token. See [Login-into-workspace mode](./overview.md#login-into-workspace-mode) for the values and behavior.
+
+```
+https://auth.altium.com/connect/authorize
+  ?client_id=<client_id>
+  &response_type=code
+  &scope=openid+profile+offline_access
+  &redirect_uri=https%3A%2F%2Fauth.altium.com%2Fapi%2FAuthComplete
+  &code_challenge=<code_challenge>
+  &code_challenge_method=S256
+  &state=<wait_token>
+  &selectWorkspace=optional
+```
+
 ### Exchange the code (public client)
 
 ```

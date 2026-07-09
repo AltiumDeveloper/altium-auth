@@ -5,7 +5,7 @@
   "authorizeUrl": [
     {
       "id": "authurl-commercial-public",
-      "description": "Commercial authorize URL with PKCE; secure must not appear on /authorize.",
+      "description": "Commercial authorize URL with PKCE; secure must not appear on /authorize and selectWorkspace is absent by default.",
       "config": { "clientId": "test-client-id", "scopes": "openid profile" },
       "options": { "redirectUri": "https://app.example.com/cb", "state": "state-123", "codeVerifier": "verifier-123" },
       "expect": {
@@ -20,7 +20,42 @@
           "code_challenge": "<any>",
           "state": "state-123"
         },
-        "queryAbsent": ["secure", "client_secret"]
+        "queryAbsent": ["secure", "client_secret", "selectWorkspace"]
+      }
+    },
+    {
+      "id": "authurl-select-workspace-strict",
+      "description": "selectWorkspace=strict appears on /authorize when strict workspace selection is requested (SPEC §3.1).",
+      "config": { "clientId": "test-client-id", "scopes": "openid profile" },
+      "options": { "state": "s", "codeVerifier": "v", "selectWorkspace": "strict" },
+      "expect": {
+        "origin": "https://auth.altium.com",
+        "pathname": "/connect/authorize",
+        "query": { "selectWorkspace": "strict", "code_challenge_method": "S256" },
+        "queryAbsent": ["secure"]
+      }
+    },
+    {
+      "id": "authurl-select-workspace-optional",
+      "description": "selectWorkspace=optional appears on /authorize when optional workspace selection is requested (SPEC §3.1).",
+      "config": { "clientId": "test-client-id", "scopes": "openid profile" },
+      "options": { "state": "s", "codeVerifier": "v", "selectWorkspace": "optional" },
+      "expect": {
+        "origin": "https://auth.altium.com",
+        "pathname": "/connect/authorize",
+        "query": { "selectWorkspace": "optional", "code_challenge_method": "S256" },
+        "queryAbsent": ["secure"]
+      }
+    },
+    {
+      "id": "authurl-select-workspace-none-omitted",
+      "description": "selectWorkspace is absent from /authorize when the value is 'none' (SPEC §3.1 — default/omit).",
+      "config": { "clientId": "test-client-id", "scopes": "openid profile" },
+      "options": { "state": "s", "codeVerifier": "v", "selectWorkspace": "none" },
+      "expect": {
+        "origin": "https://auth.altium.com",
+        "pathname": "/connect/authorize",
+        "queryAbsent": ["selectWorkspace", "secure"]
       }
     },
     {

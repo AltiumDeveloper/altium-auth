@@ -68,6 +68,16 @@ TokenSet tokens = await client.SignInAsync();
 TokenSet workspaceToken = await client.SignIntoWorkspaceAsync(tokens.AccessToken, "workspace-id-here");
 ```
 
+To prompt the user to select a workspace **during sign-in** (login-into-workspace mode), pass `selectWorkspace`:
+
+```csharp
+// WorkspaceSelection.Strict   → user must choose a workspace (token is workspace-scoped after exchange)
+// WorkspaceSelection.Optional → selection offered; the user may skip it
+TokenSet tokens = await client.SignInAsync(WorkspaceSelection.Optional);
+```
+
+See [Login-into-workspace mode](../../docs/guides/overview.md#login-into-workspace-mode).
+
 ### Confidential apps (web / server — authorization-code redirect)
 
 For backends that **host their own redirect endpoint**. Set `ClientSecret` to
@@ -138,8 +148,8 @@ Constructor: `new AltiumAuthClient(HttpClient http, AltiumAuthOptions options)` 
 
 | Member | Description |
 | --- | --- |
-| `SignInAsync(ct)` | Public-client PKCE sign-in via ActionWait (invokes `OpenBrowser`). Returns `TokenSet`. |
-| `CreateAuthorizationUrl(redirectUri?, state?, codeVerifier?)` | Build the authorize URL for the redirect flow. Returns `AuthorizationRequest`. Synchronous. |
+| `SignInAsync(selectWorkspace, ct)` | Public-client PKCE sign-in via ActionWait (invokes `OpenBrowser`). `selectWorkspace` is a `WorkspaceSelection` (`None` default, `Strict`, `Optional`). Returns `TokenSet`. |
+| `CreateAuthorizationUrl(redirectUri?, state?, codeVerifier?, selectWorkspace)` | Build the authorize URL for the redirect flow. Returns `AuthorizationRequest`. Synchronous. `selectWorkspace` is a `WorkspaceSelection` (`None` default, `Strict`, `Optional`). |
 | `ExchangeCodeAsync(code, codeVerifier?, redirectUri?, ct)` | Exchange an authorization code for tokens. |
 | `SignIntoWorkspaceAsync(baseAccessToken, workspaceAuthId, ct)` | Workspace-scoped token via RFC 8693 token-exchange. |
 | `RefreshTokenAsync(refreshToken, ct)` | Refresh via the `refresh_token` grant (sends no scope — retains the original grant). |

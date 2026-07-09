@@ -63,6 +63,12 @@ libs/
 4. Run **all** conformance runners (see cheat-sheet). All green, or the PR isn't done.
 5. Update the human-visible docs: the relevant `docs/*.md` guide(s), each changed
    library's README + CHANGELOG, and the root `README.md` conformance matrix.
+6. If the capability is user-exercisable (a new option, flag, method, or grant),
+   surface it in **each library's live E2E harness** so it can be tried against a real
+   environment — TS `libs/typescript/scripts/test-signin.ts`, .NET
+   `libs/dotnet/tools/SignInTest`. These harnesses are **not** unit-tested (they need
+   network + a browser), so they only stay correct if updated in lockstep with the API —
+   an unsurfaced capability, or a stale call after a signature change, is a defect.
 
 **Fix a bug in one library:**
 1. If it's a behavior bug, first add a vector that fails against the buggy behavior.
@@ -95,6 +101,9 @@ sh libs/dotnet/build-offline.sh
 
 Live end-to-end (needs network + a browser — never in CI): each library ships a
 sign-in tool — TS `npm run test:e2e`, .NET `dotnet run --project libs/dotnet/tools/SignInTest`.
+Keep them at feature parity: every new user-facing capability gets a flag/option here in
+**both** harnesses (see playbook step 6). CI builds `tools/SignInTest` so signature drift
+can't silently break it; the TS harness is type-checked when you run it via `tsx`.
 
 ## Definition of done (agent PR)
 
@@ -103,6 +112,8 @@ sign-in tool — TS `npm run test:e2e`, .NET `dotnet run --project libs/dotnet/t
 - [ ] **Every affected library passes its conformance runner** + unit tests + lint/typecheck/build.
 - [ ] Cross-language parity kept, or a gap recorded in the root README conformance matrix.
 - [ ] Affected `docs/*.md` guides + library READMEs updated; CHANGELOGs updated.
+- [ ] Live E2E harnesses (`scripts/test-signin.ts`, `tools/SignInTest`) expose any new
+      user-facing capability and still build/type-check — kept at parity across languages.
 - [ ] No secrets in code, tests, or CLI args (secrets come from env only).
 
 ## Documentation is part of the contract

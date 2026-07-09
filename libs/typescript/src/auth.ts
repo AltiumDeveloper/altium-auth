@@ -306,6 +306,18 @@ export interface AuthorizationUrlOptions {
   codeVerifier?: string;
   /** Override the configured `scopes` for this request. */
   scopes?: string;
+  /**
+   * Controls whether the user is prompted to select a workspace during authentication
+   * (login-into-workspace mode, SPEC §3.1).
+   *
+   * - `'strict'`: Workspace selection is **mandatory** — the user must choose a
+   *   workspace before authentication can complete. The returned token is
+   *   workspace-scoped, eliminating the need for a separate token-exchange step.
+   * - `'optional'`: Workspace selection is presented to the user but may be skipped.
+   * - `'none'` or omitted (default): Workspace selection is skipped; the flow
+   *   issues a global access token as usual.
+   */
+  selectWorkspace?: "none" | "strict" | "optional";
 }
 
 /** A prepared authorization request: where to send the user, and what to stash. */
@@ -333,6 +345,13 @@ function buildAuthorize(cfg: ResolvedConfig, options?: AuthorizationUrlOptions):
     state,
   });
   // Note: `secure=1` is a token-endpoint concern only — not sent on /authorize.
+  // `selectWorkspace` is only sent when explicitly requested (not 'none' or omitted).
+  const sw = options?.selectWorkspace;
+  if (sw === "strict" || sw === "optional") {
+    params.set("selectWorkspace", sw);
+  } else if (sw !== undefined && sw !== "none") {
+    throw new Error(`selectWorkspace must be "strict", "optional", "none", or undefined (got: ${sw}).`);
+  }
 
   return { url: `${cfg.authEndpoint}?${params.toString()}`, state, codeVerifier };
 }
@@ -412,6 +431,13 @@ export interface SignInOptions {
    * Optional signal to cancel sign-in early. When aborted, throws "Sign-in cancelled.".
    */
   signal?: AbortSignal;
+
+  /**
+   * Controls whether the user is prompted to select a workspace during authentication
+   * (login-into-workspace mode, SPEC §3.1). See {@link AuthorizationUrlOptions.selectWorkspace}
+   * for the full description of values.
+   */
+  selectWorkspace?: "none" | "strict" | "optional";
 }
 
 /**
@@ -439,7 +465,10 @@ export async function signIn(
 
   // The connection token doubles as the OAuth `state` and the ActionWait token.
   const connectionToken = crypto.randomUUID();
-  const { url, codeVerifier } = buildAuthorize(cfg, { state: connectionToken });
+  const { url, codeVerifier } = buildAuthorize(cfg, {
+    state: connectionToken,
+    selectWorkspace: options?.selectWorkspace,
+  });
 
   // Start long-poll BEFORE opening the browser so a fast callback can't race.
   const signal = options?.signal ?? new AbortController().signal;

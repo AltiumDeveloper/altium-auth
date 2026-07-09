@@ -10,6 +10,7 @@
 //   --secure | --no-secure              Force secure=1 on/off (default: auto from token host)
 //   --scopes "<scopes>"                 Space-delimited scopes (default: "openid profile")
 //   --workspace <authId>                Exchange for a workspace token after sign-in
+//   --select-workspace none|strict|optional  Login-into-workspace mode at /authorize (default: none)
 //   --refresh                           Exercise refresh (implies offline_access)
 //   --revoke                            Revoke the (latest) refresh token, then prove it fails
 //   --userinfo                          GET /connect/userinfo and print the response
@@ -28,6 +29,7 @@ string? clientId = null, env = "prod", workspaceEnv = null, scopes = "openid pro
 string? workspace = null, code = null, codeVerifier = null, redirectUri = null;
 bool refresh = false, revoke = false, userinfo = false, authorizeUrl = false;
 bool? secure = null;
+var selectWorkspace = WorkspaceSelection.None;
 
 for (var i = 0; i < args.Length; i++)
 {
@@ -39,6 +41,7 @@ for (var i = 0; i < args.Length; i++)
         case "--no-secure": secure = false; break;
         case "--scopes": scopes = args[++i]; break;
         case "--workspace": workspace = args[++i]; break;
+        case "--select-workspace": selectWorkspace = ParseSelectWorkspace(args[++i]); break;
         case "--refresh": refresh = true; break;
         case "--revoke": revoke = true; break;
         case "--userinfo": userinfo = true; break;
@@ -75,7 +78,7 @@ var exchangeOptions = MkOptions(workspaceEnv ?? env!);
 // Authorize-URL mode: print and exit (for confidential/custom-callback clients).
 if (authorizeUrl)
 {
-    var authz = new AltiumAuthClient(http, signInOptions).CreateAuthorizationUrl(redirectUri);
+    var authz = new AltiumAuthClient(http, signInOptions).CreateAuthorizationUrl(redirectUri, selectWorkspace: selectWorkspace);
     Console.WriteLine("=== authorize URL ===\n");
     Console.WriteLine($"redirect_uri : {redirectUri ?? signInOptions.Endpoints.RedirectUri}");
     Console.WriteLine($"state         : {authz.State}");
@@ -88,6 +91,7 @@ Console.WriteLine("=== a365-auth .NET sign-in E2E ===\n");
 Console.WriteLine($"Client type  : {(clientSecret is null ? "public (PKCE)" : "confidential (HTTP Basic)")}");
 Console.WriteLine($"secure=1      : {(secure is null ? "auto (from token host)" : secure.Value ? "forced on" : "forced off")}");
 Console.WriteLine($"Scopes        : {scopes}");
+if (selectWorkspace != WorkspaceSelection.None) Console.WriteLine($"selectWorkspace: {selectWorkspace} (login-into-workspace)");
 Console.WriteLine($"Sign-in ({env}) : {(code is null ? signInOptions.Endpoints.AuthorizeEndpoint : "exchange authorization code")}");
 Console.WriteLine($"Token host    : {signInOptions.Endpoints.TokenEndpoint}");
 if (workspace is not null) Console.WriteLine($"Exchange ({workspaceEnv ?? env}): {exchangeOptions.Endpoints.TokenEndpoint}");
@@ -103,7 +107,7 @@ try
     var signInClient = new AltiumAuthClient(http, signInOptions);
     var tokens = code is not null
         ? await signInClient.ExchangeCodeAsync(code, codeVerifier, redirectUri, cts.Token)
-        : await signInClient.SignInAsync(cts.Token);
+        : await signInClient.SignInAsync(selectWorkspace, cts.Token);
     PrintTokens("Global token:", tokens);
 
     if (userinfo) await PrintUserinfo(signInOptions, tokens.AccessToken);
@@ -160,6 +164,16 @@ catch (Exception ex)
 
 static string Env(string v) =>
     v is "prod" or "dev" or "gov" or "dev-gov" ? v : FailReturn($"--env must be prod|dev|gov|dev-gov (got \"{v}\")");
+
+static WorkspaceSelection ParseSelectWorkspace(string v) => v switch
+{
+    "none" => WorkspaceSelection.None,
+    "strict" => WorkspaceSelection.Strict,
+    "optional" => WorkspaceSelection.Optional,
+    _ => FailReturnWorkspace($"--select-workspace must be none|strict|optional (got \"{v}\")"),
+};
+
+static WorkspaceSelection FailReturnWorkspace(string message) { Fail(message); return WorkspaceSelection.None; }
 
 // Environment tier: a token can only be exchanged within its own tier (prod↔gov, dev↔dev-gov).
 static string Tier(string env) => env is "prod" or "gov" ? "prod" : "dev";

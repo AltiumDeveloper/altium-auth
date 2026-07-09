@@ -25,13 +25,31 @@ public sealed class TokenSet
     [JsonPropertyName("scope")] public string? Scope { get; set; }
 }
 
+/// <summary>
+/// Whether the authorize step should let the user pick a workspace, so the code
+/// exchange returns a workspace-scoped token directly (SPEC §3.1). Emitted as the
+/// <c>selectWorkspace</c> parameter on <c>/connect/authorize</c>.
+/// </summary>
+public enum WorkspaceSelection
+{
+    /// <summary>Default — no workspace selection; the parameter is omitted.</summary>
+    None,
+
+    /// <summary>Workspace selection is mandatory (<c>selectWorkspace=strict</c>).</summary>
+    Strict,
+
+    /// <summary>Workspace selection is offered but may be skipped (<c>selectWorkspace=optional</c>).</summary>
+    Optional,
+}
+
 public interface IAltiumAuthClient
 {
-    AuthorizationRequest CreateAuthorizationUrl(string? redirectUri = null, string? state = null, string? codeVerifier = null);
+    AuthorizationRequest CreateAuthorizationUrl(string? redirectUri = null, string? state = null, string? codeVerifier = null, WorkspaceSelection selectWorkspace = WorkspaceSelection.None);
     Task<TokenSet> ExchangeCodeAsync(string code, string? codeVerifier = null, string? redirectUri = null, CancellationToken ct = default);
     Task<TokenSet> SignIntoWorkspaceAsync(string baseAccessToken, string workspaceAuthId, CancellationToken ct = default);
     Task<TokenSet> RefreshTokenAsync(string refreshToken, CancellationToken ct = default);
     Task<TokenSet> SignInAsync(CancellationToken ct = default);
+    Task<TokenSet> SignInAsync(WorkspaceSelection selectWorkspace, CancellationToken ct = default);
     Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default);
 }
 
@@ -93,7 +111,7 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
         return tok;
     }
 
-    public AuthorizationRequest CreateAuthorizationUrl(string? redirectUri = null, string? state = null, string? codeVerifier = null)
+    public AuthorizationRequest CreateAuthorizationUrl(string? redirectUri = null, string? state = null, string? codeVerifier = null, WorkspaceSelection selectWorkspace = WorkspaceSelection.None)
     {
         var verifier = codeVerifier ?? Base64Url(RandomNumberGenerator.GetBytes(32));
         var challenge = Base64Url(SHA256.HashData(Encoding.ASCII.GetBytes(verifier)));
@@ -111,6 +129,15 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
             ["code_challenge_method"] = "S256",
             ["state"] = st,
         };
+        // selectWorkspace: only sent when explicitly requested — None omits it (SPEC §3.1).
+        var workspaceParam = selectWorkspace switch
+        {
+            WorkspaceSelection.Strict => "strict",
+            WorkspaceSelection.Optional => "optional",
+            _ => null,
+        };
+        if (workspaceParam is not null)
+            query["selectWorkspace"] = workspaceParam;
         var qs = string.Join("&", query.Select(kv => $"{Uri.EscapeDataString(kv.Key)}={Uri.EscapeDataString(kv.Value)}"));
         return new AuthorizationRequest($"{options.Endpoints.AuthorizeEndpoint}?{qs}", st, verifier);
     }
@@ -152,11 +179,13 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
         return TokenRequestAsync(form, ct);
     }
 
-    public async Task<TokenSet> SignInAsync(CancellationToken ct = default)
+    public Task<TokenSet> SignInAsync(CancellationToken ct = default) => SignInAsync(WorkspaceSelection.None, ct);
+
+    public async Task<TokenSet> SignInAsync(WorkspaceSelection selectWorkspace, CancellationToken ct = default)
     {
         // The connection token doubles as the OAuth `state` and the ActionWait token (SPEC §4.1).
         var connectionToken = Guid.NewGuid().ToString();
-        var authz = CreateAuthorizationUrl(state: connectionToken);
+        var authz = CreateAuthorizationUrl(state: connectionToken, selectWorkspace: selectWorkspace);
 
         // Start the long-poll BEFORE opening the browser so a fast callback can't race (SPEC §4.4).
         var pollTask = PollActionWaitAsync(connectionToken, ct);
