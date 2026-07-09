@@ -29,7 +29,7 @@ jobs:
           dotnet-version: "8.0.x"
 
       # xUnit conformance harness against the shared vectors.
-      - run: dotnet test tests/Altium.Auth.Tests -c Release
+      - run: dotnet test Altium.Auth.sln -c Release
 
       # Build the live E2E tool so API changes can't silently break it (it isn't a test).
       - run: dotnet build tools/SignInTest -c Release
