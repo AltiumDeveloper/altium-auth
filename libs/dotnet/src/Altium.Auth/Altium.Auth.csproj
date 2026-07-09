@@ -17,7 +17,7 @@
          built-in .NET analyzers + .editorconfig rules, promoted to build errors so
          the shipped library can't regress on style/naming/quality. -->
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
-    <AnalysisLevel>8.0-recommended</AnalysisLevel
+    <AnalysisLevel>8.0-recommended</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
