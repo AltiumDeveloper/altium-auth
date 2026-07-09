@@ -22,7 +22,7 @@ public interface IAltiumAuthClient
     Task<TokenSet> SignInAsync(CancellationToken ct = default);
 
     /// <summary>Public-client PKCE sign-in via the ActionWait long-poll (invokes <c>OpenBrowser</c>).</summary>
-    Task<TokenSet> SignInAsync(WorkspaceSelection selectWorkspace = WorkspaceSelection.None, CancellationToken ct = default);
+    Task<TokenSet> SignInAsync(WorkspaceSelection selectWorkspace, CancellationToken ct = default);
 
     /// <summary>Revoke a refresh token (RFC 7009); idempotent.</summary>
     Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default);
