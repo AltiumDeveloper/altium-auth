@@ -6,6 +6,6 @@
     page includes it verbatim at build time.
 
 {%
-   include-markdown "../spec/SPEC.md"
+   include-markdown "../../spec/SPEC.md"
    heading-offset=1
 %}

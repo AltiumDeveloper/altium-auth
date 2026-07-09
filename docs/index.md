@@ -13,31 +13,33 @@ every library's CI proves it still conforms.
 
 Pick the flow that matches your application:
 
-- **Desktop / on-prem / native** (can't host a redirect) → [Desktop & on-prem apps](desktop-and-onprem-apps.md)
+- **Desktop / on-prem / native** (can't host a redirect) → [Desktop & on-prem apps](guides/desktop-and-onprem-apps.md)
   — browser sign-in with PKCE over ActionWait.
-- **Web / server backends** (host a redirect) → [Web & server apps](web-and-server-apps.md)
+- **Web / server backends** (host a redirect) → [Web & server apps](guides/web-and-server-apps.md)
   — the standard authorization-code redirect flow.
 
-New to Altium Identity? Start with the [Overview](overview.md), then
-[Register your application](register-your-application.md).
+New to Altium Identity? Start with the [Overview](guides/overview.md), then
+[Register your application](guides/register-your-application.md).
 
 ## Libraries
 
-| Package | Registry | Install |
-| --- | --- | --- |
-| [`@altium-developer/a365-auth`](https://www.npmjs.com/package/@altium-developer/a365-auth) | npm | `npm i @altium-developer/a365-auth` |
-| [`Altium.Auth`](https://www.nuget.org/packages/Altium.Auth) | NuGet | `dotnet add package Altium.Auth` |
+Full API reference and examples for each library are on this site (the **Libraries** tab):
+
+| Library | Docs | Registry | Install |
+| --- | --- | --- | --- |
+| `@altium-developer/a365-auth` | [TypeScript](libraries/typescript.md) | npm | `npm i @altium-developer/a365-auth` |
+| `Altium.Auth` | [.NET](libraries/dotnet.md) | NuGet | `dotnet add package Altium.Auth` |
 
 Both are `0.1.0` **preview** — the API may change as the spec and libraries evolve.
 
 ## How it stays in sync
 
-The [conformance vectors](conformance.md) are the enforcement layer: every library
+The [conformance vectors](specification/conformance.md) are the enforcement layer: every library
 runs the **same** `spec/conformance/vectors.json` and asserts the same requests and
 outcomes, so the implementations can't drift. The normative behavior lives in the
-[integration spec](spec.md).
+[integration spec](specification/spec.md).
 
 ## Topics
 
-- [Gov Cloud](gov-cloud.md) — Commercial vs Gov and the `secure=1` two-token model
-- [Access token claims](token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
+- [Gov Cloud](guides/gov-cloud.md) — Commercial vs Gov and the `secure=1` two-token model
+- [Access token claims](guides/token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
