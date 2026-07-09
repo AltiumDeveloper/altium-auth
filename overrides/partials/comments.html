@@ -1,0 +1,61 @@
+{#-
+  Comments via giscus (GitHub Discussions). Rendered on every content page.
+
+  Setup (one-time, by a maintainer):
+    1. Enable Discussions on github.com/AltiumDeveloper/a365-auth.
+    2. Create an "Announcement"-type category named "Comments".
+    3. Install the giscus GitHub App (github.com/apps/giscus) for the repo.
+    4. Go to https://giscus.app, enter AltiumDeveloper/a365-auth, choose
+       Discussion mapping = "pathname" and category = "Comments", then copy the
+       generated data-repo-id and data-category-id into the two placeholders below.
+-#}
+<h2 id="__comments">{{ lang.t("meta.comments") }}</h2>
+
+<!-- giscus -->
+<script
+  src="https://giscus.app/client.js"
+  data-repo="AltiumDeveloper/a365-auth"
+  data-repo-id="R_kgDOTSXlXQ"
+  data-category="Comments"
+  data-category-id="DIC_kwDOTSXlXc4DA1sE"
+  data-mapping="pathname"
+  data-strict="1"
+  data-reactions-enabled="1"
+  data-emit-metadata="0"
+  data-input-position="top"
+  data-theme="light"
+  data-lang="en"
+  crossorigin="anonymous"
+  async
+>
+</script>
+
+<!-- Keep the giscus theme in sync with the Material light/dark palette toggle. -->
+<script>
+  const giscus = document.querySelector("script[src*=giscus]")
+
+  // Map the current Material palette scheme to a giscus theme.
+  function __giscusTheme() {
+    const palette = typeof __md_get === "function" ? __md_get("__palette") : null
+    return palette && palette.color && palette.color.scheme === "slate"
+      ? "dark"
+      : "light"
+  }
+
+  // Set the initial theme before the frame loads.
+  if (giscus) giscus.setAttribute("data-theme", __giscusTheme())
+
+  // React to the palette toggle and push the new theme into the giscus frame.
+  document.addEventListener("DOMContentLoaded", function () {
+    const palette = document.querySelector("[data-md-component=palette]")
+    if (!palette) return
+    palette.addEventListener("change", function () {
+      const frame = document.querySelector("iframe.giscus-frame")
+      if (!frame) return
+      frame.contentWindow.postMessage(
+        { giscus: { setConfig: { theme: __giscusTheme() } } },
+        "https://giscus.app"
+      )
+    })
+  })
+</script>
