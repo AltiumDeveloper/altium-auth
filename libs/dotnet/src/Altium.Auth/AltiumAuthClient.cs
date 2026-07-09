@@ -48,7 +48,8 @@ public interface IAltiumAuthClient
     Task<TokenSet> ExchangeCodeAsync(string code, string? codeVerifier = null, string? redirectUri = null, CancellationToken ct = default);
     Task<TokenSet> SignIntoWorkspaceAsync(string baseAccessToken, string workspaceAuthId, CancellationToken ct = default);
     Task<TokenSet> RefreshTokenAsync(string refreshToken, CancellationToken ct = default);
-    Task<TokenSet> SignInAsync(WorkspaceSelection selectWorkspace = WorkspaceSelection.None, CancellationToken ct = default);
+    Task<TokenSet> SignInAsync(CancellationToken ct = default);
+    Task<TokenSet> SignInAsync(WorkspaceSelection selectWorkspace, CancellationToken ct = default);
     Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default);
 }
 
@@ -178,7 +179,9 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
         return TokenRequestAsync(form, ct);
     }
 
-    public async Task<TokenSet> SignInAsync(WorkspaceSelection selectWorkspace = WorkspaceSelection.None, CancellationToken ct = default)
+    public Task<TokenSet> SignInAsync(CancellationToken ct = default) => SignInAsync(WorkspaceSelection.None, ct);
+
+    public async Task<TokenSet> SignInAsync(WorkspaceSelection selectWorkspace, CancellationToken ct = default)
     {
         // The connection token doubles as the OAuth `state` and the ActionWait token (SPEC §4.1).
         var connectionToken = Guid.NewGuid().ToString();
