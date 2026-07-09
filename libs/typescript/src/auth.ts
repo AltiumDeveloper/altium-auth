@@ -347,11 +347,10 @@ function buildAuthorize(cfg: ResolvedConfig, options?: AuthorizationUrlOptions):
   // Note: `secure=1` is a token-endpoint concern only — not sent on /authorize.
   // `selectWorkspace` is only sent when explicitly requested (not 'none' or omitted).
   const sw = options?.selectWorkspace;
-  if (sw && sw !== "none") {
-    if (sw !== "strict" && sw !== "optional") {
-      throw new Error(`selectWorkspace must be "strict", "optional", "none", or undefined (got: ${sw}).`);
-    }
+  if (sw === "strict" || sw === "optional") {
     params.set("selectWorkspace", sw);
+  } else if (sw !== undefined && sw !== "none") {
+    throw new Error(`selectWorkspace must be "strict", "optional", "none", or undefined (got: ${sw}).`);
   }
 
   return { url: `${cfg.authEndpoint}?${params.toString()}`, state, codeVerifier };

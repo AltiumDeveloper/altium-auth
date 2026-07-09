@@ -9,7 +9,6 @@ using System.Text.Json;
 
 namespace Altium.Auth;
 
-/// <inheritdoc cref="IAltiumAuthClient" />
 public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options) : IAltiumAuthClient
 {
     private static string Truncate(string s) => s.Length > 500 ? s[..500] : s;
@@ -141,7 +140,10 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
     }
 
     /// <inheritdoc />
-    public async Task<TokenSet> SignInAsync(WorkspaceSelection selectWorkspace = WorkspaceSelection.None, CancellationToken ct = default)
+    public Task<TokenSet> SignInAsync(CancellationToken ct = default) => SignInAsync(WorkspaceSelection.None, ct);
+
+    /// <inheritdoc />
+    public async Task<TokenSet> SignInAsync(WorkspaceSelection selectWorkspace, CancellationToken ct = default)
     {
         // The connection token doubles as the OAuth `state` and the ActionWait token (SPEC §4.1).
         var connectionToken = Guid.NewGuid().ToString();

@@ -192,9 +192,11 @@ public class ConformanceTests
     // Map the language-neutral vector value to the idiomatic .NET enum.
     private static WorkspaceSelection ParseWorkspaceSelection(string? v) => v switch
     {
+        null => WorkspaceSelection.None,
+        "none" => WorkspaceSelection.None,
         "strict" => WorkspaceSelection.Strict,
         "optional" => WorkspaceSelection.Optional,
-        _ => WorkspaceSelection.None,
+        _ => throw new InvalidOperationException($"Unknown selectWorkspace value in vector: '{v}'."),
     };
 
     private static (int, string) MockBody(JsonElement mock)

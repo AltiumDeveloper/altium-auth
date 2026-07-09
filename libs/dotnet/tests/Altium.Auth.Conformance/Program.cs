@@ -240,9 +240,11 @@ string? Opt(JsonElement e, string name) =>
 // Map the language-neutral vector value to the idiomatic .NET enum.
 WorkspaceSelection ParseWorkspaceSelection(string? v) => v switch
 {
+    null => WorkspaceSelection.None,
+    "none" => WorkspaceSelection.None,
     "strict" => WorkspaceSelection.Strict,
     "optional" => WorkspaceSelection.Optional,
-    _ => WorkspaceSelection.None,
+    _ => throw new InvalidOperationException($"Unknown selectWorkspace value in vector: '{v}'."),
 };
 
 (int status, string body) MockBody(JsonElement mock)
