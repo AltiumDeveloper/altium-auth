@@ -49,8 +49,8 @@ Then work inside the library you're changing:
 
 | Command | What it does |
 |---------|--------------|
-| `dotnet test tests/Altium.Auth.Tests -c Release` | xUnit conformance over the shared vectors |
-| `sh build-offline.sh` | Same vectors with no NuGet (locked-down environments) |
+| `dotnet build Altium.Auth.sln -c Release` | Build the whole solution (analyzers gate the library) |
+| `dotnet test Altium.Auth.sln -c Release` | xUnit conformance over the shared vectors |
 | `dotnet run --project tools/SignInTest -- <clientId>` | Live sign-in (needs network + browser) |
 
 ## Changing behavior (the contract)

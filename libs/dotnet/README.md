@@ -216,13 +216,19 @@ behavior-identical. Spec: [`spec/SPEC.md`](https://github.com/AltiumDeveloper/a3
 
 ## Development
 
-```bash
-# Conformance (xUnit) over the shared vectors
-dotnet test tests/Altium.Auth.Tests -c Release
+Open `Altium.Auth.sln` in your IDE (library, tests, and tools grouped into `src`/`tests`/`tools` folders), or from the CLI:
 
-# Same vectors without NuGet (locked-down environments)
-sh build-offline.sh
+```bash
+# Build / test the whole solution
+dotnet build Altium.Auth.sln -c Release
+dotnet test Altium.Auth.sln -c Release      # runs the xUnit conformance suite
+
+# Or target a single project:
+dotnet test tests/Altium.Auth.Tests -c Release
 ```
+
+The shipped library (`src/Altium.Auth`) builds with analyzers + `TreatWarningsAsErrors`
+(see `.editorconfig`), so `dotnet build` is the style/quality gate.
 
 ### Live E2E against a real environment
 

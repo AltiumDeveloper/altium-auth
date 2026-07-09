@@ -93,10 +93,8 @@ libs/
 cd libs/typescript && npm ci && npm run lint && npm run typecheck \
   && npm test && npm run test:conformance && npm run build && cd ../..
 
-# .NET
-dotnet test libs/dotnet/tests/Altium.Auth.Tests -c Release
-# offline / no-NuGet fallback for the same vectors:
-sh libs/dotnet/build-offline.sh
+# .NET (solution-level; the src project builds with analyzers as errors)
+dotnet test libs/dotnet/Altium.Auth.sln -c Release
 ```
 
 Live end-to-end (needs network + a browser — never in CI): each library ships a

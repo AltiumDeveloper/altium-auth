@@ -1,9 +1,8 @@
 // xUnit conformance harness — runs the shared, language-neutral vectors
 // (spec/conformance/vectors.json) against the Altium.Auth client and asserts the
-// same outgoing requests / outcomes as the TS runner. This is the CI-grade version
-// of the offline console runner in ../Altium.Auth.Conformance.
+// same outgoing requests / outcomes as the TS runner.
 //
-//   dotnet test ports/dotnet/tests/Altium.Auth.Tests
+//   dotnet test libs/dotnet/tests/Altium.Auth.Tests   (or open Altium.Auth.sln)
 using System.Net;
 using System.Text;
 using System.Text.Json;
