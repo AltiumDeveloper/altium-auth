@@ -8,9 +8,18 @@
     <!-- Offline-friendly: use the installed runtime patch's on-disk ref pack
          instead of fetching the latest patch from NuGet. -->
     <TargetLatestRuntimePatch>false</TargetLatestRuntimePatch>
-    <!-- Dependency-free by design: a token-acquisition client needs no JWT/JWKS
-         validation stack, so there are no package references. -->
+    <!-- Dependency-free by design: no *runtime* package references. The only
+         package below is StyleCop.Analyzers — a dev-only analyzer (PrivateAssets=all)
+         that never ships in the nupkg. -->
     <NuGetAudit>false</NuGetAudit>
+
+    <!-- Code-quality enforcement (the analog of the TS library's ESLint gate):
+         built-in .NET analyzers + .editorconfig rules, promoted to build errors so
+         the shipped library can't regress on style/naming/quality. -->
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <!-- NuGet package metadata (nuget.org: Altium.Auth). -->
@@ -33,6 +42,16 @@
   <ItemGroup>
     <!-- Ship the library README (libs/dotnet/README.md) as the nuget.org package page. -->
     <None Include="../../README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Dev-only analyzer (never a runtime/transitive dependency). Enforces the
+         structural rules the built-in .NET analyzers don't: SA1402 (one type per
+         file) and SA1649 (file name matches the type) — scoped via .editorconfig. -->
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

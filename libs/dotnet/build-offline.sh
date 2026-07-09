@@ -28,8 +28,8 @@ printf 'global using System;\nglobal using System.Collections.Generic;\nglobal u
 rsp="$out/args.rsp"; : > "$rsp"
 for f in "$ref"/*.dll; do echo "-r:$f" >> "$rsp"; done
 echo "$out/GlobalUsings.cs" >> "$rsp"
-echo "$here/src/Altium.Auth/AltiumAuthOptions.cs" >> "$rsp"
-echo "$here/src/Altium.Auth/AltiumAuthClient.cs" >> "$rsp"
+# All library sources (one type per file), plus the console conformance runner.
+for f in "$here"/src/Altium.Auth/*.cs; do echo "$f" >> "$rsp"; done
 echo "$here/tests/Altium.Auth.Conformance/Program.cs" >> "$rsp"
 
 echo "Compiling with csc against ref pack $ver ..."

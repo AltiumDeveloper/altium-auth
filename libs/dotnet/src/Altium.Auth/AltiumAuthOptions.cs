@@ -1,30 +1,4 @@
-// Altium.Auth — client configuration + endpoint presets. See ../../README.md.
 namespace Altium.Auth;
-
-/// <summary>Endpoint set for one environment (mirrors the TS endpoint presets).</summary>
-public sealed record AltiumEndpoints(
-    string AuthorizeEndpoint,
-    string TokenEndpoint,
-    string ActionWaitEndpoint,
-    string RedirectUri)
-{
-    /// <summary>Altium 365 Commercial Cloud (defaults; the non-Gov cloud).</summary>
-    public static readonly AltiumEndpoints CommercialCloud = new(
-        "https://auth.altium.com/connect/authorize",
-        "https://auth.altium.com/connect/token",
-        "https://actionwait.altium.com/await",
-        "https://auth.altium.com/api/AuthComplete");
-
-    /// <summary>
-    /// Altium 365 Gov Cloud. Only authorize/token are gov-specific; ActionWait and
-    /// the AuthComplete callback stay on the Commercial Cloud host (SPEC §1.1, §4.2).
-    /// </summary>
-    public static readonly AltiumEndpoints GovCloud = new(
-        "https://auth.365-gov.altium.com/connect/authorize",
-        "https://auth.365-gov.altium.com/connect/token",
-        "https://actionwait.altium.com/await",
-        "https://auth.altium.com/api/AuthComplete");
-}
 
 /// <summary>
 /// Configuration for the Altium 365 auth client. Only <see cref="ClientId"/> and
@@ -32,6 +6,7 @@ public sealed record AltiumEndpoints(
 /// </summary>
 public sealed class AltiumAuthOptions
 {
+    /// <summary>OAuth2 client id registered with Altium Identity.</summary>
     public required string ClientId { get; init; }
 
     /// <summary>Space-delimited scopes (must include "openid profile").</summary>
@@ -52,6 +27,7 @@ public sealed class AltiumAuthOptions
     /// <summary>Invoked by <c>SignInAsync</c> to open the authorize URL. No-op if null.</summary>
     public Action<string>? OpenBrowser { get; init; }
 
+    /// <summary>Whether the client authenticates with a secret (HTTP Basic) vs. PKCE.</summary>
     public bool IsConfidential => !string.IsNullOrEmpty(ClientSecret);
 
     /// <summary>Whether token requests must carry secure=1 (SPEC §5.4).</summary>

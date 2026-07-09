@@ -6,52 +6,10 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Altium.Auth;
 
-/// <summary>A prepared authorization request (mirrors the TS AuthorizationRequest).</summary>
-public sealed record AuthorizationRequest(string Url, string State, string CodeVerifier);
-
-/// <summary>Token endpoint response (subset; see spec/schemas/token-response.schema.json).</summary>
-public sealed class TokenSet
-{
-    [JsonPropertyName("access_token")] public string AccessToken { get; set; } = "";
-    [JsonPropertyName("token_type")] public string? TokenType { get; set; }
-    [JsonPropertyName("expires_in")] public int? ExpiresIn { get; set; }
-    [JsonPropertyName("expires_at")] public long? ExpiresAt { get; set; }
-    [JsonPropertyName("refresh_token")] public string? RefreshToken { get; set; }
-    [JsonPropertyName("id_token")] public string? IdToken { get; set; }
-    [JsonPropertyName("scope")] public string? Scope { get; set; }
-}
-
-/// <summary>
-/// Whether the authorize step should let the user pick a workspace, so the code
-/// exchange returns a workspace-scoped token directly (SPEC §3.1). Emitted as the
-/// <c>selectWorkspace</c> parameter on <c>/connect/authorize</c>.
-/// </summary>
-public enum WorkspaceSelection
-{
-    /// <summary>Default — no workspace selection; the parameter is omitted.</summary>
-    None,
-
-    /// <summary>Workspace selection is mandatory (<c>selectWorkspace=strict</c>).</summary>
-    Strict,
-
-    /// <summary>Workspace selection is offered but may be skipped (<c>selectWorkspace=optional</c>).</summary>
-    Optional,
-}
-
-public interface IAltiumAuthClient
-{
-    AuthorizationRequest CreateAuthorizationUrl(string? redirectUri = null, string? state = null, string? codeVerifier = null, WorkspaceSelection selectWorkspace = WorkspaceSelection.None);
-    Task<TokenSet> ExchangeCodeAsync(string code, string? codeVerifier = null, string? redirectUri = null, CancellationToken ct = default);
-    Task<TokenSet> SignIntoWorkspaceAsync(string baseAccessToken, string workspaceAuthId, CancellationToken ct = default);
-    Task<TokenSet> RefreshTokenAsync(string refreshToken, CancellationToken ct = default);
-    Task<TokenSet> SignInAsync(WorkspaceSelection selectWorkspace = WorkspaceSelection.None, CancellationToken ct = default);
-    Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default);
-}
-
+/// <inheritdoc cref="IAltiumAuthClient" />
 public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options) : IAltiumAuthClient
 {
     private static string Truncate(string s) => s.Length > 500 ? s[..500] : s;
@@ -79,8 +37,8 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
 
     private async Task<TokenSet> TokenRequestAsync(Dictionary<string, string> form, CancellationToken ct)
     {
-        var res = await http.SendAsync(BuildTokenRequest(options.Endpoints.TokenEndpoint, form), ct);
-        var body = await res.Content.ReadAsStringAsync(ct);
+        var res = await http.SendAsync(BuildTokenRequest(options.Endpoints.TokenEndpoint, form), ct).ConfigureAwait(false);
+        var body = await res.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
         var status = (int)res.StatusCode;
 
         if (status is not (200 or 201))
@@ -95,14 +53,14 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
                     if (e.TryGetValue("error_description", out var dv) && dv.ValueKind == JsonValueKind.String) desc = dv.GetString()!;
                 }
             }
-            catch { /* non-JSON error body */ }
+            catch (JsonException) { /* non-JSON error body */ }
             var suffix = desc.Length > 0 ? $" — {desc}" : "";
             throw new InvalidOperationException($"Token endpoint {status} {err}{suffix} (body: {Truncate(body)})");
         }
 
         TokenSet? tok;
         try { tok = JsonSerializer.Deserialize<TokenSet>(body); }
-        catch { throw new InvalidOperationException($"Token endpoint returned non-JSON body: {Truncate(body)}"); }
+        catch (JsonException) { throw new InvalidOperationException($"Token endpoint returned non-JSON body: {Truncate(body)}"); }
         if (tok is null) throw new InvalidOperationException($"Token endpoint returned non-JSON body: {Truncate(body)}");
 
         if (tok.ExpiresIn is int ein && tok.ExpiresAt is null)
@@ -110,6 +68,7 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
         return tok;
     }
 
+    /// <inheritdoc />
     public AuthorizationRequest CreateAuthorizationUrl(string? redirectUri = null, string? state = null, string? codeVerifier = null, WorkspaceSelection selectWorkspace = WorkspaceSelection.None)
     {
         var verifier = codeVerifier ?? Base64Url(RandomNumberGenerator.GetBytes(32));
@@ -141,10 +100,11 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
         return new AuthorizationRequest($"{options.Endpoints.AuthorizeEndpoint}?{qs}", st, verifier);
     }
 
+    /// <inheritdoc />
     public Task<TokenSet> ExchangeCodeAsync(string code, string? codeVerifier = null, string? redirectUri = null, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(code))
-            throw new ArgumentException("code is required — pass the authorization code from the redirect callback.");
+            throw new ArgumentException("code is required — pass the authorization code from the redirect callback.", nameof(code));
         var form = new Dictionary<string, string>
         {
             ["grant_type"] = "authorization_code",
@@ -155,10 +115,11 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
         return TokenRequestAsync(form, ct);
     }
 
+    /// <inheritdoc />
     public Task<TokenSet> SignIntoWorkspaceAsync(string baseAccessToken, string workspaceAuthId, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(baseAccessToken))
-            throw new ArgumentException("baseAccessToken is required — pass the access_token from a prior sign-in.");
+            throw new ArgumentException("baseAccessToken is required — pass the access_token from a prior sign-in.", nameof(baseAccessToken));
         var form = new Dictionary<string, string>
         {
             ["grant_type"] = "urn:ietf:params:oauth:grant-type:token-exchange",
@@ -169,15 +130,17 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
         return TokenRequestAsync(form, ct);
     }
 
+    /// <inheritdoc />
     public Task<TokenSet> RefreshTokenAsync(string refreshToken, CancellationToken ct = default)
     {
         if (string.IsNullOrEmpty(refreshToken))
-            throw new ArgumentException("refreshToken is required — pass the refresh_token from a prior TokenSet.");
+            throw new ArgumentException("refreshToken is required — pass the refresh_token from a prior TokenSet.", nameof(refreshToken));
         // No scope sent — the grant retains the token's original scope (SPEC §5.3).
         var form = new Dictionary<string, string> { ["grant_type"] = "refresh_token", ["refresh_token"] = refreshToken };
         return TokenRequestAsync(form, ct);
     }
 
+    /// <inheritdoc />
     public async Task<TokenSet> SignInAsync(WorkspaceSelection selectWorkspace = WorkspaceSelection.None, CancellationToken ct = default)
     {
         // The connection token doubles as the OAuth `state` and the ActionWait token (SPEC §4.1).
@@ -187,11 +150,11 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
         // Start the long-poll BEFORE opening the browser so a fast callback can't race (SPEC §4.4).
         var pollTask = PollActionWaitAsync(connectionToken, ct);
         options.OpenBrowser?.Invoke(authz.Url);
-        var (code, state) = await pollTask;
+        var (code, state) = await pollTask.ConfigureAwait(false);
         if (state != connectionToken)
             throw new InvalidOperationException("State mismatch during sign-in (possible CSRF attack).");
 
-        return await ExchangeCodeAsync(code, authz.CodeVerifier, options.Endpoints.RedirectUri, ct);
+        return await ExchangeCodeAsync(code, authz.CodeVerifier, options.Endpoints.RedirectUri, ct).ConfigureAwait(false);
     }
 
     private async Task<(string Code, string State)> PollActionWaitAsync(string token, CancellationToken ct)
@@ -203,18 +166,20 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
             {
                 Content = new StringContent(JsonSerializer.Serialize(new { token }), Encoding.UTF8, "application/json"),
             };
-            var res = await http.SendAsync(req, ct);
+            var res = await http.SendAsync(req, ct).ConfigureAwait(false);
             var status = (int)res.StatusCode;
 
             if (status == 408) continue;                                  // normal reconnect
             if (status == 410) throw new InvalidOperationException("Sign-in cancelled.");
 
-            var body = await res.Content.ReadAsStringAsync(ct);
+            var body = await res.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
             if (status == 200)
             {
-                JsonElement data;
-                try { data = JsonDocument.Parse(body).RootElement.GetProperty("data"); }
-                catch { throw new InvalidOperationException($"ActionWait returned 200 but body is not JSON: {Truncate(body)}"); }
+                JsonElement root;
+                try { root = JsonDocument.Parse(body).RootElement; }
+                catch (JsonException) { throw new InvalidOperationException($"ActionWait returned 200 but body is not JSON: {Truncate(body)}"); }
+                if (root.ValueKind != JsonValueKind.Object || root.TryGetProperty("data", out var data) is false)
+                    throw new InvalidOperationException($"ActionWait returned 200 but body is not JSON: {Truncate(body)}");
 
                 var code = data.TryGetProperty("code", out var c) && c.ValueKind == JsonValueKind.String ? c.GetString() : null;
                 var state = data.TryGetProperty("state", out var s) && s.ValueKind == JsonValueKind.String ? s.GetString() : null;
@@ -227,6 +192,7 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
         throw new InvalidOperationException($"ActionWait retry count exceeded {maxRetries}.");
     }
 
+    /// <inheritdoc />
     public async Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default)
     {
         var url = options.Endpoints.TokenEndpoint.Replace("/connect/token", "/connect/revocation");
@@ -242,6 +208,6 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
             form["client_id"] = options.ClientId;
         }
         req.Content = new FormUrlEncodedContent(form);
-        await http.SendAsync(req, ct); // 200 with empty body (also 200 for unknown tokens)
+        await http.SendAsync(req, ct).ConfigureAwait(false); // 200 with empty body (also 200 for unknown tokens)
     }
 }
