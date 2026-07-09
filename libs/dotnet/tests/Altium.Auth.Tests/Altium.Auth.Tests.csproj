@@ -7,10 +7,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <!-- Requires NuGet (xUnit). Run on a networked machine / CI:
-         dotnet test ports/dotnet/tests/Altium.Auth.Tests
-       The offline console runner (tests/Altium.Auth.Conformance) covers the
-       same vectors where NuGet is unavailable. -->
+  <!-- Runs the shared conformance vectors under xUnit: `dotnet test` (or open Altium.Auth.sln). -->
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="xunit" Version="2.9.2" />

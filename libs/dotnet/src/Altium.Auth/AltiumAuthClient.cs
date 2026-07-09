@@ -9,6 +9,7 @@ using System.Text.Json;
 
 namespace Altium.Auth;
 
+/// <inheritdoc/>
 public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options) : IAltiumAuthClient
 {
     private static string Truncate(string s) => s.Length > 500 ? s[..500] : s;

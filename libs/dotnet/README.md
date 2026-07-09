@@ -225,9 +225,6 @@ dotnet test Altium.Auth.sln -c Release      # runs the xUnit conformance suite
 
 # Or target a single project:
 dotnet test tests/Altium.Auth.Tests -c Release
-
-# Same vectors without NuGet (locked-down environments)
-sh build-offline.sh
 ```
 
 The shipped library (`src/Altium.Auth`) builds with analyzers + `TreatWarningsAsErrors`
