@@ -11,8 +11,8 @@ Altium Identity is available at one base URL per environment:
 
 | Name | Base URL | Discovery document |
 | --- | --- | --- |
-| Commercial Cloud | `https://auth.altium.com` | `https://auth.altium.com/.well-known/openid-configuration` |
-| Gov Cloud | `https://auth.365-gov.altium.com` | `https://auth.365-gov.altium.com/.well-known/openid-configuration` |
+| Commercial Cloud | https://auth.altium.com | https://auth.altium.com/.well-known/openid-configuration |
+| Gov Cloud | https://auth.365-gov.altium.com | https://auth.365-gov.altium.com/.well-known/openid-configuration |
 
 See [Gov Cloud considerations](./gov-cloud.md) for the differences that apply to Gov Cloud.
 
@@ -34,6 +34,46 @@ Prepend the base URL for your environment — for example, `https://auth.altium.
 - **Refresh token** — issued when you request the `offline_access` scope; use it to obtain a new access token (global or workspace) without asking the user to sign in again.
 - **Workspace context** — the workspace identity carried by the `a365:workspace:{workspaceId}` scope.
 
+## The authentication journey
+
+The recommended flow is the same for web and desktop/on-prem apps — only *how* you obtain the authorization code differs (a redirect you host, or the [ActionWait](./desktop-and-onprem-apps.md) pattern). In both cases:
+
+1. **Sign in on `https://auth.altium.com`** to get a **global access token**. Use it for accessing global resources such as listing the user's workspaces.
+2. **Discover the user's workspaces** with the global token. See [Discover the user's workspaces](./web-and-server-apps.md#step-3--discover-the-users-workspaces).
+3. **Exchange the global token for a workspace access token — at the endpoint that matches the workspace:**
+   - **Commercial workspace** → exchange on Commercial Cloud endpoint (`https://auth.altium.com`, no `secure=1`).
+   - **Gov Cloud workspace** → exchange on Gov Cloud endpoint (`https://auth.365-gov.altium.com`, with `secure=1`). See [Gov Cloud considerations](./gov-cloud.md).
+4. **Call the Altium 365 API** with the workspace token, refreshing it at the endpoint that issued it.
+
+```mermaid
+sequenceDiagram
+    participant App
+    participant Identity as Altium Identity
+    participant API as Altium 365 API
+    App->>Identity: 1. Sign in on auth.altium.com (openid profile) + PKCE
+    Identity-->>App: global access token
+    App->>API: 2. desWorkspaceInfos (global token)
+    API-->>App: workspaces (+ location.name)
+    alt Commercial workspace
+        App->>Identity: 3a. Token exchange @ auth.altium.com
+        Identity-->>App: workspace access token
+    else Gov Cloud workspace
+        App->>Identity: 3b. Token exchange @ auth.365-gov.altium.com (secure=1)
+        Identity-->>App: Gov workspace access token
+    end
+    App->>API: 4. API calls (workspace access token)
+```
+
+An app commonly holds several tokens at once — one global token plus a workspace token per workspace in use (some Commercial, some Gov). Each refreshes at its own issuing endpoint.
+
+### Where to send each request
+
+| Operation | Endpoint |
+| --- | --- |
+| Sign in + code exchange | `auth.altium.com` |
+| Commercial workspace token (exchange + refresh) | `auth.altium.com` |
+| Gov Cloud workspace token (exchange + refresh) | `auth.365-gov.altium.com` |
+
 ## Login-into-workspace mode
 
 When you know at sign-in time that the user should land on a workspace, you can prompt the user to select one **as part of the authorization flow** using the optional `selectWorkspace` parameter on `/connect/authorize`. This eliminates the separate discover-and-exchange steps (steps 2–3 of the recommended flow).
@@ -49,47 +89,6 @@ When a workspace is selected, the authorization code exchange returns a workspac
 The `a365:workspace:{workspaceId}` scope plays two roles today: it transfers **workspace context** (which workspace the token is for) and grants **access to that workspace's resources**. It is the same scope across Altium 365 and Altium Enterprise Server. Additional scopes may appear in the discovery document over time; this guide uses `a365:workspace:{workspaceId}`.
 
 See the [OAuth Scopes](https://www.altium.com/documentation/altium-developer-center/altium-365/key-concepts/oauth-scopes) key concept.
-
-## The authentication journey
-
-The recommended flow is the same for web and desktop/on-prem apps — only *how* you obtain the authorization code differs (a redirect you host, or the [ActionWait](./desktop-and-onprem-apps.md) pattern). In both cases:
-
-1. **Sign in on `https://auth.altium.com`** to get a **global access token**. Use it for accessing global resurses such as listing the user's workspaces.
-2. **Discover the user's workspaces** with the global token. See [Discover the user's workspaces](./web-and-server-apps.md#step-3--discover-the-users-workspaces).
-3. **Exchange the global token for a workspace access token — at the endpoint that matches the workspace:**
-   - **Non-Gov workspace** → exchange on Commercial Cloud endpoint (`https://auth.altium.com`, no `secure=1`).
-   - **Gov Cloud workspace** → exchange on Gov Cloud endpoint (`https://auth.365-gov.altium.com`, with `secure=1`). See [Gov Cloud considerations](./gov-cloud.md).
-4. **Call the Altium 365 API** with the workspace token, refreshing it at the endpoint that issued it.
-
-```mermaid
-sequenceDiagram
-    participant App
-    participant Identity as Altium Identity
-    participant API as Altium 365 API
-    App->>Identity: 1. Sign in on auth.altium.com (openid profile) + PKCE
-    Identity-->>App: global access token
-    App->>API: 2. desWorkspaceInfos (global token)
-    API-->>App: workspaces (+ location.name)
-    alt Non-Gov workspace
-        App->>Identity: 3a. Token exchange @ auth.altium.com
-        Identity-->>App: workspace access token
-    else Gov Cloud workspace ("US GovCloud")
-        App->>Identity: 3b. Token exchange @ auth.365-gov.altium.com (secure=1)
-        Identity-->>App: Gov workspace access token
-    end
-    App->>API: 4. API calls (workspace access token)
-```
-
-An app commonly holds several tokens at once — one global token plus a workspace token per workspace in use (some non-Gov, some Gov). Each refreshes at its own issuing endpoint.
-
-### Where to send each request
-
-| Operation | Endpoint | `secure=1` |
-| --- | --- | --- |
-| Sign in + code exchange | `auth.altium.com` | — |
-| User profile / discover workspaces | `auth.altium.com` / Altium 365 API | — |
-| Non-Gov workspace token (exchange + refresh) | `auth.altium.com` | no |
-| Gov Cloud workspace token (exchange + refresh) | `auth.365-gov.altium.com` | yes |
 
 ## Which flow do I need?
 

@@ -1,6 +1,5 @@
 # @altium-developer/a365-auth
 
-[![npm](https://img.shields.io/npm/v/@altium-developer/a365-auth.svg)](https://www.npmjs.com/package/@altium-developer/a365-auth)
 [![CI](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/typescript-ci.yml/badge.svg)](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/typescript-ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AltiumDeveloper/a365-auth/blob/main/libs/typescript/LICENSE)
 
@@ -11,12 +10,6 @@ Altium 365 OAuth2 / OpenID Connect authentication library. Supports both client 
 - **Workspace tokens**, **token refresh**, and first-class **Gov Cloud** support.
 
 **Zero runtime dependencies.** Runs on Node ≥20, Bun, and Deno (and bundled apps that polyfill Node's `crypto`).
-
-## Installation
-
-```bash
-npm i @altium-developer/a365-auth
-```
 
 ## Documentation
 

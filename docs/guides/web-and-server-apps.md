@@ -183,7 +183,7 @@ See the [API examples](https://www.altium.com/documentation/altium-developer-cen
 
 Exchange the global access token for a token scoped to the chosen workspace, **at the endpoint that matches the workspace's `location`** (Step 3). Requesting `offline_access` also returns a refresh token. In both variants `subject_token` is the same global access token from Step 2.
 
-**Non-Gov workspace — exchange on `auth.altium.com`:**
+**Commercial workspace — exchange on `auth.altium.com`:**
 
 ```
 POST https://auth.altium.com/connect/token
@@ -214,7 +214,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 
 Presenting your Commercial global token to the Gov `/token` endpoint with `secure=1` mints a Gov workspace token — one whose `iss` is `https://auth.365-gov.altium.com` and which carries a `secure` claim. Omitting `secure=1` on the Gov endpoint — or exchanging a Gov workspace on `auth.altium.com` — returns `access_denied`. See [Gov Cloud considerations](./gov-cloud.md).
 
-cURL (non-Gov; for a Gov workspace, target `https://auth.365-gov.altium.com` and add `--data-urlencode "secure=1"`):
+cURL (Commercial workspace; for a Gov workspace, target `https://auth.365-gov.altium.com` and add `--data-urlencode "secure=1"`):
 
 ```bash
 curl -X POST https://auth.altium.com/connect/token \
@@ -245,13 +245,13 @@ The `access_token` is your **workspace access token**. Use it to call the Altium
 Authorization: Bearer <workspace access token>
 ```
 
-> **Shortcut when you already know the workspace.** Request the workspace scope directly in Step 1 — set `scope=openid profile offline_access a365:workspace:<workspaceId>` in the authorize request — and the code exchange in Step 2 returns the workspace token (and refresh token) directly, skipping Steps 3–4. Run the *whole* flow on the host that matches the workspace: `auth.altium.com` for a non-Gov workspace, or `auth.365-gov.altium.com` for a Gov Cloud workspace (send `secure=1` on the `/connect/token` requests only). Use the discover-then-exchange flow (Steps 3–4) when the user chooses a workspace at runtime.
+> **Shortcut when you already know the workspace.** Request the workspace scope directly in Step 1 — set `scope=openid profile offline_access a365:workspace:<workspaceId>` in the authorize request — and the code exchange in Step 2 returns the workspace token (and refresh token) directly, skipping Steps 3–4. Run the *whole* flow on the host that matches the workspace: `auth.altium.com` for a Commercial workspace, or `auth.365-gov.altium.com` for a Gov Cloud workspace (send `secure=1` on the `/connect/token` requests only). Use the discover-then-exchange flow (Steps 3–4) when the user chooses a workspace at runtime.
 >
 > **Alternatively**, use `selectWorkspace=strict` (or `optional`) in Step 1 to have the server present workspace selection during sign-in — the user picks from their own workspaces without your app needing to enumerate them first. See [Login-into-workspace mode](./overview.md#login-into-workspace-mode).
 
 ## Refresh the workspace access token
 
-When the workspace access token expires, use the refresh token to get a new one. **Refresh at the endpoint that issued the token:** a non-Gov workspace token refreshes on `auth.altium.com`; a Gov Cloud workspace token refreshes on `auth.365-gov.altium.com` **with `secure=1`**.
+When the workspace access token expires, use the refresh token to get a new one. **Refresh at the endpoint that issued the token:** a Commercial workspace token refreshes on `auth.altium.com`; a Gov Cloud workspace token refreshes on `auth.365-gov.altium.com` **with `secure=1`**.
 
 ```
 POST https://auth.altium.com/connect/token

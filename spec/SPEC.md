@@ -96,7 +96,7 @@ Request body (`Content-Type: application/json`):
 ```
 Responses:
 - `200` — result ready. Body: `{ "data": { "code": "<code>", "state": "<wait_token>" } }`. The client **MUST** verify `data.state` equals its wait token before using `data.code`.
-- `408` — the long-poll idle window elapsed. This is **normal**; the client **MUST** immediately reconnect with the **same** token.
+- `408` — the poll's server-side hold interval elapsed. This is **normal**; the client **MUST** immediately reconnect with the **same** token. The hold interval is an unspecified implementation detail and clients **MUST NOT** depend on any particular duration; it is distinct from the client's own overall sign-in timeout, which spans the whole reconnect loop.
 - `410` — the wait token is no longer valid (consumed/superseded). Terminal; the client **MUST** restart sign-in with a new token.
 - Other status — treat as an error.
 
@@ -138,14 +138,14 @@ Commercial and Gov are kept strictly separate. A token's environment is its issu
 1. Sign in on **Commercial Cloud** → global access token (`iss = https://auth.altium.com`).
 2. Discover the user's workspaces with the global token (§7).
 3. Exchange the global token for a **workspace** token at the endpoint matching the workspace:
-   - Non-Gov workspace → Commercial token endpoint, **no** `secure=1`.
+   - Commercial workspace → Commercial token endpoint, **no** `secure=1`.
    - Gov workspace → Gov token endpoint, **with** `secure=1`. The result has `iss = https://auth.365-gov.altium.com` and a `secure` claim.
 4. Call the API with the workspace token; refresh at the endpoint that issued it.
 
 Rules (validated):
 - A global token **MUST** be exchanged for a workspace on the matching side; a mismatched exchange returns **`access_denied`**:
   - Gov workspace on the Commercial endpoint → `access_denied`.
-  - Non-Gov workspace on the Gov endpoint → `access_denied`.
+  - Commercial workspace on the Gov endpoint → `access_denied`.
   - Gov endpoint **without** `secure=1` → `access_denied`.
 - A Gov (`secure`) token **MUST NOT** be presented to Commercial/global services, and vice versa.
 - **Same environment only.** The Commercial→Gov exchange happens between the Commercial and Gov hosts of the **same deployment/environment** (e.g. Production Commercial → Production Gov; Dev Commercial → Dev Gov). A token's issuer must be trusted by the exchange endpoint, so presenting a token to a *different* environment's endpoint — e.g. a Production token (`iss = auth.altium.com`) to a Dev Gov endpoint (`auth.dev-365-gov.altium.com`) — is rejected with **`invalid_request` / `invalid_token`**.

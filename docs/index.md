@@ -25,10 +25,10 @@ New to Altium Identity? Start with the [Overview](guides/overview.md), then
 
 Full API reference and examples for each library are on this site (the **Libraries** tab):
 
-| Library | Docs | Registry | Install |
-| --- | --- | --- | --- |
-| `@altium-developer/a365-auth` | [TypeScript](libraries/typescript.md) | npm | `npm i @altium-developer/a365-auth` |
-| `Altium.Auth` | [.NET](libraries/dotnet.md) | NuGet | `dotnet add package Altium.Auth` |
+| Library | Docs |
+| --- | --- |
+| `@altium-developer/a365-auth` | [TypeScript](libraries/typescript.md) |
+| `Altium.Auth` | [.NET](libraries/dotnet.md) |
 
 Both are `0.1.0` **preview** — the API may change as the spec and libraries evolve.
 

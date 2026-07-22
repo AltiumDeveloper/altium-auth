@@ -1,6 +1,5 @@
 # Altium.Auth
 
-[![NuGet](https://img.shields.io/nuget/v/Altium.Auth.svg)](https://www.nuget.org/packages/Altium.Auth)
 [![CI](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/dotnet-ci.yml/badge.svg)](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/dotnet-ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AltiumDeveloper/a365-auth/blob/main/LICENSE)
 
@@ -17,12 +16,6 @@ client types and both clouds:
 **Zero dependencies**, `net8.0`. Validated against the same language-neutral
 [conformance vectors](https://github.com/AltiumDeveloper/a365-auth/blob/main/spec/conformance/vectors.json) as the TypeScript library —
 see [How it's built](#how-its-built).
-
-## Installation
-
-```bash
-dotnet add package Altium.Auth
-```
 
 ## Documentation
 
