@@ -20,8 +20,8 @@ spec/                     Normative spec + JSON Schemas + conformance vectors (t
     README.md             Vector format + matchers
 docs/                     Conceptual auth guides (language-neutral)
 libs/
-  typescript/             @altium-developer/a365-auth   → npm
-  dotnet/                 Altium.Auth                   → nuget.org
+  typescript/             @altium-developer/a365-auth
+  dotnet/                 Altium.Auth
 .github/workflows/        Per-library CI + release (path-filtered)
 ```
 
@@ -30,10 +30,10 @@ needs to build/test/publish lives under that library's `libs/<lang>/` directory.
 
 ## Libraries
 
-| Library | Package | Registry | Status |
-| --- | --- | --- | --- |
-| [`libs/typescript`](libs/typescript) | `@altium-developer/a365-auth` | npm | 🧪 preview (v0.1.0) |
-| [`libs/dotnet`](libs/dotnet) | `Altium.Auth` | nuget.org | 🧪 preview (v0.1.0) |
+| Library | Package | Status |
+| --- | --- | --- |
+| [`libs/typescript`](libs/typescript) | `@altium-developer/a365-auth` | 🧪 preview (v0.1.0) |
+| [`libs/dotnet`](libs/dotnet) | `Altium.Auth` | 🧪 preview (v0.1.0) |
 
 ## Documentation
 

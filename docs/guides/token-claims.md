@@ -23,7 +23,7 @@ Example payload (a Gov Cloud workspace token; identifiers shown as placeholders)
 
 | Claim | Present on | Meaning |
 | --- | --- | --- |
-| `iss` | every token | **Issuer** — the base URL that minted the token, which identifies the cloud: `https://auth.altium.com` (Commercial) or `https://auth.365-gov.altium.com` (Gov Cloud). Non-production environments use their own hosts. |
+| `iss` | every token | **Issuer** — the base URL that minted the token, which identifies the cloud: `https://auth.altium.com` (Commercial) or `https://auth.365-gov.altium.com` (Gov Cloud). |
 | `sub` | every token | **Subject** — for user tokens, the user's ID (a stable identifier; the same value the [`userinfo`](./web-and-server-apps.md#read-the-users-profile-optional) endpoint returns as `sub`). |
 | `client_id` | every token | The **application** — the registered OAuth client that obtained the token. |
 | `scope` | every token | The granted scopes. A workspace token includes `a365:workspace:{workspaceId}`; `offline_access` means a refresh token was issued alongside it. |

@@ -103,11 +103,11 @@ const tokens = await signIn({
 
 Commercial and Gov are kept strictly separate: a global token can only be exchanged for a workspace of the matching kind. `secure=1` is driven by which token endpoint you use — Gov endpoint → sent, Commercial endpoint → omitted — so pointing `tokenEndpoint` at the Gov host is all it takes to exchange a Commercial token for a Gov workspace token.
 
-> Gov tokens must never be used against Commercial (non-Gov) services, and vice versa. For Dev Gov testing, swap the host for `https://auth.dev-365-gov.altium.com`. See [docs/gov-cloud.md](../../docs/guides/gov-cloud.md).
+> Gov tokens must never be used against Commercial services, and vice versa. See [docs/gov-cloud.md](../../docs/guides/gov-cloud.md).
 
-### Non-production environments
+### Custom or on-prem installations
 
-For Dev/UAT, on-prem, or other installations, override any of the four
+For on-prem or other custom installations, override any of the four
 endpoints. Anything you omit still falls back to the Commercial Cloud:
 
 ```typescript

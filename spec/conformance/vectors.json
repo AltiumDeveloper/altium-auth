@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "note": "Language-neutral conformance vectors for the Altium Identity flow. See README.md for the format and matchers. Extracted from src/index.test.ts and the live Commercial/Gov/Dev captures.",
+  "note": "Language-neutral conformance vectors for the Altium Identity flow. See README.md for the format and matchers. Extracted from src/index.test.ts and the live Commercial and Gov captures.",
 
   "authorizeUrl": [
     {

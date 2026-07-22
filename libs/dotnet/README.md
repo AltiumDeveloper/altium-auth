@@ -166,7 +166,7 @@ public sealed class AltiumAuthOptions
 
 A record of the four endpoints (`AuthorizeEndpoint`, `TokenEndpoint`, `ActionWaitEndpoint`,
 `RedirectUri`) with two presets: `AltiumEndpoints.CommercialCloud` (default) and
-`AltiumEndpoints.GovCloud`. Construct your own for Dev/UAT or on-prem hosts.
+`AltiumEndpoints.GovCloud`. Construct your own for on-prem or custom hosts.
 
 ### `TokenSet`
 

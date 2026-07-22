@@ -23,16 +23,15 @@ Altium Identity runs as an OpenID Connect provider, one **base URL per environme
 
 - Clients **SHOULD** resolve endpoints from the discovery document; hardcoded base URLs **MAY** be used as a fallback.
 - Standard endpoints (all under the base URL): `/connect/authorize`, `/connect/token`, `/connect/userinfo`, `/connect/revocation`.
-- Non-production tiers (e.g. Dev) use their own hosts (e.g. `auth.dev1.altium.com`, `auth.dev-365-gov.altium.com`) and are configured explicitly.
+- The base URLs above are the production hosts; a deployment **MAY** expose the same endpoints under different hosts, so treat base URLs as configuration rather than constants.
 
 ### 1.1 ActionWait host (proprietary)
 
-The **ActionWait** service is a single Commercial-Cloud deployment per environment tier — it has **no** Gov-specific host:
+The **ActionWait** service is a single Commercial-Cloud deployment — it has **no** Gov-specific host. In production it is:
 
-| Tier | ActionWait poll |
+| Service | Endpoint |
 | --- | --- |
-| Production | `https://actionwait.altium.com/await` |
-| Dev | `https://actionwait.dev1.altium.com/await` |
+| ActionWait poll | `https://actionwait.altium.com/await` |
 
 ---
 
@@ -148,7 +147,7 @@ Rules (validated):
   - Commercial workspace on the Gov endpoint → `access_denied`.
   - Gov endpoint **without** `secure=1` → `access_denied`.
 - A Gov (`secure`) token **MUST NOT** be presented to Commercial/global services, and vice versa.
-- **Same environment only.** The Commercial→Gov exchange happens between the Commercial and Gov hosts of the **same deployment/environment** (e.g. Production Commercial → Production Gov; Dev Commercial → Dev Gov). A token's issuer must be trusted by the exchange endpoint, so presenting a token to a *different* environment's endpoint — e.g. a Production token (`iss = auth.altium.com`) to a Dev Gov endpoint (`auth.dev-365-gov.altium.com`) — is rejected with **`invalid_request` / `invalid_token`**.
+- **Same environment only.** The Commercial→Gov exchange happens between the Commercial and Gov hosts of the **same deployment/environment**. A token's issuer must be trusted by the exchange endpoint, so presenting a token to a *different* environment's endpoint is rejected with **`invalid_request` / `invalid_token`**.
 
 Host detection (reference heuristic): a token endpoint is Gov iff its host contains a `gov` label (e.g. `auth.365-gov.altium.com`). Implementations **MAY** allow an explicit override for non-standard hosts.
 
