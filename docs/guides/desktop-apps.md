@@ -297,7 +297,7 @@ A successful request returns `200 OK` with an empty body. Per the revocation sta
 
 ## ActionWait service API
 
-The ActionWait service is a **separate host** from Altium Identity: `https://actionwait.altium.com`. It has no Gov-specific host — Gov sign-in polls the same Commercial host.
+The ActionWait service is a **separate host** from Altium Identity: `https://actionwait.altium.com`. It has no Gov-specific host — Gov sign-in polls the same Commercial host. **AES (on-prem)** installations host their own ActionWait service at `{origin}/actionwait` instead — see [AES (on-prem) considerations](./aes.md).
 
 **`POST /await`** — long-polls for the authorization result tied to your wait token.
 
@@ -333,4 +333,4 @@ Status codes:
 ## Related
 
 - [Authentication overview](./overview.md) · [Web and server application flow](./web-and-server-apps.md)
-- [Gov Cloud considerations](./gov-cloud.md)
+- [Gov Cloud considerations](./gov-cloud.md) · [AES (on-prem) considerations](./aes.md)

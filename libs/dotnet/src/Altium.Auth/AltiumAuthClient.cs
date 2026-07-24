@@ -195,6 +195,43 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
         throw new InvalidOperationException($"ActionWait retry count exceeded {maxRetries}.");
     }
 
+    /// <summary>
+    /// Fetch the OAuth scopes registered for a client from the ClientScopes endpoint
+    /// (<see cref="AltiumEndpoints.ScopeEndpoint"/>) — the endpoint itself returns an empty
+    /// array for an unknown <paramref name="clientId"/>. Anything else unexpected (a non-200
+    /// status, or a body that is not a JSON array of strings) <b>throws</b>: an empty scope list
+    /// is a meaningful answer, so a failed lookup must not be reported as one.
+    ///
+    /// On Commercial/Gov Cloud this returns the client's static scopes (e.g. <c>openid</c>,
+    /// <c>profile</c>), but <b>no</b> <c>a365:workspace:{id}</c> scope — a Cloud client can have
+    /// access to many workspaces, so there is no single scope to introspect; discover those via
+    /// <c>desWorkspaceInfos</c> instead. On an AES (on-prem) installation, which hosts exactly one
+    /// workspace, the response <i>does</i> include that workspace's <c>a365:workspace:{id}</c> scope
+    /// directly — a shortcut over the (also-available, but longer) <c>desWorkspaceInfos</c> round trip.
+    /// </summary>
+    /// <param name="http">HttpClient to issue the request with.</param>
+    /// <param name="scopeEndpoint">The ClientScopes endpoint URL.</param>
+    /// <param name="clientId">The OAuth client ID to look up scopes for.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <exception cref="InvalidOperationException">
+    /// The endpoint did not answer 200 with a JSON array of scope strings.
+    /// </exception>
+    public static async Task<string[]> GetClientScopesAsync(HttpClient http, string scopeEndpoint, string clientId, CancellationToken ct = default)
+    {
+        var url = $"{scopeEndpoint}?clientId={Uri.EscapeDataString(clientId)}";
+        var res = await http.GetAsync(url, ct).ConfigureAwait(false);
+        var body = await res.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        var status = (int)res.StatusCode;
+
+        if (status != 200) throw new InvalidOperationException($"ClientScopes endpoint {status}: {Truncate(body)}");
+
+        string[]? scopes = null;
+        try { scopes = JsonSerializer.Deserialize<string[]>(body); }
+        catch (JsonException) { /* reported by the shared error below */ }
+        return scopes ?? throw new InvalidOperationException(
+            $"ClientScopes endpoint returned an unexpected body (expected a JSON array of strings): {Truncate(body)}");
+    }
+
     /// <inheritdoc />
     public async Task RevokeRefreshTokenAsync(string refreshToken, CancellationToken ct = default)
     {

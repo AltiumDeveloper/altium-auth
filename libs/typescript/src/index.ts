@@ -16,6 +16,8 @@ export {
   exchangeCode,
   COMMERCIAL_CLOUD_ENDPOINTS,
   GOV_CLOUD_ENDPOINTS,
+  createAesEndpoints,
+  getClientScopes,
 } from "./auth";
 export type {
   SignInOptions,

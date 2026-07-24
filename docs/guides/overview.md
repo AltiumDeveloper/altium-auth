@@ -13,8 +13,9 @@ Altium Identity is available at one base URL per environment:
 | --- | --- | --- |
 | Commercial Cloud | https://auth.altium.com | https://auth.altium.com/.well-known/openid-configuration |
 | Gov Cloud | https://auth.365-gov.altium.com | https://auth.365-gov.altium.com/.well-known/openid-configuration |
+| AES (on-prem) | {origin}/unifiedlogin (customer-hosted) | {origin}/unifiedlogin/.well-known/openid-configuration |
 
-See [Gov Cloud considerations](./gov-cloud.md) for the differences that apply to Gov Cloud.
+See [Gov Cloud considerations](./gov-cloud.md) for the differences that apply to Gov Cloud, and [AES (on-prem) considerations](./aes.md) for on-prem installations.
 
 Every endpoint below is published in each base URL's discovery document:
 
@@ -70,9 +71,11 @@ An application commonly holds several tokens at once — one global token plus a
 
 | Operation | Endpoint |
 | --- | --- |
-| Sign in + code exchange | `auth.altium.com` |
+| Cloud sign in + code exchange | `auth.altium.com` |
 | Commercial workspace token (exchange + refresh) | `auth.altium.com` |
 | Gov Cloud workspace token (exchange + refresh) | `auth.365-gov.altium.com` |
+| AES sign in + workspace token | `{origin}/unifiedlogin` (customer-hosted) |
+
 
 ## Login-into-workspace mode
 
@@ -100,7 +103,7 @@ See the [OAuth Scopes](https://www.altium.com/documentation/altium-developer-cen
 - **Web or server application** that can host an HTTPS redirect endpoint: [Authenticate a web or server application](./web-and-server-apps.md).
 - **Desktop application** that cannot host a public redirect: [Authenticate a desktop application](./desktop-apps.md).
 
-Both guides cover Gov Cloud workspaces via the exchange branch above. See [Gov Cloud considerations](./gov-cloud.md) for additional details.
+Both guides cover Gov Cloud workspaces via the exchange branch above. See [Gov Cloud considerations](./gov-cloud.md) for additional details, or [AES (on-prem) considerations](./aes.md) if you're integrating against an on-prem AES installation.
 
 ## Related
 

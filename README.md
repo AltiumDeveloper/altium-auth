@@ -71,8 +71,9 @@ needs a real server (skipped by offline runners in both).
 | Vector group | TypeScript | .NET |
 | --- | --- | --- |
 | authorizeUrl | ✅ | ✅ |
-| tokenRequest (exchange/workspace/refresh, Gov `secure=1`, cross-partition) | ✅ | ✅ |
+| tokenRequest (exchange/workspace/refresh, Gov `secure=1`, AES host, cross-partition) | ✅ | ✅ |
 | actionWait (200/408/410/non-JSON/missing-code/CSRF) | ✅ | ✅ |
+| clientScopes (scope introspection) | ✅ | ✅ |
 | revocation — `revoke-refresh-token` | ✅ | ✅ |
 | revocation — `revoke-then-refresh-invalid-grant` | live | live |
 | userinfo (response shape) | schema ref | schema ref |

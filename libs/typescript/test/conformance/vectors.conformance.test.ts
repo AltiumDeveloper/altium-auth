@@ -19,6 +19,7 @@ import {
   revokeRefreshToken,
   createAuthorizationUrl,
   exchangeCode,
+  getClientScopes,
 } from "../../src/index";
 import vectors from "../../../../spec/conformance/vectors.json";
 
@@ -35,7 +36,7 @@ function stubFetch(reply: (url: string, opts: Any) => { status: number; body: st
     vi.fn(async (url: string, opts: Any) => {
       calls.push({ url, opts });
       const { status, body } = reply(url, opts);
-      return { status, text: async () => body };
+      return { status, text: async () => body, json: async () => JSON.parse(body) };
     }),
   );
   return calls;
@@ -200,6 +201,27 @@ describe("conformance: revocation", () => {
       for (const k of er.bodyParamsAbsent ?? []) {
         expect(params.has(k)).toBe(false);
       }
+    });
+  }
+});
+
+// ── clientScopes ────────────────────────────────────────────────
+describe("conformance: clientScopes", () => {
+  for (const v of (vectors as Any).clientScopes) {
+    it(v.id, async () => {
+      const calls = stubFetch(() => ({ status: v.mockResponse.status, body: bodyText(v.mockResponse) }));
+
+      if (v.expectErrorContains) {
+        await expect(getClientScopes(v.input.scopeEndpoint, v.input.clientId)).rejects.toThrow(v.expectErrorContains);
+      } else {
+        const result = await getClientScopes(v.input.scopeEndpoint, v.input.clientId);
+        expect(result).toEqual(v.expectResult);
+      }
+
+      expect(calls.length).toBeGreaterThan(0);
+      const { url } = calls[0];
+      const er = v.expectRequest ?? {};
+      if (er.endpoint) { expect(url).toBe(er.endpoint); }
     });
   }
 });

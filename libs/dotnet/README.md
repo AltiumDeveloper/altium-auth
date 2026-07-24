@@ -4,14 +4,14 @@
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AltiumDeveloper/a365-auth/blob/main/LICENSE)
 
 Altium 365 OAuth2 / OpenID Connect authentication client for .NET. Supports both
-client types and both clouds:
+client types as well as the different deployment types: Commercial Cloud, Gov Cloud, and AES (on-prem).
 
 - **Public clients** (desktop) — browser sign-in with PKCE over Altium's
   **ActionWait** long-poll: `SignInAsync`.
 - **Confidential clients** (web/server backends with a secret) — the standard
-  **authorization-code redirect** flow via composable steps: `CreateAuthorizationUrl`
-  + `ExchangeCodeAsync`.
-- **Workspace tokens**, **token refresh / revocation**, and first-class **Gov Cloud** support.
+  **authorization-code redirect** flow via composable steps: `CreateAuthorizationUrl` and `ExchangeCodeAsync`.
+- **Workspace tokens**, **token refresh / revocation**, and first-class **Gov Cloud** and
+  **AES** (on-prem) support.
 
 **Zero dependencies**, `net8.0`. Validated against the same language-neutral
 [conformance vectors](https://github.com/AltiumDeveloper/a365-auth/blob/main/spec/conformance/vectors.json) as the TypeScript library —
@@ -27,6 +27,7 @@ this package):
 - [Web / server apps](../../docs/guides/web-and-server-apps.md) — authorization-code redirect flow (confidential)
 - [Desktop apps](../../docs/guides/desktop-apps.md) — the ActionWait pattern (public)
 - [Gov Cloud](../../docs/guides/gov-cloud.md) — Commercial vs Gov and the `secure=1` two-token model
+- [AES (on-prem)](../../docs/guides/aes.md) — customer-hosted installations
 - [Access token claims](../../docs/guides/token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
 
 ## Quick start
@@ -117,7 +118,34 @@ var options = new AltiumAuthOptions
 Commercial and Gov are kept strictly separate: a global token can only be exchanged for a
 workspace of the matching kind. `secure=1` is driven by which token endpoint you use, so
 pointing the token endpoint at the Gov host is all it takes to exchange a Commercial token
-for a Gov workspace token. See [docs/gov-cloud.md](../../docs/guides/gov-cloud.md).
+for a Gov workspace token. See the [Gov Cloud](../../docs/guides/gov-cloud.md) guide.
+
+### AES (on-prem)
+
+Altium Enterprise Server (AES) is a customer-hosted, on-prem installation — unlike
+Commercial/Gov Cloud (fixed Altium-hosted domains), there's no fixed host, so use
+`AltiumEndpoints.Aes(origin)` to derive the endpoint set from your AES server's origin. AES
+does not use `secure=1` (same rule as Commercial), and there's no cross-cloud bridging
+to/from Commercial or Gov.
+
+```csharp
+var clientId = "your-aes-client-id";
+var endpoints = AltiumEndpoints.Aes("https://aes.server.example:9785");
+
+// AES hosts a single workspace — introspect the exact scope to request for it.
+var scopesArray = await AltiumAuthClient.GetClientScopesAsync(http, endpoints.ScopeEndpoint!, clientId);
+var scopes = string.Join(" ", scopesArray);
+
+var options = new AltiumAuthOptions
+{
+    ClientId = clientId,
+    Scopes = scopes,
+    Endpoints = endpoints,
+    OpenBrowser = url => Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }),
+};
+```
+
+See the [AES (on-prem)](../../docs/guides/aes.md) guide.
 
 ### Refresh & sign-out
 
@@ -164,9 +192,18 @@ public sealed class AltiumAuthOptions
 
 ### `AltiumEndpoints`
 
-A record of the four endpoints (`AuthorizeEndpoint`, `TokenEndpoint`, `ActionWaitEndpoint`,
-`RedirectUri`) with two presets: `AltiumEndpoints.CommercialCloud` (default) and
-`AltiumEndpoints.GovCloud`. Construct your own for on-prem or custom hosts.
+A record of the endpoints (`AuthorizeEndpoint`, `TokenEndpoint`, `ActionWaitEndpoint`,
+`RedirectUri`, `ScopeEndpoint`) with two fixed presets —
+`AltiumEndpoints.CommercialCloud` (default) and `AltiumEndpoints.GovCloud` — plus
+`AltiumEndpoints.Aes(origin)`, a factory that derives the endpoint set for an AES (on-prem)
+installation from its server origin, including `ScopeEndpoint`
+for [scope introspection](../../docs/guides/aes.md#single-workspace) — use
+`AltiumAuthClient.GetClientScopesAsync` (GET with a `clientId` query parameter) to discover
+the exact `a365:workspace:{id}` scope for the installation's single workspace.
+`ScopeEndpoint` is `null` in the Cloud presets: the endpoint exists there too
+(`{base}/api/ClientScopes`), but a Cloud response carries no `a365:workspace:{id}` scope — a
+Cloud client may reach many workspaces, none implied by its client ID — so set it yourself if
+you want the client's static scopes. Construct your own record for other custom hosts.
 
 ### `TokenSet`
 
@@ -235,13 +272,17 @@ dotnet run --project tools/SignInTest -- YOUR_CLIENT_ID
 # Dev Gov — verifies the secure=1 two-token model
 dotnet run --project tools/SignInTest -- --env dev-gov YOUR_GOV_CLIENT_ID
 
+# AES (on-prem) — verifies the origin-derived endpoints, no secure=1
+dotnet run --project tools/SignInTest -- --env aes --aes-origin https://aes.server.example:9785 YOUR_AES_CLIENT_ID
+
 # Confidential client (HTTP Basic) — secret via env, never on the CLI
 A365_CLIENT_SECRET=... dotnet run --project tools/SignInTest -- --workspace <authId> --revoke YOUR_CLIENT_ID
 ```
 
-Options mirror the TS harness: `--env prod|dev|gov|dev-gov`, `--workspace-env`,
-`--secure`/`--no-secure`, `--scopes`, `--workspace`, `--refresh`, `--revoke`, `--userinfo`,
-and `--authorize-url`/`--exchange-code`/`--code-verifier`/`--redirect-uri` for
+Options mirror the TS harness: `--env prod|dev|gov|dev-gov|aes`, `--aes-origin` (required for
+`--env aes`), `--workspace-env`, `--secure`/`--no-secure`, `--scopes`, `--workspace`,
+`--refresh`, `--revoke`, `--userinfo`, and
+`--authorize-url`/`--exchange-code`/`--code-verifier`/`--redirect-uri` for
 confidential/custom-callback clients.
 
 See [CONTRIBUTING.md](https://github.com/AltiumDeveloper/a365-auth/blob/main/CONTRIBUTING.md) and [AGENTS.md](https://github.com/AltiumDeveloper/a365-auth/blob/main/AGENTS.md) for the

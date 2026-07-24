@@ -3,8 +3,9 @@
  *
  * Only `clientId` and `scopes` are required. The four endpoints default to
  * Altium's Commercial Cloud values (see `COMMERCIAL_CLOUD_ENDPOINTS`) and only
- * need to be set for Dev/UAT, on-prem, or Gov Cloud installations. Any endpoint
- * that is provided must be a valid URL.
+ * need to be set for Dev/UAT, Gov Cloud, or AES (on-prem) installations — for
+ * AES, use `createAesEndpoints()` to derive them from your server's origin.
+ * Any endpoint that is provided must be a valid URL.
  */
 export interface OAuthConfig {
   /** OAuth2 client ID registered with the Altium identity provider. */
@@ -47,6 +48,11 @@ export interface OAuthConfig {
    * @default COMMERCIAL_CLOUD_ENDPOINTS.actionWaitEndpoint
    */
   actionWaitEndpoint?: string;
+
+  /**
+   * Client scope introspection endpoint URL.
+   */
+  scopeEndpoint?: string;
 
   /**
    * Fixed redirect URI registered with the auth client.
