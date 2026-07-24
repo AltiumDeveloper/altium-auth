@@ -241,10 +241,10 @@
     },
     {
       "id": "revoke-then-refresh-invalid-grant",
-      "description": "After revoking a refresh token, refreshing with it returns invalid_grant (validated live on dev).",
+      "description": "After revoking a refresh token, refreshing with it returns invalid_grant (validated against a live test environment).",
       "mockResponse": { "status": 400, "json": { "error": "invalid_grant" } },
       "expectErrorContains": "invalid_grant",
-      "note": "Behavioral reference (revoke → refresh → invalid_grant). Requires a live server, so offline runners skip it. Validated live on dev."
+      "note": "Behavioral reference (revoke → refresh → invalid_grant). Requires a live server, so offline runners skip it. Validated against a live test environment."
     }
   ],
 

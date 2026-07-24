@@ -8,6 +8,7 @@ dist/
 
 # Local tooling / editor
 .claude/
+.idea/
 .DS_Store
 *.log
 
