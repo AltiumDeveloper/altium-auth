@@ -50,6 +50,19 @@ const workspaceToken = await signIntoWorkspace(config, tokens.access_token, "wor
 The library returns tokens and never stores them — persistence, refresh, and
 sign-out are entirely yours to manage.
 
+If your host runtime needs to open URLs through a host API, keep using `signIn`
+and provide a browser opener. The library still owns PKCE, ActionWait polling,
+state correlation, CSRF validation, and token exchange:
+
+```typescript
+const tokens = await signIn(config, {
+  openBrowser: async (url) => {
+    // Example: VS Code extension host, Electron shell, native app bridge, etc.
+    await openExternalUrl(url);
+  },
+});
+```
+
 ### Confidential apps (web / server — authorization-code redirect)
 
 For web/server backends that **host their own redirect endpoint**. Set `clientSecret` on the config to authenticate as a confidential client (HTTP Basic), and drive the flow with two composable steps. See [Web / server apps](../../docs/guides/web-and-server-apps.md).
@@ -139,7 +152,7 @@ Performs OAuth2 PKCE sign-in. Opens the browser to the authorization URL, long-p
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | config | `OAuthConfig` | OAuth2 configuration (`clientId` + `scopes` required; endpoints default to the Commercial Cloud) |
-| options | `SignInOptions` | Optional: `timeoutMs` (default 180s), `AbortSignal` for cancellation, `selectWorkspace` for login-into-workspace mode |
+| options | `SignInOptions` | Optional: `timeoutMs` (default 180s), `AbortSignal` for cancellation, `selectWorkspace` for login-into-workspace mode, and `openBrowser` for host-specific URL opening |
 
 **Returns:** `Promise<TokenSet>` — the full token response from the IdP.
 
@@ -290,7 +303,14 @@ selectWorkspace?: "none" | "strict" | "optional";
 // "strict"   — workspace selection mandatory; returned token is workspace-scoped.
 // "optional" — workspace selection offered; user may skip.
 // "none" or omitted (default) — no workspace prompt; issues a global access token.
+
+// SignInOptions only:
+openBrowser?: (url: string) => void | Promise<void>;
 ```
+
+Use `openBrowser` when embedding the library into a host with its own browser API
+such as VS Code, Electron, or a native app bridge. ActionWait polling remains
+owned by the library.
 
 ## Error Handling
 

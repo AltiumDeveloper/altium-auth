@@ -32,7 +32,7 @@ needs to build/test/publish lives under that library's `libs/<lang>/` directory.
 
 | Library | Package | Status |
 | --- | --- | --- |
-| [`libs/typescript`](libs/typescript) | `@altium-developer/a365-auth` | 🧪 preview (v0.1.0) |
+| [`libs/typescript`](libs/typescript) | `@altium-developer/a365-auth` | 🧪 preview (v0.1.2) |
 | [`libs/dotnet`](libs/dotnet) | `Altium.Auth` | 🧪 preview (v0.1.0) |
 
 ## Documentation

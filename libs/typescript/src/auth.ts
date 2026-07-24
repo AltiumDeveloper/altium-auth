@@ -438,6 +438,13 @@ export interface SignInOptions {
    * for the full description of values.
    */
   selectWorkspace?: "none" | "strict" | "optional";
+
+  /**
+   * Override how the authorization URL is opened. Desktop integrations commonly
+   * pass their host API here (for example, VS Code's `env.openExternal`). If not
+   * provided, the library tries `globalThis.open(url)` and logs the URL.
+   */
+  openBrowser?: (url: string) => void | Promise<void>;
 }
 
 /**
@@ -472,15 +479,20 @@ export async function signIn(
 
   // Start long-poll BEFORE opening the browser so a fast callback can't race.
   const signal = options?.signal ?? new AbortController().signal;
+  const timeoutMs = options?.timeoutMs ?? 180_000;
   const pollPromise = pollActionWait(
     cfg.actionWaitEndpoint,
     connectionToken,
     signal,
-    options?.timeoutMs ?? 180_000,
+    timeoutMs,
   );
 
   // Open browser (or log URL for environments without globalThis.open).
-  openBrowser(url);
+  if (options?.openBrowser) {
+    await options.openBrowser(url);
+  } else {
+    openBrowser(url);
+  }
 
   const { code, state } = await pollPromise;
 

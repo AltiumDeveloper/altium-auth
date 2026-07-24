@@ -18,10 +18,10 @@ public interface IAltiumAuthClient
     /// <summary>Refresh an access token (OAuth2 <c>refresh_token</c> grant; retains the original scope).</summary>
     Task<TokenSet> RefreshTokenAsync(string refreshToken, CancellationToken ct = default);
 
-    /// <summary>Public-client PKCE sign-in via the ActionWait long-poll (invokes <c>OpenBrowser</c>).</summary>
+    /// <summary>Public-client PKCE sign-in via ActionWait (uses <c>OpenBrowser</c> to launch the authorize URL).</summary>
     Task<TokenSet> SignInAsync(CancellationToken ct = default);
 
-    /// <summary>Public-client PKCE sign-in via the ActionWait long-poll (invokes <c>OpenBrowser</c>).</summary>
+    /// <summary>Public-client PKCE sign-in via ActionWait (uses <c>OpenBrowser</c> to launch the authorize URL).</summary>
     Task<TokenSet> SignInAsync(WorkspaceSelection selectWorkspace, CancellationToken ct = default);
 
     /// <summary>Revoke a refresh token (RFC 7009); idempotent.</summary>

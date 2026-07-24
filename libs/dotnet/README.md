@@ -141,7 +141,7 @@ Constructor: `new AltiumAuthClient(HttpClient http, AltiumAuthOptions options)` 
 
 | Member | Description |
 | --- | --- |
-| `SignInAsync(selectWorkspace, ct)` | Public-client PKCE sign-in via ActionWait (invokes `OpenBrowser`). `selectWorkspace` is a `WorkspaceSelection` (`None` default, `Strict`, `Optional`). Returns `TokenSet`. |
+| `SignInAsync(selectWorkspace, ct)` | Public-client PKCE sign-in via ActionWait. Uses `OpenBrowser` to launch the authorization URL. `selectWorkspace` is a `WorkspaceSelection` (`None` default, `Strict`, `Optional`). Returns `TokenSet`. |
 | `CreateAuthorizationUrl(redirectUri?, state?, codeVerifier?, selectWorkspace)` | Build the authorize URL for the redirect flow. Returns `AuthorizationRequest`. Synchronous. `selectWorkspace` is a `WorkspaceSelection` (`None` default, `Strict`, `Optional`). |
 | `ExchangeCodeAsync(code, codeVerifier?, redirectUri?, ct)` | Exchange an authorization code for tokens. |
 | `SignIntoWorkspaceAsync(baseAccessToken, workspaceAuthId, ct)` | Workspace-scoped token via RFC 8693 token-exchange. |

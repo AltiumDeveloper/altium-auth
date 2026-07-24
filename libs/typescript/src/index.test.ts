@@ -186,6 +186,39 @@ describe("signIn", () => {
     await expect(signIn(validConfig)).rejects.toThrow("missing data.code");
   });
 
+  it("uses a custom browser opener while the library owns ActionWait polling", async () => {
+    const openBrowser = vi.fn().mockResolvedValue(undefined);
+    vi.stubGlobal("crypto", { ...crypto, randomUUID: () => "hook-state" });
+    vi.stubGlobal("fetch", vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes("await")) {
+        return {
+          ok: true,
+          status: 200,
+          headers: new Map(),
+          text: () => Promise.resolve(JSON.stringify({ data: { code: "hook-code", state: "hook-state" } })),
+        };
+      }
+      return {
+        ok: true,
+        status: 200,
+        headers: new Map(),
+        text: () => Promise.resolve(JSON.stringify(mockTokenSet)),
+      };
+    }));
+
+    const result = await signIn(validConfig, { openBrowser, timeoutMs: 12_345 });
+
+    expect(result.access_token).toBe("mock-access-token");
+    expect(openBrowser).toHaveBeenCalledOnce();
+    expect(openBrowser.mock.calls[0][0]).toContain(validConfig.authEndpoint);
+    const calls = (fetch as ReturnType<typeof vi.fn>).mock.calls;
+    expect(calls[0][0]).toBe(validConfig.actionWaitEndpoint);
+    expect(calls[0][1].body).toBe(JSON.stringify({ token: "hook-state" }));
+    const [tokenEndpoint, tokenRequest] = calls[1];
+    expect(tokenEndpoint).toBe(validConfig.tokenEndpoint);
+    expect(tokenRequest.body as string).toContain("code=hook-code");
+  });
+
   it("stops polling when ActionWait never delivers a code", async () => {
     // Server keeps asking the client to reconnect (408) and never returns a code.
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({

@@ -7,6 +7,17 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] — 2026-07-24
+
+### Added
+
+- `signIn` now accepts `openBrowser(url)` so desktop and extension hosts can
+  launch the authorization URL through their own browser API while the library
+  continues to own PKCE generation, ActionWait polling, state validation, and
+  token exchange.
+
+## [0.1.1] — 2026-07-24
+
 ### Added
 
 - **Login-into-workspace mode** (`selectWorkspace` on `/connect/authorize`). Pass
@@ -49,4 +60,6 @@ as the shared spec and sibling libraries evolve.
 - Zero runtime dependencies. Runs on Node ≥20, Bun, and Deno.
 - Conforms to the shared, language-neutral vectors in `spec/conformance/vectors.json`.
 
+[0.1.2]: https://github.com/AltiumDeveloper/a365-auth/releases/tag/ts-v0.1.2
+[0.1.1]: https://github.com/AltiumDeveloper/a365-auth/releases/tag/ts-v0.1.1
 [0.1.0]: https://github.com/AltiumDeveloper/a365-auth/releases/tag/ts-v0.1.0
