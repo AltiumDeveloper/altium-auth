@@ -8,8 +8,8 @@
 
 Altium 365 OAuth2 / OpenID Connect authentication library. Supports both client types and both clouds:
 
-- **Public clients** (desktop, on-prem, native) — browser sign-in with PKCE over Altium's **ActionWait** long-poll: [`signIn`](#signinconfig-options).
-- **Confidential clients** (web/server backends with a secret) — the standard **authorization-code redirect** flow via composable steps: [`createAuthorizationUrl`](#createauthorizationurlconfig-options) + [`exchangeCode`](#exchangecodeconfig-params).
+- **Public clients** (desktop, on-prem, native) — browser sign-in with PKCE over Altium's **ActionWait** long-poll: <a href="#signinconfig-options"><code>signIn</code></a>.
+- **Confidential clients** (web/server backends with a secret) — the standard **authorization-code redirect** flow via composable steps: <a href="#createauthorizationurlconfig-options"><code>createAuthorizationUrl</code></a> + <a href="#exchangecodeconfig-params"><code>exchangeCode</code></a>.
 - **Workspace tokens**, **token refresh**, and first-class **Gov Cloud** support.
 
 **Zero runtime dependencies.** Runs on Node ≥20, Bun, and Deno (and bundled apps that polyfill Node's `crypto`).

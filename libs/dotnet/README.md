@@ -15,7 +15,7 @@ client types and both clouds:
 
 **Zero dependencies**, `net8.0`. Validated against the same language-neutral
 [conformance vectors](https://github.com/AltiumDeveloper/a365-auth/blob/main/spec/conformance/vectors.json) as the TypeScript library —
-see [How it's built](#how-its-built).
+see <a href="#how-its-built">How it's built</a>.
 
 ## Documentation
 
