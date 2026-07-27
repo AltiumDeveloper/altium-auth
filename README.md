@@ -30,10 +30,10 @@ needs to build/test/publish lives under that library's `libs/<lang>/` directory.
 
 ## Libraries
 
-| Library | Package | Status |
-| --- | --- | --- |
-| [`libs/typescript`](libs/typescript) | `@altium-developer/a365-auth` | 🧪 preview (v0.1.2) |
-| [`libs/dotnet`](libs/dotnet) | `Altium.Auth` | 🧪 preview (v0.1.0) |
+| Library | Package | Version | Status |
+| --- | --- | --- | --- |
+| [`libs/typescript`](libs/typescript) | [`@altium-developer/a365-auth`](https://www.npmjs.com/package/@altium-developer/a365-auth) | [![npm](https://img.shields.io/npm/v/@altium-developer/a365-auth?label=npm)](https://www.npmjs.com/package/@altium-developer/a365-auth) | 🧪 preview |
+| [`libs/dotnet`](libs/dotnet) | `Altium.Auth` | _not yet published_ | 🧪 preview |
 
 ## Documentation
 

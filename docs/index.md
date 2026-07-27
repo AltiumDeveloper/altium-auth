@@ -30,7 +30,7 @@ Full API reference and examples for each library are on this site (the **Librari
 | `@altium-developer/a365-auth` | [TypeScript](libraries/typescript.md) |
 | `Altium.Auth` | [.NET](libraries/dotnet.md) |
 
-Both are `0.1.0` **preview** — the API may change as the spec and libraries evolve.
+Both are in **preview** — the API may change as the spec and libraries evolve.
 
 ## How it stays in sync
 

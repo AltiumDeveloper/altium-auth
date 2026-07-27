@@ -1,5 +1,8 @@
 # @altium-developer/a365-auth
 
+[![npm version](https://img.shields.io/npm/v/@altium-developer/a365-auth.svg)](https://www.npmjs.com/package/@altium-developer/a365-auth)
+[![npm downloads](https://img.shields.io/npm/dm/@altium-developer/a365-auth.svg)](https://www.npmjs.com/package/@altium-developer/a365-auth)
+[![node](https://img.shields.io/node/v/@altium-developer/a365-auth.svg)](https://www.npmjs.com/package/@altium-developer/a365-auth)
 [![CI](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/typescript-ci.yml/badge.svg)](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/typescript-ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AltiumDeveloper/a365-auth/blob/main/libs/typescript/LICENSE)
 
@@ -21,6 +24,12 @@ The library implements the flow described in these guides (protocol-level, indep
 - [Desktop / on-prem apps](../../docs/guides/desktop-and-onprem-apps.md) — the ActionWait pattern (public clients)
 - [Gov Cloud](../../docs/guides/gov-cloud.md) — Commercial vs Gov and the `secure=1` two-token model
 - [Access token claims](../../docs/guides/token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
+
+## Installation
+
+```bash
+npm install @altium-developer/a365-auth
+```
 
 ## Quick Start
 
