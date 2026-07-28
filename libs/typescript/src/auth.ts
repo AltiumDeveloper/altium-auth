@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "crypto";
 import { OAuthConfig, TokenSet } from "./types";
-import { postJson, postForm } from "./fetchPolyfill";
+import { postJson, postForm, isTlsError } from "./fetchPolyfill";
 
 // ── PKCE helpers ────────────────────────────────────────────────
 
@@ -151,9 +151,12 @@ async function pollActionWait(
       let res;
       try {
         res = await postJson(endpoint, { token: connectionToken }, controller.signal);
-      } catch {
+      } catch (err) {
         if (controller.signal.aborted) {
           throw abortError();
+        }
+        if (isTlsError(err)) {
+          throw new Error(`ActionWait TLS error: ${err.message}`);
         }
         continue; // transient network error — reconnect
       }

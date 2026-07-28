@@ -7,6 +7,10 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **TLS error handling in ActionWait polling** — a TLS/certificate error (e.g. a
+  self-signed cert on an on-prem AES server) now fails the sign-in immediately
+  instead of being retried forever as a transient network error.
+
 ## [0.1.2] — 2026-07-24
 
 ### Added
