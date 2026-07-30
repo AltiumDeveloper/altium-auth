@@ -118,13 +118,15 @@ function parseArgs(argv: string[]): CliArgs {
       case "--code-verifier": codeVerifier = argv[++i]; break;
       case "--redirect-uri": redirectUri = argv[++i]; break;
       default:
-        if (a.startsWith("--")) fail(`Unknown option: ${a}`);
-        else if (clientId) fail(`Unexpected argument: ${a}`);
-        else clientId = a;
+        if (a.startsWith("--")) { fail(`Unknown option: ${a}`); }
+        else if (clientId) { fail(`Unexpected argument: ${a}`); }
+        else { clientId = a; }
     }
   }
 
-  if (!clientId) fail("Missing <clientId>.");
+  if (!clientId) {
+    fail("Missing <clientId>.");
+  }
   // Refresh and revoke both need a refresh token, which requires offline_access.
   if ((refresh || revoke) && !scopes.split(/\s+/).includes("offline_access")) {
     scopes = `${scopes} offline_access`.trim();
@@ -150,7 +152,7 @@ function fail(message: string): never {
 }
 
 function endpointsFor(env: Env) {
-  if (env === "prod") return COMMERCIAL_CLOUD_ENDPOINTS;
+  if (env === "prod") { return COMMERCIAL_CLOUD_ENDPOINTS; }
   if (env === "dev") {
     return {
       authEndpoint: "https://auth.dev1.altium.com/connect/authorize",
@@ -159,7 +161,7 @@ function endpointsFor(env: Env) {
       redirectUri: "https://auth.dev1.altium.com/api/AuthComplete",
     };
   }
-  if (env === "gov") return GOV_CLOUD_ENDPOINTS;
+  if (env === "gov") { return GOV_CLOUD_ENDPOINTS; }
   // dev-gov: only authorize/token move to the dev-gov host. ActionWait and the
   // AuthComplete callback have no gov DNS — they use the DEV *commercial* hosts.
   const base = "https://auth.dev-365-gov.altium.com";
@@ -174,9 +176,9 @@ function endpointsFor(env: Env) {
 /** Decode a JWT payload for human-readable output (no signature verification). */
 function decodeJwt(jwt: string): unknown {
   const parts = jwt.split(".");
-  if (parts.length !== 3) return null;
+  if (parts.length !== 3) { return null; }
   let b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-  while (b64.length % 4 !== 0) b64 += "=";
+  while (b64.length % 4 !== 0) { b64 += "="; }
   try {
     return JSON.parse(Buffer.from(b64, "base64").toString("utf8"));
   } catch {
@@ -191,7 +193,7 @@ function printTokens(label: string, tokens: { access_token: string; expires_at?:
   if (at) {
     // The access token is a JWT — surface the claims that vary Commercial vs Gov.
     console.log(`  ↳ iss        : ${at.iss}`);
-    if ("secure" in at) console.log(`  ↳ secure     : ${at.secure}`);
+    if ("secure" in at) { console.log(`  ↳ secure     : ${at.secure}`); }
   }
   console.log(`  token_type   : ${tokens.token_type}`);
   console.log(`  expires_at   : ${tokens.expires_at}`);
@@ -201,7 +203,7 @@ function printTokens(label: string, tokens: { access_token: string; expires_at?:
   }
   if (tokens.id_token) {
     const claims = decodeJwt(tokens.id_token);
-    if (claims) console.log(`  id_token     : ${JSON.stringify(claims, null, 2).slice(0, 300)}...`);
+    if (claims) { console.log(`  id_token     : ${JSON.stringify(claims, null, 2).slice(0, 300)}...`); }
   }
 }
 

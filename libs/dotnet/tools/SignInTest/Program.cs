@@ -25,7 +25,8 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using Altium.Auth;
 
-string? clientId = null, env = "prod", workspaceEnv = null, scopes = "openid profile";
+string? clientId = null, workspaceEnv = null;
+string env = "prod", scopes = "openid profile";
 string? workspace = null, code = null, codeVerifier = null, redirectUri = null;
 bool refresh = false, revoke = false, userinfo = false, authorizeUrl = false;
 bool? secure = null;
@@ -57,7 +58,7 @@ for (var i = 0; i < args.Length; i++)
     }
 }
 if (clientId is null) Fail("missing <clientId>");
-if ((refresh || revoke) && !scopes!.Split(' ').Contains("offline_access")) scopes += " offline_access";
+if ((refresh || revoke) && !scopes.Split(' ').Contains("offline_access")) scopes += " offline_access";
 
 var clientSecret = Environment.GetEnvironmentVariable("A365_CLIENT_SECRET");
 var http = new HttpClient();
@@ -72,8 +73,8 @@ AltiumAuthOptions MkOptions(string e) => new()
     OpenBrowser = OpenBrowser,
 };
 
-var signInOptions = MkOptions(env!);
-var exchangeOptions = MkOptions(workspaceEnv ?? env!);
+var signInOptions = MkOptions(env);
+var exchangeOptions = MkOptions(workspaceEnv ?? env);
 
 // Authorize-URL mode: print and exit (for confidential/custom-callback clients).
 if (authorizeUrl)
@@ -95,7 +96,7 @@ if (selectWorkspace != WorkspaceSelection.None) Console.WriteLine($"selectWorksp
 Console.WriteLine($"Sign-in ({env}) : {(code is null ? signInOptions.Endpoints.AuthorizeEndpoint : "exchange authorization code")}");
 Console.WriteLine($"Token host    : {signInOptions.Endpoints.TokenEndpoint}");
 if (workspace is not null) Console.WriteLine($"Exchange ({workspaceEnv ?? env}): {exchangeOptions.Endpoints.TokenEndpoint}");
-if (workspace is not null && Tier(env!) != Tier(workspaceEnv ?? env!))
+if (workspace is not null && Tier(env) != Tier(workspaceEnv ?? env))
     Console.WriteLine($"\n⚠️  sign-in env '{env}' and workspace-env '{workspaceEnv}' are different environment tiers.\n" +
         "    The token exchange will likely fail (invalid_token): the Commercial→Gov bridge works\n" +
         "    within a tier (prod↔gov, dev↔dev-gov), because the token's issuer must be trusted by the endpoint.");

@@ -26,7 +26,7 @@
     "build": "tsc -p tsconfig.build.json",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src",
+    "lint": "eslint src test scripts",
     "test": "vitest run",
     "test:conformance": "vitest run --config test/conformance/vitest.config.ts",
     "test:e2e": "tsx scripts/test-signin.ts",

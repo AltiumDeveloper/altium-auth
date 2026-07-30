@@ -73,25 +73,21 @@ export const GOV_CLOUD_ENDPOINTS = {
 } as const;
 
 /** A config with every endpoint filled in from defaults (client auth/flags preserved). */
-type ResolvedConfig = OAuthConfig & {
-  authEndpoint: string;
-  tokenEndpoint: string;
-  actionWaitEndpoint: string;
-  redirectUri: string;
-};
+type EndpointConfig = Required<Pick<OAuthConfig, "authEndpoint" | "tokenEndpoint" | "actionWaitEndpoint" | "redirectUri">>;
+type ResolvedConfig = OAuthConfig & EndpointConfig;
 
 /**
  * Fill omitted endpoints from `COMMERCIAL_CLOUD_ENDPOINTS` and validate.
  * Throws if `clientId`/`scopes` are missing or any endpoint is not a valid URL.
  */
-function resolveConfig(config: OAuthConfig): ResolvedConfig {
-  const resolved: ResolvedConfig = {
+function resolveConfig(config: OAuthConfig) {
+  const resolved = {
     ...config,
     authEndpoint: config.authEndpoint || COMMERCIAL_CLOUD_ENDPOINTS.authEndpoint,
     tokenEndpoint: config.tokenEndpoint || COMMERCIAL_CLOUD_ENDPOINTS.tokenEndpoint,
     actionWaitEndpoint: config.actionWaitEndpoint || COMMERCIAL_CLOUD_ENDPOINTS.actionWaitEndpoint,
     redirectUri: config.redirectUri || COMMERCIAL_CLOUD_ENDPOINTS.redirectUri,
-  };
+  } satisfies ResolvedConfig;
 
   for (const key of ["clientId", "scopes"] as const) {
     if (!resolved[key] || resolved[key].trim() === "") {

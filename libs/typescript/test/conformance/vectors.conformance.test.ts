@@ -46,10 +46,13 @@ function bodyText(r: Any): string {
 }
 
 function matchValue(actual: string | null, matcher: Any): void {
-  if (matcher === "<any>") expect(actual).not.toBeNull();
-  else if (typeof matcher === "string" && matcher.startsWith("contains:")) {
+  if (matcher === "<any>") {
+    expect(actual).not.toBeNull();
+  } else if (typeof matcher === "string" && matcher.startsWith("contains:")) {
     expect(actual ?? "").toContain(matcher.slice("contains:".length));
-  } else expect(actual).toBe(matcher);
+  } else {
+    expect(actual).toBe(matcher);
+  }
 }
 
 // ── authorizeUrl ────────────────────────────────────────────────
@@ -108,8 +111,8 @@ describe("conformance: tokenRequest", () => {
       expect(calls.length).toBeGreaterThan(0);
       const { url, opts } = calls[0];
       const er = v.expectRequest ?? {};
-      if (er.endpoint) expect(url).toBe(er.endpoint);
-      if (er.method) expect(opts.method).toBe(er.method);
+      if (er.endpoint) { expect(url).toBe(er.endpoint); }
+      if (er.method) { expect(opts.method).toBe(er.method); }
 
       const auth = opts.headers?.Authorization ?? opts.headers?.authorization;
       if (er.authorization === "none") {
@@ -179,8 +182,8 @@ describe("conformance: revocation", () => {
       expect(calls.length).toBeGreaterThan(0);
       const { url, opts } = calls[0];
       const er = v.expectRequest;
-      if (er.endpoint) expect(url).toBe(er.endpoint);
-      if (er.method) expect(opts.method).toBe(er.method);
+      if (er.endpoint) { expect(url).toBe(er.endpoint); }
+      if (er.method) { expect(opts.method).toBe(er.method); }
 
       const auth = opts.headers?.Authorization ?? opts.headers?.authorization;
       if (er.authorization === "none") {
