@@ -76,13 +76,18 @@ An application commonly holds several tokens at once — one global token plus a
 
 ## Login-into-workspace mode
 
-When you know at sign-in time that the user should land on a workspace, you can prompt the user to select one **as part of the authorization flow** using the optional `selectWorkspace` parameter on `/connect/authorize`. This eliminates the separate discover-and-exchange steps (steps 2–3 of the recommended flow).
+When you know at sign-in time that the user should land on a workspace, you don't need the separate discover-and-exchange steps (steps 2–3) — you can get a workspace-scoped token directly from the initial sign-in:
+
+- **You already know the workspace ID.** Include `a365:workspace:{workspaceId}` directly in the `scope` parameter of the initial `/connect/authorize` request, alongside `openid profile` and, if you need a refresh token, `offline_access`. This returns the workspace-scoped access token (and refresh token, if requested) in one round trip.
+- **You want the user to choose during sign-in.** Use the optional `selectWorkspace` parameter on `/connect/authorize` instead, so the user picks a workspace **as part of the authorization flow** without your application needing to enumerate them first.
 
 | `selectWorkspace` value | Behavior |
 | --- | --- |
 | omitted or `none` (default) | Workspace selection is skipped; the flow issues a global access token as usual. |
 | `strict` | Workspace selection is **mandatory** — the user must choose a workspace before authentication can complete. The returned token is already workspace-scoped. |
 | `optional` | Workspace selection is offered but may be skipped by the user. |
+
+Run the *whole* flow on the host that matches the workspace: `auth.altium.com` for a Commercial workspace, or `auth.365-gov.altium.com` for a Gov Cloud workspace (send `secure=1` on the `/connect/token` requests only).
 
 When a workspace is selected, the authorization code exchange returns a workspace-scoped access token directly. See [Step 1](./web-and-server-apps.md#step-1-request-authorization-with-pkce) in the web guide, or the `selectWorkspace` option in the library API references.
 
