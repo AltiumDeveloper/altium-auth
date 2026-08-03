@@ -71,7 +71,7 @@ nav:
   - Guides:
       - Overview: guides/overview.md
       - Web & server apps: guides/web-and-server-apps.md
-      - Desktop & on-prem apps: guides/desktop-and-onprem-apps.md
+      - Desktop apps: guides/desktop-apps.md
       - Gov Cloud: guides/gov-cloud.md
       - Access token claims: guides/token-claims.md
       - Register your application: guides/register-your-application.md

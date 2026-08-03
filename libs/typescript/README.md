@@ -21,7 +21,7 @@ The library implements the flow described in these guides (protocol-level, indep
 - [Authentication overview](../../docs/guides/overview.md) — endpoints, key terms, and the recommended flow
 - [Register your application](../../docs/guides/register-your-application.md) — client types, redirect URLs, credentials
 - [Web / server apps](../../docs/guides/web-and-server-apps.md) — authorization-code redirect flow (confidential clients)
-- [Desktop / on-prem apps](../../docs/guides/desktop-and-onprem-apps.md) — the ActionWait pattern (public clients)
+- [Desktop apps](../../docs/guides/desktop-apps.md) — the ActionWait pattern (public clients)
 - [Gov Cloud](../../docs/guides/gov-cloud.md) — Commercial vs Gov and the `secure=1` two-token model
 - [Access token claims](../../docs/guides/token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
 
@@ -35,9 +35,9 @@ npm install @altium-developer/a365-auth
 
 Only `clientId` and `scopes` are required — the endpoints default to the Altium 365 Commercial Cloud. Pick the flow that matches your app.
 
-### Public apps (desktop / on-prem — ActionWait sign-in)
+### Public apps (desktop — ActionWait sign-in)
 
-For desktop, on-prem, and native clients that **can't host a public redirect**. `signIn` opens the browser, waits for the callback over Altium's ActionWait long-poll, and returns tokens. See [Desktop / on-prem apps](../../docs/guides/desktop-and-onprem-apps.md).
+For desktop clients that **can't host a public redirect**. `signIn` opens the browser, waits for the callback over Altium's ActionWait long-poll, and returns tokens. See [Desktop apps](../../docs/guides/desktop-apps.md).
 
 ```typescript
 import { signIn, signIntoWorkspace } from "@altium-developer/a365-auth";

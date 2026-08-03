@@ -448,7 +448,7 @@ export interface SignInOptions {
 
 /**
  * Perform an OAuth2 PKCE sign-in using Altium's ActionWait long-poll mechanism —
- * the flow for public clients (desktop/on-prem) that cannot host a redirect.
+ * the flow for public clients (desktop) that cannot host a redirect.
  *
  * The flow:
  * 1. Generate a PKCE verifier/challenge and a connection token (used as `state`)

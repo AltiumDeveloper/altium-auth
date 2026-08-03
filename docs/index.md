@@ -13,7 +13,7 @@ every library's CI proves it still conforms.
 
 Pick the flow that matches your application:
 
-- **Desktop / on-prem / native** (can't host a redirect) → [Desktop & on-prem apps](guides/desktop-and-onprem-apps.md)
+- **Desktop** (can't host a redirect) → [Desktop apps](guides/desktop-apps.md)
   — browser sign-in with PKCE over ActionWait.
 - **Web / server backends** (host a redirect) → [Web & server apps](guides/web-and-server-apps.md)
   — the standard authorization-code redirect flow.

@@ -1,8 +1,8 @@
-# Authenticate a desktop or on-prem application
+# Authenticate a desktop application
 
-Desktop and on-premises applications usually cannot host a public HTTPS redirect endpoint, yet OAuth requires the authorization response to arrive at a registered callback. The **ActionWait** pattern solves this: the user still signs in through the browser, the browser is redirected to an **Altium-hosted** callback page, and your application picks up the result over an HTTP long-polling channel instead of hosting a redirect itself.
+Desktop applications usually cannot host a public HTTPS redirect endpoint, yet OAuth requires the authorization response to arrive at a registered callback. The **ActionWait** pattern solves this: the user still signs in through the browser, the browser is redirected to an **Altium-hosted** callback page, and your application picks up the result over an HTTP long-polling channel instead of hosting a redirect itself.
 
-Desktop and on-prem apps are typically **[public clients](https://oauth.net/2/client-types/)** — they cannot keep a client secret, so they authenticate with **[PKCE](https://oauth.net/2/pkce/)** and never send a `client_secret`. Every token request in this guide carries `client_id` (and, for the code exchange, the PKCE `code_verifier`) and **no** `Authorization: Basic` header.
+Desktop applications are typically **[public clients](https://oauth.net/2/client-types/)** — they cannot keep a client secret, so they authenticate with **[PKCE](https://oauth.net/2/pkce/)** and never send a `client_secret`. Every token request in this guide carries `client_id` (and, for the code exchange, the PKCE `code_verifier`) and **no** `Authorization: Basic` header.
 
 See [Key terms](./overview.md#key-terms) for token vocabulary and [Register your application](./register-your-application.md) for details on registering a new application.
 
@@ -10,7 +10,7 @@ See [Key terms](./overview.md#key-terms) for token vocabulary and [Register your
 
 ```mermaid
 sequenceDiagram
-    participant App as Desktop/On-prem app
+    participant App as Desktop app
     participant Browser
     participant Identity as Altium Identity
     participant AW as ActionWait service
@@ -79,9 +79,11 @@ GET https://auth.altium.com/connect/authorize
 
 When the poll returns `200 { data: { code, state } }`, verify `data.state` equals your wait token, then continue to Step 2 with `data.code`.
 
-### Login-into-workspace mode (`selectWorkspace`)
+### Getting a workspace-scoped token directly
 
-Add the optional `selectWorkspace` parameter to the authorize request to have the code exchange return a workspace-scoped token directly — skipping the discover-and-exchange steps below. See [Login-into-workspace mode](./overview.md#login-into-workspace-mode) for the values (`none` / `strict` / `optional`) and behavior.
+If you already know the workspace the user should land on, request it up front: include `a365:workspace:<workspaceId>` in the `scope` parameter above, and the code exchange in Step 2 returns the workspace token (and refresh token, with `offline_access`) directly, skipping Steps 3–4 below.
+
+If you don't know the workspace ahead of time but still want the user to land on one during sign-in, add the optional `selectWorkspace` parameter to the authorize request instead, to have the code exchange return a workspace-scoped token directly. See [Login-into-workspace mode](./overview.md#login-into-workspace-mode) for the values (`none` / `strict` / `optional`) and behavior.
 
 ```
 GET https://auth.altium.com/connect/authorize
@@ -235,9 +237,7 @@ The `access_token` is your **workspace access token**. Use it to call the Altium
 Authorization: Bearer <workspace access token>
 ```
 
-> **Shortcut when you already know the workspace.** Request the workspace scope directly in Step 1 — set `scope=openid profile offline_access a365:workspace:<workspaceId>` in the authorize request — and the code exchange in Step 2 returns the workspace token (and refresh token) directly, skipping Steps 3–4.
->
-> **Alternatively**, use `selectWorkspace=strict` (or `optional`) in Step 1 to have the server present workspace selection during sign-in — the user picks from their own workspaces without your app needing to enumerate them first. See [Login-into-workspace mode](./overview.md#login-into-workspace-mode).
+If you already know the workspace at sign-in time, see [Getting a workspace-scoped token directly](#getting-a-workspace-scoped-token-directly) in Step 1 to skip Steps 3–4 above.
 
 ## Refresh the workspace access token
 

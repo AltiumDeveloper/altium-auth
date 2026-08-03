@@ -1,6 +1,6 @@
 # Gov Cloud considerations
 
-Altium Gov Cloud is an isolated environment for ITAR/regulated workspaces. The authentication flows are the same as the [web](./web-and-server-apps.md) and [desktop/on-prem](./desktop-and-onprem-apps.md) guides, with the differences outlined below. Contact Altium for Gov Cloud onboarding.
+Altium Gov Cloud is an isolated environment for ITAR/regulated workspaces. The authentication flows are the same as the [web](./web-and-server-apps.md) and [desktop](./desktop-apps.md) guides, with the differences outlined below. Contact Altium for Gov Cloud onboarding.
 
 ## Separate issuer
 
@@ -43,4 +43,4 @@ Hold the **Commercial global token** from sign-in for global services, and use e
 ## Related
 
 - [Authentication overview](./overview.md) · [Access token claims](./token-claims.md) (the `secure` claim)
-- [Web and server application flow](./web-and-server-apps.md) · [Desktop and on-prem flow](./desktop-and-onprem-apps.md)
+- [Web and server application flow](./web-and-server-apps.md) · [Desktop application flow](./desktop-apps.md)

@@ -40,7 +40,7 @@ The **ActionWait** service is a single Commercial-Cloud deployment — it has **
 | Type | Credential | Redirect | Auth at token endpoint |
 | --- | --- | --- | --- |
 | **Confidential** (web/server) | `client_secret` | App-hosted callback | HTTP Basic (`client_secret_basic`) |
-| **Public** (desktop/on-prem/native) | none (PKCE) | ActionWait (`§4`) | `client_id` in the request body |
+| **Public** (desktop) | none (PKCE) | ActionWait (`§4`) | `client_id` in the request body |
 
 - Public clients **MUST NOT** hold a secret and **MUST** use PKCE (§3).
 - Confidential clients **MUST** authenticate at the token endpoint with HTTP Basic and **SHOULD** also use PKCE.
@@ -208,6 +208,6 @@ Errors follow the OAuth 2.0 error response shape (`error`, optional `error_descr
 ---
 
 ## References
-- Conceptual guides: [docs/](https://github.com/AltiumDeveloper/a365-auth/tree/main/docs) (overview, web/server, desktop/on-prem, gov-cloud, register, token-claims)
+- Conceptual guides: [docs/](https://github.com/AltiumDeveloper/a365-auth/tree/main/docs) (overview, web/server, desktop, gov-cloud, register, token-claims)
 - Reference implementations: `libs/typescript/` (TypeScript) and `libs/dotnet/` (.NET)
 - Conformance vectors: [spec/conformance/](https://github.com/AltiumDeveloper/a365-auth/tree/main/spec/conformance)

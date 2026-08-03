@@ -74,7 +74,7 @@ GET https://your-app.example.com/oauth/callback?error=consent_required&state=<op
 
 ## Step 2 — Exchange the code for a global access token
 
-This guide authenticates as a **confidential client** using `Authorization: Basic <base64(client_id:client_secret)>`. **Public clients** (desktop/native/SPA) have no secret — they omit the Basic header and authenticate with `client_id` plus the PKCE `code_verifier` instead. See [Authenticate a desktop or on-prem application](./desktop-and-onprem-apps.md).
+This guide authenticates as a **confidential client** using `Authorization: Basic <base64(client_id:client_secret)>`. **Public clients** (desktop/native/SPA) have no secret — they omit the Basic header and authenticate with `client_id` plus the PKCE `code_verifier` instead. See [Authenticate a desktop application](./desktop-apps.md).
 
 ```
 POST https://auth.altium.com/connect/token

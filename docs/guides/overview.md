@@ -36,7 +36,7 @@ Prepend the base URL for your environment — for example, `https://auth.altium.
 
 ## The authentication journey
 
-The recommended flow is the same for web and desktop/on-prem apps — only *how* you obtain the authorization code differs (a redirect you host, or the [ActionWait](./desktop-and-onprem-apps.md) pattern). In both cases:
+The recommended flow is the same for web and desktop apps — only *how* you obtain the authorization code differs (a redirect you host, or the [ActionWait](./desktop-apps.md) pattern). In both cases:
 
 1. **Sign in on `https://auth.altium.com`** to get a **global access token**. Use it for accessing global resources such as listing the user's workspaces.
 2. **Discover the user's workspaces** with the global token. See [Discover the user's workspaces](./web-and-server-apps.md#step-3-discover-the-users-workspaces).
@@ -93,7 +93,7 @@ See the [OAuth Scopes](https://www.altium.com/documentation/altium-developer-cen
 ## Which flow do I need?
 
 - **Web or server application** that can host an HTTPS redirect endpoint: [Authenticate a web or server application](./web-and-server-apps.md).
-- **Desktop or on-prem application** that cannot host a public redirect: [Authenticate a desktop or on-prem application](./desktop-and-onprem-apps.md).
+- **Desktop application** that cannot host a public redirect: [Authenticate a desktop application](./desktop-apps.md).
 
 Both guides cover Gov Cloud workspaces via the exchange branch above. See [Gov Cloud considerations](./gov-cloud.md) for additional details.
 

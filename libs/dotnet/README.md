@@ -6,7 +6,7 @@
 Altium 365 OAuth2 / OpenID Connect authentication client for .NET. Supports both
 client types and both clouds:
 
-- **Public clients** (desktop, native) — browser sign-in with PKCE over Altium's
+- **Public clients** (desktop) — browser sign-in with PKCE over Altium's
   **ActionWait** long-poll: `SignInAsync`.
 - **Confidential clients** (web/server backends with a secret) — the standard
   **authorization-code redirect** flow via composable steps: `CreateAuthorizationUrl`
@@ -25,7 +25,7 @@ this package):
 - [Authentication overview](../../docs/guides/overview.md) — endpoints, key terms, recommended flow
 - [Register your application](../../docs/guides/register-your-application.md) — client types, redirect URLs, credentials
 - [Web / server apps](../../docs/guides/web-and-server-apps.md) — authorization-code redirect flow (confidential)
-- [Desktop / on-prem apps](../../docs/guides/desktop-and-onprem-apps.md) — the ActionWait pattern (public)
+- [Desktop apps](../../docs/guides/desktop-apps.md) — the ActionWait pattern (public)
 - [Gov Cloud](../../docs/guides/gov-cloud.md) — Commercial vs Gov and the `secure=1` two-token model
 - [Access token claims](../../docs/guides/token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
 
@@ -34,7 +34,7 @@ this package):
 Only `ClientId` and `Scopes` are required — endpoints default to the Altium 365
 Commercial Cloud. You supply the `HttpClient` (reuse one / use `IHttpClientFactory`).
 
-### Public apps (desktop / native — ActionWait sign-in)
+### Public apps (desktop — ActionWait sign-in)
 
 For apps that **can't host a public redirect**. `SignInAsync` invokes your
 `OpenBrowser` callback, waits for the callback over ActionWait, and returns tokens.
