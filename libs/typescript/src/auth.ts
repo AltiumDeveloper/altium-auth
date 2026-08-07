@@ -1,4 +1,5 @@
-import { createHash, randomBytes } from "crypto";
+import { createHash, randomBytes } from "node:crypto";
+import { spawn } from "node:child_process";
 import { OAuthConfig, TokenSet } from "./types";
 import { postJson, postForm, isTlsError } from "./fetchPolyfill";
 
@@ -199,19 +200,32 @@ async function pollActionWait(
 // ── Browser helpers ─────────────────────────────────────────────
 
 /**
- * Try to open the browser with the given URL. Uses globalThis.open if available,
- * otherwise logs the URL for manual copy-and-paste.
+ * Try to open the browser with the given URL: `globalThis.open` in a browser
+ * environment, or the OS-native opener command in Node (no dependency —
+ * `open` on macOS, `start` on Windows, `xdg-open` elsewhere). Always logs the
+ * URL too, for manual copy-and-paste if the launch fails or isn't available.
  */
 function openBrowser(url: string): void {
   const opener = (globalThis as Record<string, unknown>).open as ((url: string) => void) | undefined;
-  if (typeof opener === "function") {
-    try {
+  try {
+    if (typeof opener === "function") {
       opener(url);
-    } catch {
-      // Fallback to console log below.
+    } else {
+      const platform = process.platform;
+      const [command, args] = platform === "darwin"
+        ? ["open", [url]]
+        // Quote the URL ourselves and pass the command line verbatim: authorize URLs
+        // contain `&`, which cmd.exe treats as a command separator, and Node only
+        // auto-quotes arguments containing whitespace or a double quote.
+        : platform === "win32"
+          ? ["cmd", ["/c", "start", '""', `"${url}"`]]
+          : ["xdg-open", [url]];
+      spawn(command, args, { stdio: "ignore", detached: true, windowsVerbatimArguments: platform === "win32" }).unref();
     }
+  } catch {
+    // Fallback to console log below.
   }
-  // Always log for debugging / environments without window.open.
+  // Always log for debugging / environments without a way to launch a browser.
   console.log(`Open the following URL in your browser to sign in:\n${url}`);
 }
 

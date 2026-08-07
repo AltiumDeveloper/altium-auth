@@ -7,6 +7,8 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Added a fallback implementation of `openBrowser` in the typescript library.
+
 - **TLS error handling in ActionWait polling** — a TLS/certificate error (e.g. a
   self-signed cert on an on-prem AES server) now fails the sign-in immediately
   instead of being retried forever as a transient network error.
