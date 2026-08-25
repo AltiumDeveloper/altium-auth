@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { OAuthConfig, TokenSet } from "./types";
+import type { OAuthConfig, TokenSet } from "./types.js";
 import {
   signIn,
   signIntoWorkspace,
@@ -10,7 +10,7 @@ import {
   COMMERCIAL_CLOUD_ENDPOINTS,
   GOV_CLOUD_ENDPOINTS,
   createAesEndpoints,
-} from "./auth";
+} from "./auth.js";
 
 // ── Test fixtures ───────────────────────────────────────────────
 

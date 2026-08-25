@@ -18,11 +18,11 @@ export {
   GOV_CLOUD_ENDPOINTS,
   createAesEndpoints,
   getClientScopes,
-} from "./auth";
+} from "./auth.js";
 export type {
   SignInOptions,
   AuthorizationUrlOptions,
   AuthorizationRequest,
   ExchangeCodeParams,
-} from "./auth";
-export type { OAuthConfig, TokenSet } from "./types";
+} from "./auth.js";
+export type { OAuthConfig, TokenSet } from "./types.js";

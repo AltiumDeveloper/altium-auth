@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { spawn } from "node:child_process";
-import { OAuthConfig, TokenSet } from "./types";
-import { postJson, postForm, isTlsError } from "./fetchPolyfill";
+import { OAuthConfig, TokenSet } from "./types.js";
+import { postJson, postForm, isTlsError } from "./fetchPolyfill.js";
 
 // ── PKCE helpers ────────────────────────────────────────────────
 
@@ -174,7 +174,7 @@ async function pollActionWait(
           throw abortError();
         }
         if (isTlsError(err)) {
-          throw new Error(`ActionWait TLS error: ${err.message}`);
+          throw new Error(`ActionWait TLS error: ${err.message}`, { cause: err });
         }
         continue; // transient network error — reconnect
       }
