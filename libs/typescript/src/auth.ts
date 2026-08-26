@@ -39,7 +39,7 @@ function codeChallenge(verifier: string): string {
 // ── Config resolution & validation ─────────────────────────────
 
 /**
- * Altium 365 **Commercial Cloud** endpoints (the non-Gov cloud). Used as defaults
+ * Altium 365 **Commercial Cloud** endpoints (the non-GovCloud). Used as defaults
  * for any endpoint a caller omits from `OAuthConfig`. Override individual fields
  * for Dev/UAT or on-prem.
  */
@@ -51,9 +51,9 @@ export const COMMERCIAL_CLOUD_ENDPOINTS = {
 } as const;
 
 /**
- * Altium 365 **Gov Cloud (Production)** endpoints. Pass these as your
+ * Altium 365 **GovCloud (Production)** endpoints. Pass these as your
  * `OAuthConfig` endpoints; the library detects the Gov token endpoint and adds
- * `secure=1` to token requests automatically. See docs/gov-cloud.md.
+ * `secure=1` to token requests automatically. See docs/govcloud.md.
  *
  * Only `authEndpoint`/`tokenEndpoint` are gov-specific. ActionWait has no
  * gov-specific DNS — both its poll endpoint (`actionWaitEndpoint`) and its
@@ -75,7 +75,7 @@ export const GOV_CLOUD_ENDPOINTS = {
 
 /**
  * Derive endpoints for an **AES (on-prem)** installation from its server origin.
- * Unlike Commercial/Gov Cloud (fixed Altium-hosted domains), AES runs on a
+ * Unlike Commercial/GovCloud (fixed Altium-hosted domains), AES runs on a
  * customer-controlled origin, so there is no fixed constant — call this with
  * your AES server's origin (scheme + host, plus port if non-default), e.g.
  * `createAesEndpoints("https://aes.example.com:9785")`.
@@ -253,7 +253,7 @@ function openBrowser(url: string): void {
 // ── Token endpoint ──────────────────────────────────────────────
 
 /**
- * Whether a token endpoint belongs to Altium Gov Cloud. Gov hosts carry a "gov"
+ * Whether a token endpoint belongs to Altium GovCloud. Gov hosts carry a "gov"
  * label (e.g. `auth.365-gov.altium.com`, `auth.dev-365-gov.altium.com`);
  * Commercial hosts (`auth.altium.com`, `auth.dev1.altium.com`) do not. Callers
  * can override detection with `OAuthConfig.secure` for non-standard hosts.
@@ -273,7 +273,7 @@ function isGovTokenEndpoint(tokenEndpoint: string): boolean {
  * a JSON array of strings) **throws**: an empty scope list is a meaningful
  * answer, so a failed lookup must not be reported as one.
  *
- * On Commercial/Gov Cloud this returns the client's static scopes (e.g.
+ * On Commercial/GovCloud this returns the client's static scopes (e.g.
  * `openid`, `profile`), but **no** `a365:workspace:{id}` scope — a Cloud
  * client can have access to many workspaces, so there is no single scope to
  * introspect; discover those via `desWorkspaceInfos` instead. On an AES
@@ -324,7 +324,7 @@ async function tokenRequest(
   const body: Record<string, string> = { ...params };
   const headers: Record<string, string> = {};
 
-  // Gov Cloud token requests require `secure=1`; Commercial must omit it.
+  // GovCloud token requests require `secure=1`; Commercial must omit it.
   // Derived from the token endpoint host; `config.secure` forces either way.
   if (cfg.secure ?? isGovTokenEndpoint(cfg.tokenEndpoint)) {
     body.secure = "1";

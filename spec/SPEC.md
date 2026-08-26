@@ -19,7 +19,7 @@ Altium Identity runs as an OpenID Connect provider, one **base URL per environme
 | Name | Base URL | Discovery document |
 | --- | --- | --- |
 | Commercial Cloud | `https://auth.altium.com` | `https://auth.altium.com/.well-known/openid-configuration` |
-| Gov Cloud | `https://auth.365-gov.altium.com` | `https://auth.365-gov.altium.com/.well-known/openid-configuration` |
+| GovCloud | `https://auth.365-gov.altium.com` | `https://auth.365-gov.altium.com/.well-known/openid-configuration` |
 | AES (on-prem) | `{origin}/unifiedlogin` (customer-hosted) | `{origin}/unifiedlogin/.well-known/openid-configuration` |
 
 - Clients **SHOULD** resolve endpoints from the discovery document; hardcoded base URLs **MAY** be used as a fallback.
@@ -170,7 +170,7 @@ Host detection (reference heuristic): a token endpoint is Gov iff its host conta
 
 **AES** is its own environment (§1), distinct from both Commercial and Gov; each AES installation has exactly one workspace. Token requests follow the Commercial rule — never `secure=1` (§5.4) — and the workspace token-exchange grant (§5.2) *is* available, but is rarely needed: with a single workspace, its ID is known up front, so clients **SHOULD** request `a365:workspace:{workspaceId}` in the sign-in `scope` and get a workspace token in one trip. There is no `selectWorkspace` prompt on AES (§3.1) — with one workspace there is nothing to choose; requesting the workspace scope at sign-in is how a client "logs into the workspace". The "same environment only" rule above still holds: an AES-issued token is not accepted by Commercial/Gov endpoints and vice versa.
 
-A client that does not already know the workspace ID **MAY** introspect the scopes registered for it at `{base}/api/ClientScopes?clientId={clientId}` (`GET`), which returns a JSON array of scope strings. The endpoint exists in **every** environment (§1), but only on AES does the response include an `a365:workspace:{workspaceId}` scope — the installation hosts exactly one workspace, so it *is* implied by the client ID. On Commercial/Gov Cloud the response carries only the client's static scopes (e.g. `openid`, `profile`): a Cloud client may reach many workspaces, none of them derivable from the client ID alone, so discover those via §7 instead.
+A client that does not already know the workspace ID **MAY** introspect the scopes registered for it at `{base}/api/ClientScopes?clientId={clientId}` (`GET`), which returns a JSON array of scope strings. The endpoint exists in **every** environment (§1), but only on AES does the response include an `a365:workspace:{workspaceId}` scope — the installation hosts exactly one workspace, so it *is* implied by the client ID. On Commercial/GovCloud the response carries only the client's static scopes (e.g. `openid`, `profile`): a Cloud client may reach many workspaces, none of them derivable from the client ID alone, so discover those via §7 instead.
 
 ---
 
@@ -185,7 +185,7 @@ query {
 ```
 
 - `authId` is the `{workspaceId}` used in §5.2.
-- A workspace is in **Gov Cloud** iff `location.name = "US GovCloud"` — the current recommended signal for choosing the exchange endpoint.
+- A workspace is in **GovCloud** iff `location.name = "US GovCloud"` — the current recommended signal for choosing the exchange endpoint.
 
 > OPEN: confirm the `des` prefix and the global discovery GraphQL endpoint with the API team.
 

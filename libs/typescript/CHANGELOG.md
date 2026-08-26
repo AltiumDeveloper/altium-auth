@@ -72,7 +72,7 @@ as the shared spec and sibling libraries evolve.
 - `revokeRefreshToken(config, refreshToken)`: revoke a refresh token via the OAuth2
   Token Revocation endpoint (RFC 7009), e.g. on sign-out. Client authentication
   follows the client type (confidential → HTTP Basic; public → `client_id` in body).
-- **Gov Cloud support** — `GOV_CLOUD_ENDPOINTS`. The library auto-detects the
+- **GovCloud support** — `GOV_CLOUD_ENDPOINTS`. The library auto-detects the
   Gov token endpoint and adds `secure=1` to token requests (the two-token model);
   `OAuthConfig.secure` is an optional override for non-standard hosts.
 - `COMMERCIAL_CLOUD_ENDPOINTS`: exported Altium 365 Commercial Cloud endpoints.

@@ -6,11 +6,11 @@
 [![CI](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/typescript-ci.yml/badge.svg)](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/typescript-ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AltiumDeveloper/a365-auth/blob/main/libs/typescript/LICENSE)
 
-Altium 365 OAuth2 / OpenID Connect authentication library. Supports both client types, and Commercial Cloud, Gov Cloud, and AES (on-prem) deployments:
+Altium 365 OAuth2 / OpenID Connect authentication library. Supports both client types, and Commercial Cloud, GovCloud, and AES (on-prem) deployments:
 
 - **Public clients** (desktop, on-prem, native) — browser sign-in with PKCE over Altium's **ActionWait** long-poll: <a href="#signinconfig-options"><code>signIn</code></a>.
 - **Confidential clients** (web/server backends with a secret) — the standard **authorization-code redirect** flow via composable steps: <a href="#createauthorizationurlconfig-options"><code>createAuthorizationUrl</code></a> + <a href="#exchangecodeconfig-params"><code>exchangeCode</code></a>.
-- **Workspace tokens**, **token refresh**, and first-class **Gov Cloud** and **AES** (on-prem) support.
+- **Workspace tokens**, **token refresh**, and first-class **GovCloud** and **AES** (on-prem) support.
 
 **Zero runtime dependencies.** Runs on Node ≥20, Bun, and Deno (and bundled apps that polyfill Node's `crypto`).
 
@@ -22,7 +22,7 @@ The library implements the flow described in these guides (protocol-level, indep
 - [Register your application](../../docs/guides/register-your-application.md) — client types, redirect URLs, credentials
 - [Web / server apps](../../docs/guides/web-and-server-apps.md) — authorization-code redirect flow (confidential clients)
 - [Desktop apps](../../docs/guides/desktop-apps.md) — the ActionWait pattern (public clients)
-- [Gov Cloud](../../docs/guides/gov-cloud.md) — Commercial vs Gov and the `secure=1` two-token model
+- [GovCloud](../../docs/guides/govcloud.md) — Commercial vs Gov and the `secure=1` two-token model
 - [AES (on-prem)](../../docs/guides/aes.md) — customer-hosted installations
 - [Access token claims](../../docs/guides/token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
 
@@ -110,9 +110,9 @@ app.get("/oauth/callback", async (req, res) => {
 
 `createAuthorizationUrl` is synchronous (it generates PKCE + `state` and returns the URL to redirect to); `exchangeCode` performs the token exchange. Both `signIntoWorkspace` and `refreshToken` also send the `clientSecret` automatically when it's set.
 
-### Gov Cloud
+### GovCloud
 
-Altium Gov Cloud is an isolated environment for ITAR/regulated workspaces. Use the exported `GOV_CLOUD_ENDPOINTS` — that's it. The library detects the Gov token endpoint and adds the required `secure=1` to token requests automatically (the two-token model); no `secure` flag to set.
+Altium GovCloud is an isolated environment for ITAR/regulated workspaces. Use the exported `GOV_CLOUD_ENDPOINTS` — that's it. The library detects the Gov token endpoint and adds the required `secure=1` to token requests automatically (the two-token model); no `secure` flag to set.
 
 ```typescript
 import { signIn, GOV_CLOUD_ENDPOINTS } from "@altium-developer/a365-auth";
@@ -126,11 +126,11 @@ const tokens = await signIn({
 
 Commercial and Gov are kept strictly separate: a global token can only be exchanged for a workspace of the matching kind. `secure=1` is driven by which token endpoint you use — Gov endpoint → sent, Commercial endpoint → omitted — so pointing `tokenEndpoint` at the Gov host is all it takes to exchange a Commercial token for a Gov workspace token.
 
-> Gov tokens must never be used against Commercial services, and vice versa. See the [Gov Cloud](../../docs/guides/gov-cloud.md) guide.
+> Gov tokens must never be used against Commercial services, and vice versa. See the [GovCloud](../../docs/guides/govcloud.md) guide.
 
 ### AES (on-prem)
 
-Altium Enterprise Server (AES) is a customer-hosted, on-prem installation — unlike Commercial/Gov Cloud (fixed Altium-hosted domains), there's no fixed host, so use `createAesEndpoints()` to derive the endpoint set from your AES server's origin. AES does not use `secure=1` (same rule as Commercial), and there's no cross-cloud bridging to/from Commercial or Gov.
+Altium Enterprise Server (AES) is a customer-hosted, on-prem installation — unlike Commercial/GovCloud (fixed Altium-hosted domains), there's no fixed host, so use `createAesEndpoints()` to derive the endpoint set from your AES server's origin. AES does not use `secure=1` (same rule as Commercial), and there's no cross-cloud bridging to/from Commercial or Gov.
 
 ```typescript
 import { signIn, createAesEndpoints, getClientScopes } from "@altium-developer/a365-auth";
@@ -299,7 +299,7 @@ interface OAuthConfig {
   secure?: boolean;           // Override Gov auto-detection (normally unset)
 
   // Optional — default to COMMERCIAL_CLOUD_ENDPOINTS. Override individually for
-  // custom installations, spread GOV_CLOUD_ENDPOINTS for Gov Cloud, or spread
+  // custom installations, spread GOV_CLOUD_ENDPOINTS for GovCloud, or spread
   // createAesEndpoints(origin) for an AES (on-prem) installation.
   authEndpoint?: string;      // default: https://auth.altium.com/connect/authorize
   tokenEndpoint?: string;     // default: https://auth.altium.com/connect/token
@@ -384,7 +384,7 @@ Run the sign-in flow against a live Altium environment. It opens your browser, w
 # Commercial Cloud, public client
 npm run test:e2e -- YOUR_CLIENT_ID
 
-# Gov Cloud (Dev) — verifies the secure=1 two-token model
+# GovCloud (Dev) — verifies the secure=1 two-token model
 npm run test:e2e -- --env dev-gov YOUR_GOV_CLIENT_ID
 
 # AES (on-prem) — verifies the origin-derived endpoints, no secure=1

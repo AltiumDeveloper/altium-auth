@@ -7,7 +7,7 @@ outlined below.
 
 ## Its own environment, on a customer domain
 
-Unlike Commercial Cloud (`auth.altium.com`) and Gov Cloud
+Unlike Commercial Cloud (`auth.altium.com`) and GovCloud
 (`auth.365-gov.altium.com`), which are fixed Altium-hosted domains, an AES
 installation runs on a **customer-controlled origin** — there is no fixed
 hostname. Given the AES server's origin (e.g.
@@ -50,7 +50,7 @@ scope by making a GET request to
 `{origin}/unifiedlogin/api/ClientScopes?clientId={clientId}` on the AES
 installation.
 
-That endpoint is not AES-specific — Commercial and Gov Cloud expose it too, at
+That endpoint is not AES-specific — Commercial and GovCloud expose it too, at
 `{base}/api/ClientScopes` — but only on AES does it return an
 `a365:workspace:{workspaceId}` scope. A Cloud client may reach many workspaces,
 and none of them follow from its client ID, so on Cloud the response carries
@@ -66,7 +66,7 @@ workspace.
 
 AES is its own environment. A token issued by an AES installation is only
 accepted by that same AES installation — it cannot be exchanged for a Commercial
-or Gov Cloud workspace token, and a Commercial/Gov token cannot be exchanged at
+or GovCloud workspace token, and a Commercial/Gov token cannot be exchanged at
 an AES endpoint. There is no equivalent of the Commercial→Gov workspace-bridging
 flow for AES.
 

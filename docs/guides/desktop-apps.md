@@ -142,7 +142,7 @@ The `access_token` is your **global access token**.
 
 ## Step 3 — Discover the user's workspaces
 
-Query the Altium 365 API with the global access token to list workspaces, then let the user choose one. Include `location.name` — it tells you whether a workspace lives in Gov Cloud, which decides *where* you exchange the token in Step 4.
+Query the Altium 365 API with the global access token to list workspaces, then let the user choose one. Include `location.name` — it tells you whether a workspace lives in GovCloud, which decides *where* you exchange the token in Step 4.
 
 ```graphql
 query {
@@ -157,12 +157,12 @@ query {
 }
 ```
 
-A Gov Cloud workspace reports `location.name = "US GovCloud"`:
+A GovCloud workspace reports `location.name = "US GovCloud"`:
 
 ```json
 {
   "authId": "110ee681-0f50-48e4-a1d1-0e7466ab8682",
-  "name": "Example Gov Cloud workspace",
+  "name": "Example GovCloud workspace",
   "url": "https://example-workspace.365-gov.altium.com/",
   "location": {
     "name": "US GovCloud"
@@ -191,7 +191,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 &client_id=<client_id>
 ```
 
-**Gov Cloud workspace (`location.name = "US GovCloud"`) — exchange on `auth.365-gov.altium.com` and add `secure=1`:**
+**GovCloud workspace (`location.name = "US GovCloud"`) — exchange on `auth.365-gov.altium.com` and add `secure=1`:**
 
 ```
 POST https://auth.365-gov.altium.com/connect/token
@@ -205,7 +205,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 &client_id=<client_id>
 ```
 
-Everything up to this point — the browser sign-in, the `AuthComplete` redirect, the ActionWait poll host, and the code exchange — runs on Commercial `auth.altium.com` and yields a global access token. Presenting that Commercial global token to the Gov `/token` endpoint with `secure=1` mints a Gov workspace token — one whose `iss` is `https://auth.365-gov.altium.com` and which carries a `secure` claim. Omitting `secure=1` on the Gov endpoint — or exchanging a Gov workspace on `auth.altium.com` — returns `access_denied`. See [Gov Cloud considerations](./gov-cloud.md).
+Everything up to this point — the browser sign-in, the `AuthComplete` redirect, the ActionWait poll host, and the code exchange — runs on Commercial `auth.altium.com` and yields a global access token. Presenting that Commercial global token to the Gov `/token` endpoint with `secure=1` mints a Gov workspace token — one whose `iss` is `https://auth.365-gov.altium.com` and which carries a `secure` claim. Omitting `secure=1` on the Gov endpoint — or exchanging a Gov workspace on `auth.altium.com` — returns `access_denied`. See [GovCloud considerations](./govcloud.md).
 
 cURL (Commercial workspace; for a Gov workspace, target `https://auth.365-gov.altium.com` and add `--data-urlencode "secure=1"`):
 
@@ -241,7 +241,7 @@ If you already know the workspace at sign-in time, see [Getting a workspace-scop
 
 ## Refresh the workspace access token
 
-When the workspace access token expires, use the refresh token to get a new one. **Refresh at the endpoint that issued the token:** a Commercial workspace token refreshes on `auth.altium.com`; a Gov Cloud workspace token refreshes on `auth.365-gov.altium.com` **with `secure=1`**. As a public client you send `client_id` with no secret.
+When the workspace access token expires, use the refresh token to get a new one. **Refresh at the endpoint that issued the token:** a Commercial workspace token refreshes on `auth.altium.com`; a GovCloud workspace token refreshes on `auth.365-gov.altium.com` **with `secure=1`**. As a public client you send `client_id` with no secret.
 
 ```
 POST https://auth.altium.com/connect/token
@@ -333,4 +333,4 @@ Status codes:
 ## Related
 
 - [Authentication overview](./overview.md) · [Web and server application flow](./web-and-server-apps.md)
-- [Gov Cloud considerations](./gov-cloud.md) · [AES (on-prem) considerations](./aes.md)
+- [GovCloud considerations](./govcloud.md) · [AES (on-prem) considerations](./aes.md)

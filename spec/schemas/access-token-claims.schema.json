@@ -32,7 +32,7 @@
     "secure": {
       "type": "string",
       "const": "1",
-      "description": "Present on Gov Cloud tokens only. Marks a Gov (secure) token; absent on Commercial tokens."
+      "description": "Present on GovCloud tokens only. Marks a Gov (secure) token; absent on Commercial tokens."
     },
     "iat": { "type": "integer", "description": "Issued-at (epoch seconds)." },
     "exp": { "type": "integer", "description": "Expiry (epoch seconds)." },

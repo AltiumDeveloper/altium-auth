@@ -12,10 +12,10 @@ Altium Identity is available at one base URL per environment:
 | Name | Base URL | Discovery document |
 | --- | --- | --- |
 | Commercial Cloud | https://auth.altium.com | https://auth.altium.com/.well-known/openid-configuration |
-| Gov Cloud | https://auth.365-gov.altium.com | https://auth.365-gov.altium.com/.well-known/openid-configuration |
+| GovCloud | https://auth.365-gov.altium.com | https://auth.365-gov.altium.com/.well-known/openid-configuration |
 | AES (on-prem) | {origin}/unifiedlogin (customer-hosted) | {origin}/unifiedlogin/.well-known/openid-configuration |
 
-See [Gov Cloud considerations](./gov-cloud.md) for the differences that apply to Gov Cloud, and [AES (on-prem) considerations](./aes.md) for on-prem installations.
+See [GovCloud considerations](./govcloud.md) for the differences that apply to GovCloud, and [AES (on-prem) considerations](./aes.md) for on-prem installations.
 
 Every endpoint below is published in each base URL's discovery document:
 
@@ -43,7 +43,7 @@ The recommended flow is the same for web and desktop apps — only *how* you obt
 2. **Discover the user's workspaces** with the global token. See [Discover the user's workspaces](./web-and-server-apps.md#step-3-discover-the-users-workspaces).
 3. **Exchange the global token for a workspace access token — at the endpoint that matches the workspace:**
     - **Commercial workspace** → exchange on Commercial Cloud endpoint (`https://auth.altium.com`, no `secure=1`).
-    - **Gov Cloud workspace** → exchange on Gov Cloud endpoint (`https://auth.365-gov.altium.com`, with `secure=1`). See [Gov Cloud considerations](./gov-cloud.md).
+    - **GovCloud workspace** → exchange on GovCloud endpoint (`https://auth.365-gov.altium.com`, with `secure=1`). See [GovCloud considerations](./govcloud.md).
 4. **Call the Altium 365 API** with the workspace token, refreshing it at the endpoint that issued it.
 
 ```mermaid
@@ -58,7 +58,7 @@ sequenceDiagram
     alt Commercial workspace
         App->>Identity: 3a. Token exchange @ auth.altium.com
         Identity-->>App: workspace access token
-    else Gov Cloud workspace
+    else GovCloud workspace
         App->>Identity: 3b. Token exchange @ auth.365-gov.altium.com (secure=1)
         Identity-->>App: Gov workspace access token
     end
@@ -73,7 +73,7 @@ An application commonly holds several tokens at once — one global token plus a
 | --- | --- |
 | Cloud sign in + code exchange | `auth.altium.com` |
 | Commercial workspace token (exchange + refresh) | `auth.altium.com` |
-| Gov Cloud workspace token (exchange + refresh) | `auth.365-gov.altium.com` |
+| GovCloud workspace token (exchange + refresh) | `auth.365-gov.altium.com` |
 | AES sign in + workspace token | `{origin}/unifiedlogin` (customer-hosted) |
 
 
@@ -90,7 +90,7 @@ When you know at sign-in time that the user should land on a workspace, you don'
 | `strict` | Workspace selection is **mandatory** — the user must choose a workspace before authentication can complete. The returned token is already workspace-scoped. |
 | `optional` | Workspace selection is offered but may be skipped by the user. |
 
-Run the *whole* flow on the host that matches the workspace: `auth.altium.com` for a Commercial workspace, or `auth.365-gov.altium.com` for a Gov Cloud workspace (send `secure=1` on the `/connect/token` requests only).
+Run the *whole* flow on the host that matches the workspace: `auth.altium.com` for a Commercial workspace, or `auth.365-gov.altium.com` for a GovCloud workspace (send `secure=1` on the `/connect/token` requests only).
 
 When a workspace is selected, the authorization code exchange returns a workspace-scoped access token directly. See [Step 1](./web-and-server-apps.md#step-1-request-authorization-with-pkce) in the web guide, or the `selectWorkspace` option in the library API references.
 
@@ -103,7 +103,7 @@ See the [OAuth Scopes](https://www.altium.com/documentation/altium-developer-cen
 - **Web or server application** that can host an HTTPS redirect endpoint: [Authenticate a web or server application](./web-and-server-apps.md).
 - **Desktop application** that cannot host a public redirect: [Authenticate a desktop application](./desktop-apps.md).
 
-Both guides cover Gov Cloud workspaces via the exchange branch above. See [Gov Cloud considerations](./gov-cloud.md) for additional details, or [AES (on-prem) considerations](./aes.md) if you're integrating against an on-prem AES installation.
+Both guides cover GovCloud workspaces via the exchange branch above. See [GovCloud considerations](./govcloud.md) for additional details, or [AES (on-prem) considerations](./aes.md) if you're integrating against an on-prem AES installation.
 
 ## Related
 

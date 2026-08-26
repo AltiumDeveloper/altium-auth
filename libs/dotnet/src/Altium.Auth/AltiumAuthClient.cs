@@ -202,7 +202,7 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
     /// status, or a body that is not a JSON array of strings) <b>throws</b>: an empty scope list
     /// is a meaningful answer, so a failed lookup must not be reported as one.
     ///
-    /// On Commercial/Gov Cloud this returns the client's static scopes (e.g. <c>openid</c>,
+    /// On Commercial/GovCloud this returns the client's static scopes (e.g. <c>openid</c>,
     /// <c>profile</c>), but <b>no</b> <c>a365:workspace:{id}</c> scope — a Cloud client can have
     /// access to many workspaces, so there is no single scope to introspect; discover those via
     /// <c>desWorkspaceInfos</c> instead. On an AES (on-prem) installation, which hosts exactly one

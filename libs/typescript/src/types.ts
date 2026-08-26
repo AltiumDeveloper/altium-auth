@@ -3,7 +3,7 @@
  *
  * Only `clientId` and `scopes` are required. The four endpoints default to
  * Altium's Commercial Cloud values (see `COMMERCIAL_CLOUD_ENDPOINTS`) and only
- * need to be set for Dev/UAT, Gov Cloud, or AES (on-prem) installations — for
+ * need to be set for Dev/UAT, GovCloud, or AES (on-prem) installations — for
  * AES, use `createAesEndpoints()` to derive them from your server's origin.
  * Any endpoint that is provided must be a valid URL.
  */
@@ -23,7 +23,7 @@ export interface OAuthConfig {
   clientSecret?: string;
 
   /**
-   * Override automatic Gov Cloud detection. By default the library sends
+   * Override automatic GovCloud detection. By default the library sends
    * `secure=1` on token requests when the token endpoint is a Gov host (e.g.
    * `auth.365-gov.altium.com`) and omits it on Commercial hosts — so you
    * normally leave this unset. Provide it only to force behavior for a
