@@ -7,6 +7,29 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Move from CommonJS to ESM** for the TypeScript implementation library, and
+  update of its package dependencies. The minimum NodeJS version is bumped to v22.
+
+- **AES (on-prem) support** — `createAesEndpoints(origin)`. Unlike Commercial/Gov
+  Cloud (fixed Altium-hosted domains), AES runs on a customer-controlled origin, so
+  this builder derives the five endpoints below from your AES server's origin:
+  - `{origin}/unifiedlogin/connect/authorize`
+  - `{origin}/unifiedlogin/connect/token`
+  - `{origin}/actionwait/await`
+  - `{origin}/unifiedlogin/api/AuthComplete`
+  - `{origin}/unifiedlogin/api/ClientScopes`
+
+  The `a365:workspace:{id}` should be included in the requested scopes at sign-in
+  to obtain a workspace token — use `getClientScopes(scopeEndpoint, clientId)` to
+  discover that scope from an AES installation's ClientScopes endpoint (its single
+  workspace's scope; Cloud has no equivalent single scope to introspect).
+
+- Added a fallback implementation of `openBrowser` in the TypeScript library.
+
+- **TLS error handling in ActionWait polling** — a TLS/certificate error (e.g. a
+  self-signed cert on an on-prem AES server) now fails the sign-in immediately
+  instead of being retried forever as a transient network error.
+
 ## [0.1.2] — 2026-07-24
 
 ### Added

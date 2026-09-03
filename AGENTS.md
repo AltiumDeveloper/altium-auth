@@ -41,8 +41,9 @@ libs/
    matrix** in the root `README.md`. Never silently diverge.
 3. **Keep the delta thin.** Most of the flow is standard OAuth2/OIDC (RFC 6749/7636/
    8693/7009, OIDC Core). Only the *Altium delta* is specified: ActionWait long-poll,
-   `secure=1` Commercial-vs-Gov, the workspace token-exchange profile. Don't re-spec
-   standard behavior; don't hand-roll what the delta doesn't require.
+   `secure=1` Commercial-vs-Gov (AES follows the Commercial rule), the workspace
+   token-exchange profile. Don't re-spec standard behavior; don't hand-roll what the
+   delta doesn't require.
 4. **Dependencies are a decision, not a reflex.** These are security-sensitive clients
    and intentionally dependency-light. Propose and justify, don't just add.
 5. **Never weaken a guardrail silently.** The library implementations are validated.
@@ -133,7 +134,8 @@ Pages), so avoid repo-only constructs that won't render off GitHub.
 
 - **ActionWait:** start the long-poll **before** opening the browser (avoids a fast-callback race).
 - **`secure=1`** is a token-endpoint parameter (never on `/authorize`); derived from a
-  Gov token host, overridable via config. Commercial and Gov tokens are never mixed.
+  Gov token host, overridable via config. AES follows the Commercial rule (no
+  `secure=1`). Commercial, Gov, and AES tokens are never mixed across environments.
 - **Refresh** sends no `scope` (retains the original grant). **Revocation** targets
   refresh tokens at `/connect/revocation` and is idempotent (RFC 7009).
 - **`state`** doubles as the CSRF guard and the ActionWait connection token; verify it.

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { OAuthConfig, TokenSet } from "./types";
+import type { OAuthConfig, TokenSet } from "./types.js";
 import {
   signIn,
   signIntoWorkspace,
@@ -9,7 +9,8 @@ import {
   exchangeCode,
   COMMERCIAL_CLOUD_ENDPOINTS,
   GOV_CLOUD_ENDPOINTS,
-} from "./auth";
+  createAesEndpoints,
+} from "./auth.js";
 
 // ── Test fixtures ───────────────────────────────────────────────
 
@@ -555,5 +556,39 @@ describe("Gov Cloud", () => {
     // ...and force ON for a Commercial endpoint.
     await refreshToken({ ...validConfig, secure: true }, "r");
     expect((fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body as string).toContain("secure=1");
+  });
+});
+
+// ── AES (on-prem) tests ──────────────────────────────────────────
+
+describe("AES (on-prem)", () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const aesOrigin = "https://aes.example.com:9785";
+  const aes = createAesEndpoints(aesOrigin);
+
+  it("derives all four endpoints from the AES origin under /unifiedlogin and /actionwait", () => {
+    expect(aes.authEndpoint).toBe("https://aes.example.com:9785/unifiedlogin/connect/authorize");
+    expect(aes.tokenEndpoint).toBe("https://aes.example.com:9785/unifiedlogin/connect/token");
+    expect(aes.actionWaitEndpoint).toBe("https://aes.example.com:9785/actionwait/await");
+    expect(aes.redirectUri).toBe("https://aes.example.com:9785/unifiedlogin/api/AuthComplete");
+  });
+
+  it("strips a trailing slash from the origin before deriving endpoints", () => {
+    const trimmed = createAesEndpoints(`${aesOrigin}/`);
+    expect(trimmed.authEndpoint).toBe(aes.authEndpoint);
+  });
+
+  it("does NOT send secure=1 on token requests to an AES endpoint", async () => {
+    mockFetchOk(mockTokenSet);
+
+    const aesConfig = { ...validConfig, ...aes };
+    await refreshToken(aesConfig, "r");
+
+    const call = (fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(call[0]).toBe(aes.tokenEndpoint);
+    expect(call[1].body as string).not.toContain("secure=1");
   });
 });

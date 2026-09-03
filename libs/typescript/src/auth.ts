@@ -1,6 +1,7 @@
-import { createHash, randomBytes } from "crypto";
-import { OAuthConfig, TokenSet } from "./types";
-import { postJson, postForm } from "./fetchPolyfill";
+import { createHash, randomBytes } from "node:crypto";
+import { spawn } from "node:child_process";
+import { OAuthConfig, TokenSet } from "./types.js";
+import { postJson, postForm, isTlsError } from "./fetchPolyfill.js";
 
 // ── PKCE helpers ────────────────────────────────────────────────
 
@@ -72,26 +73,43 @@ export const GOV_CLOUD_ENDPOINTS = {
   redirectUri: "https://auth.altium.com/api/AuthComplete",
 } as const;
 
+/**
+ * Derive endpoints for an **AES (on-prem)** installation from its server origin.
+ * Unlike Commercial/Gov Cloud (fixed Altium-hosted domains), AES runs on a
+ * customer-controlled origin, so there is no fixed constant — call this with
+ * your AES server's origin (scheme + host, plus port if non-default), e.g.
+ * `createAesEndpoints("https://aes.example.com:9785")`.
+ *
+ * AES hosts its own ActionWait and `AuthComplete` callback (unlike Gov, which
+ * shares Commercial's) and does not use `secure=1` (same rule as Commercial).
+ */
+export function createAesEndpoints(origin: string) {
+  const base = origin.replace(/\/+$/, "");
+  return {
+    authEndpoint: `${base}/unifiedlogin/connect/authorize`,
+    tokenEndpoint: `${base}/unifiedlogin/connect/token`,
+    actionWaitEndpoint: `${base}/actionwait/await`,
+    redirectUri: `${base}/unifiedlogin/api/AuthComplete`,
+    scopeEndpoint: `${base}/unifiedlogin/api/ClientScopes`,
+  } as const;
+}
+
 /** A config with every endpoint filled in from defaults (client auth/flags preserved). */
-type ResolvedConfig = OAuthConfig & {
-  authEndpoint: string;
-  tokenEndpoint: string;
-  actionWaitEndpoint: string;
-  redirectUri: string;
-};
+type EndpointConfig = Required<Pick<OAuthConfig, "authEndpoint" | "tokenEndpoint" | "actionWaitEndpoint" | "redirectUri">>;
+type ResolvedConfig = OAuthConfig & EndpointConfig;
 
 /**
  * Fill omitted endpoints from `COMMERCIAL_CLOUD_ENDPOINTS` and validate.
  * Throws if `clientId`/`scopes` are missing or any endpoint is not a valid URL.
  */
-function resolveConfig(config: OAuthConfig): ResolvedConfig {
-  const resolved: ResolvedConfig = {
+function resolveConfig(config: OAuthConfig) {
+  const resolved = {
     ...config,
     authEndpoint: config.authEndpoint || COMMERCIAL_CLOUD_ENDPOINTS.authEndpoint,
     tokenEndpoint: config.tokenEndpoint || COMMERCIAL_CLOUD_ENDPOINTS.tokenEndpoint,
     actionWaitEndpoint: config.actionWaitEndpoint || COMMERCIAL_CLOUD_ENDPOINTS.actionWaitEndpoint,
     redirectUri: config.redirectUri || COMMERCIAL_CLOUD_ENDPOINTS.redirectUri,
-  };
+  } satisfies ResolvedConfig;
 
   for (const key of ["clientId", "scopes"] as const) {
     if (!resolved[key] || resolved[key].trim() === "") {
@@ -151,9 +169,12 @@ async function pollActionWait(
       let res;
       try {
         res = await postJson(endpoint, { token: connectionToken }, controller.signal);
-      } catch {
+      } catch (err) {
         if (controller.signal.aborted) {
           throw abortError();
+        }
+        if (isTlsError(err)) {
+          throw new Error(`ActionWait TLS error: ${err.message}`, { cause: err });
         }
         continue; // transient network error — reconnect
       }
@@ -200,20 +221,33 @@ async function pollActionWait(
 // ── Browser helpers ─────────────────────────────────────────────
 
 /**
- * Try to open the browser with the given URL. Uses globalThis.open if available,
- * otherwise logs the URL for manual copy-and-paste.
+ * Try to open the browser with the given URL: `globalThis.open` in a browser
+ * environment, or the OS-native opener command in Node (no dependency —
+ * `open` on macOS, `start` on Windows, `xdg-open` elsewhere). Always logs the
+ * URL too, for manual copy-and-paste if the launch fails or isn't available.
  */
 function openBrowser(url: string): void {
   const opener = (globalThis as Record<string, unknown>).open as ((url: string) => void) | undefined;
-  if (typeof opener === "function") {
-    try {
+  try {
+    if (typeof opener === "function") {
       opener(url);
-    } catch {
-      // Fallback to console log below.
+    } else {
+      const platform = process.platform;
+      const [command, args] = platform === "darwin"
+        ? ["open", [url]]
+        // Quote the URL ourselves and pass the command line verbatim: authorize URLs
+        // contain `&`, which cmd.exe treats as a command separator, and Node only
+        // auto-quotes arguments containing whitespace or a double quote.
+        : platform === "win32"
+          ? ["cmd", ["/c", "start", '""', `"${url}"`]]
+          : ["xdg-open", [url]];
+      spawn(command, args, { stdio: "ignore", detached: true, windowsVerbatimArguments: platform === "win32" }).unref();
     }
+  } catch {
+    // Fallback to console log below.
   }
-  // Always log for debugging / environments without window.open.
-  console.log(`Open the following URL in your browser to sign in:\n${url}`);
+  // Always log for debugging / environments without a way to launch a browser.
+  console.log(`\nOpen the following URL in your browser to sign in:\n${url}`);
 }
 
 // ── Token endpoint ──────────────────────────────────────────────
@@ -230,6 +264,48 @@ function isGovTokenEndpoint(tokenEndpoint: string): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Fetch the list of OAuth scopes registered for a client from the
+ * ClientScopes endpoint — the endpoint itself returns `[]` for an unknown
+ * `clientId`. Anything else unexpected (a non-200 status, or a body that is not
+ * a JSON array of strings) **throws**: an empty scope list is a meaningful
+ * answer, so a failed lookup must not be reported as one.
+ *
+ * On Commercial/Gov Cloud this returns the client's static scopes (e.g.
+ * `openid`, `profile`), but **no** `a365:workspace:{id}` scope — a Cloud
+ * client can have access to many workspaces, so there is no single scope to
+ * introspect; discover those via `desWorkspaceInfos` instead. On an AES
+ * (on-prem) installation, which hosts exactly one workspace, the response
+ * *does* include that workspace's `a365:workspace:{id}` scope directly — a
+ * shortcut over the (also-available, but longer) `desWorkspaceInfos` round trip.
+ *
+ * @param scopeEndpoint the ClientScopes endpoint URL
+ * @param clientId the OAuth client ID to look up scopes for
+ * @returns the client's registered scopes
+ * @throws if the endpoint does not answer 200 with a JSON array of scope strings
+ */
+export async function getClientScopes(scopeEndpoint: string, clientId: string): Promise<string[]> {
+  const url = new URL(scopeEndpoint);
+  url.searchParams.set("clientId", clientId);
+  const response = await fetch(url.toString());
+  const text = await response.text();
+
+  if (response.status !== 200) {
+    throw new Error(`ClientScopes endpoint ${response.status}: ${truncate(text)}`);
+  }
+
+  let data: unknown;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    data = undefined; // handled by the shared error below
+  }
+  if (!Array.isArray(data) || data.some((scope) => typeof scope !== "string")) {
+    throw new Error(`ClientScopes endpoint returned an unexpected body (expected a JSON array of strings): ${truncate(text)}`);
+  }
+  return data as string[];
 }
 
 /**
@@ -449,7 +525,7 @@ export interface SignInOptions {
 
 /**
  * Perform an OAuth2 PKCE sign-in using Altium's ActionWait long-poll mechanism —
- * the flow for public clients (desktop/on-prem) that cannot host a redirect.
+ * the flow for public clients (desktop) that cannot host a redirect.
  *
  * The flow:
  * 1. Generate a PKCE verifier/challenge and a connection token (used as `state`)

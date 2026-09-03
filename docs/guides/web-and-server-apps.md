@@ -44,9 +44,13 @@ GET https://auth.altium.com/connect/authorize
 - `redirect_uri` is the callback URL you registered with your application.
 - `state` is an opaque value you generate and later verify to protect against CSRF.
 
-### Login-into-workspace mode (`selectWorkspace`)
+### Getting a workspace-scoped token directly
 
-Add the optional `selectWorkspace` parameter to the authorize request to have the code exchange return a workspace-scoped token directly — skipping the discover-and-exchange steps below. See [Login-into-workspace mode](./overview.md#login-into-workspace-mode) for the values (`none` / `strict` / `optional`) and behavior.
+If you already know the workspace the user should land on, request it up front: include `a365:workspace:<workspaceId>` in the `scope` parameter above, and the code exchange in Step 2 directly returns the workspace token (and refresh token, with `offline_access`), skipping Steps 3–4 below.
+
+Run the *whole* flow on the host that matches the workspace: `auth.altium.com` for a Commercial workspace, or `auth.365-gov.altium.com` for a Gov Cloud workspace (send `secure=1` on the `/connect/token` requests only).
+
+If you don't know the workspace ahead of time but still want the user to land on one during sign-in, add the optional `selectWorkspace` parameter to the authorize request instead, to have the code exchange return a workspace-scoped token directly. See [Login-into-workspace mode](./overview.md#login-into-workspace-mode) for the values (`none` / `strict` / `optional`) and behavior.
 
 ```
 GET https://auth.altium.com/connect/authorize
@@ -74,7 +78,7 @@ GET https://your-app.example.com/oauth/callback?error=consent_required&state=<op
 
 ## Step 2 — Exchange the code for a global access token
 
-This guide authenticates as a **confidential client** using `Authorization: Basic <base64(client_id:client_secret)>`. **Public clients** (desktop/native/SPA) have no secret — they omit the Basic header and authenticate with `client_id` plus the PKCE `code_verifier` instead. See [Authenticate a desktop or on-prem application](./desktop-and-onprem-apps.md).
+This guide authenticates as a **confidential client** using `Authorization: Basic <base64(client_id:client_secret)>`. **Public clients** (desktop/native/SPA) have no secret — they omit the Basic header and authenticate with `client_id` plus the PKCE `code_verifier` instead. See [Authenticate a desktop application](./desktop-apps.md).
 
 ```
 POST https://auth.altium.com/connect/token
@@ -245,9 +249,7 @@ The `access_token` is your **workspace access token**. Use it to call the Altium
 Authorization: Bearer <workspace access token>
 ```
 
-> **Shortcut when you already know the workspace.** Request the workspace scope directly in Step 1 — set `scope=openid profile offline_access a365:workspace:<workspaceId>` in the authorize request — and the code exchange in Step 2 returns the workspace token (and refresh token) directly, skipping Steps 3–4. Run the *whole* flow on the host that matches the workspace: `auth.altium.com` for a Commercial workspace, or `auth.365-gov.altium.com` for a Gov Cloud workspace (send `secure=1` on the `/connect/token` requests only). Use the discover-then-exchange flow (Steps 3–4) when the user chooses a workspace at runtime.
->
-> **Alternatively**, use `selectWorkspace=strict` (or `optional`) in Step 1 to have the server present workspace selection during sign-in — the user picks from their own workspaces without your app needing to enumerate them first. See [Login-into-workspace mode](./overview.md#login-into-workspace-mode).
+If you already know the workspace at sign-in time, see [Getting a workspace-scoped token directly](#getting-a-workspace-scoped-token-directly) in Step 1 to skip Steps 3–4 above.
 
 ## Refresh the workspace access token
 
@@ -309,4 +311,4 @@ A successful request returns `200 OK` with an empty body. Per the revocation sta
 ## Related
 
 - [Authentication overview](./overview.md) · [Register your application](./register-your-application.md)
-- [Gov Cloud considerations](./gov-cloud.md)
+- [Gov Cloud considerations](./gov-cloud.md) · [AES (on-prem) considerations](./aes.md)

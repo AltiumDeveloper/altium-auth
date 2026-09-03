@@ -20,10 +20,13 @@ Altium Identity runs as an OpenID Connect provider, one **base URL per environme
 | --- | --- | --- |
 | Commercial Cloud | `https://auth.altium.com` | `https://auth.altium.com/.well-known/openid-configuration` |
 | Gov Cloud | `https://auth.365-gov.altium.com` | `https://auth.365-gov.altium.com/.well-known/openid-configuration` |
+| AES (on-prem) | `{origin}/unifiedlogin` (customer-hosted) | `{origin}/unifiedlogin/.well-known/openid-configuration` |
 
 - Clients **SHOULD** resolve endpoints from the discovery document; hardcoded base URLs **MAY** be used as a fallback.
 - Standard endpoints (all under the base URL): `/connect/authorize`, `/connect/token`, `/connect/userinfo`, `/connect/revocation`.
+- Proprietary scope-introspection endpoint (all environments): `{base}/api/ClientScopes` — e.g. `https://auth.altium.com/api/ClientScopes`, or `{origin}/unifiedlogin/api/ClientScopes` on AES. What it usefully returns differs by environment (§6).
 - The base URLs above are the production hosts; a deployment **MAY** expose the same endpoints under different hosts, so treat base URLs as configuration rather than constants.
+- **AES (on-prem)** is not an Altium-hosted domain — it runs on a customer-controlled origin (e.g. `https://aes.server.example:9785`). The base URL is that origin plus `/unifiedlogin` (e.g. `https://aes.server.example:9785/unifiedlogin/connect/authorize`). Each AES installation is its own environment.
 
 ### 1.1 ActionWait host (proprietary)
 
@@ -33,6 +36,8 @@ The **ActionWait** service is a single Commercial-Cloud deployment — it has **
 | --- | --- |
 | ActionWait poll | `https://actionwait.altium.com/await` |
 
+By contrast, AES installations host their **own** ActionWait service, at `{origin}/actionwait/await` on the same origin as its base URL — it does not share Commercial's ActionWait deployment.
+
 ---
 
 ## 2. Client types
@@ -40,7 +45,7 @@ The **ActionWait** service is a single Commercial-Cloud deployment — it has **
 | Type | Credential | Redirect | Auth at token endpoint |
 | --- | --- | --- | --- |
 | **Confidential** (web/server) | `client_secret` | App-hosted callback | HTTP Basic (`client_secret_basic`) |
-| **Public** (desktop/on-prem/native) | none (PKCE) | ActionWait (`§4`) | `client_id` in the request body |
+| **Public** (desktop) | none (PKCE) | ActionWait (`§4`) | `client_id` in the request body |
 
 - Public clients **MUST NOT** hold a secret and **MUST** use PKCE (§3).
 - Confidential clients **MUST** authenticate at the token endpoint with HTTP Basic and **SHOULD** also use PKCE.
@@ -87,6 +92,7 @@ The Altium-hosted callback correlates the browser's `code`+`state` to the waitin
 
 ### 4.2 Redirect URI
 - The authorize request's `redirect_uri` **MUST** be the Altium-hosted `AuthComplete` callback on the **Commercial Cloud** host for the tier — e.g. `https://auth.altium.com/api/AuthComplete` (Production), including for Gov sign-in. A gov-host callback is not registered and **will** fail authorization.
+- For **AES** installations, the `redirect_uri` **MUST** be its own `AuthComplete` callback at `{origin}/unifiedlogin/api/AuthComplete`.
 
 ### 4.3 Poll protocol — `POST {actionWaitHost}/await`
 Request body (`Content-Type: application/json`):
@@ -117,6 +123,16 @@ All tokens are obtained from `{base}/connect/token`. Client authentication per �
 `subject_token_type=urn:ietf:params:oauth:token-type:access_token`,
 `scope` includes `a365:workspace:{workspaceId}`.
 
+A workspace token can also be obtained in a **single** trip, without this grant, by requesting
+`a365:workspace:{workspaceId}` in the `scope` at `/authorize` (§3.1) — the issued access token is
+then already workspace-scoped. Use the exchange when the workspace is chosen *after* sign-in
+(e.g. the user picks from the workspaces discovered in §7); use the scope at sign-in when the
+workspace ID is known up front.
+
+**AES** supports this grant like Commercial (no `secure=1`, §5.4), but rarely needs it: an
+installation hosts exactly one workspace, whose scope the client can learn up front (§6), so the
+one-trip form above is the expected flow.
+
 ### 5.3 Refresh (RFC 6749 §6)
 `grant_type=refresh_token`, `refresh_token`.
 - Clients **MUST NOT** send `scope` on refresh (the grant retains the token's original scope — a global token stays global, a workspace token stays workspace-scoped).
@@ -125,6 +141,7 @@ All tokens are obtained from `{base}/connect/token`. Client authentication per �
 ### 5.4 `secure=1` (Commercial vs Gov)
 - A token request to a **Gov** token endpoint (`§6`) **MUST** include `secure=1`.
 - A token request to a **Commercial** token endpoint **MUST NOT** include `secure=1`.
+- A token request to an **AES** token endpoint **MUST NOT** include `secure=1` — AES follows the same rule as Commercial.
 - This applies to **all** grants in §5. `secure=1` is a token-endpoint parameter and **MUST NOT** be sent on `/authorize`.
 
 ---
@@ -150,6 +167,10 @@ Rules (validated):
 - **Same environment only.** The Commercial→Gov exchange happens between the Commercial and Gov hosts of the **same deployment/environment**. A token's issuer must be trusted by the exchange endpoint, so presenting a token to a *different* environment's endpoint is rejected with **`invalid_request` / `invalid_token`**.
 
 Host detection (reference heuristic): a token endpoint is Gov iff its host contains a `gov` label (e.g. `auth.365-gov.altium.com`). Implementations **MAY** allow an explicit override for non-standard hosts.
+
+**AES** is its own environment (§1), distinct from both Commercial and Gov; each AES installation has exactly one workspace. Token requests follow the Commercial rule — never `secure=1` (§5.4) — and the workspace token-exchange grant (§5.2) *is* available, but is rarely needed: with a single workspace, its ID is known up front, so clients **SHOULD** request `a365:workspace:{workspaceId}` in the sign-in `scope` and get a workspace token in one trip. There is no `selectWorkspace` prompt on AES (§3.1) — with one workspace there is nothing to choose; requesting the workspace scope at sign-in is how a client "logs into the workspace". The "same environment only" rule above still holds: an AES-issued token is not accepted by Commercial/Gov endpoints and vice versa.
+
+A client that does not already know the workspace ID **MAY** introspect the scopes registered for it at `{base}/api/ClientScopes?clientId={clientId}` (`GET`), which returns a JSON array of scope strings. The endpoint exists in **every** environment (§1), but only on AES does the response include an `a365:workspace:{workspaceId}` scope — the installation hosts exactly one workspace, so it *is* implied by the client ID. On Commercial/Gov Cloud the response carries only the client's static scopes (e.g. `openid`, `profile`): a Cloud client may reach many workspaces, none of them derivable from the client ID alone, so discover those via §7 instead.
 
 ---
 
@@ -180,8 +201,8 @@ Access tokens are signed JWTs (`typ: at+jwt`, `alg: RS256`). Verify the signatur
 | `sub` | all | User ID (for user tokens) |
 | `client_id` | all | The application (OAuth client) |
 | `scope` | all | Granted scopes (`a365:workspace:{id}`, `offline_access`, …) |
-| `workspaceId` | workspace tokens | The workspace `authId`; absent on global tokens |
-| `secure` | Gov tokens | `"1"`; absent on Commercial tokens |
+| `workspaceId` | workspace tokens | The workspace `authId`; absent on global tokens and on all AES tokens |
+| `secure` | Gov tokens | `"1"`; absent on Commercial and AES tokens |
 
 See `schemas/access-token-claims.schema.json`.
 
@@ -208,6 +229,6 @@ Errors follow the OAuth 2.0 error response shape (`error`, optional `error_descr
 ---
 
 ## References
-- Conceptual guides: [docs/](https://github.com/AltiumDeveloper/a365-auth/tree/main/docs) (overview, web/server, desktop/on-prem, gov-cloud, register, token-claims)
+- Conceptual guides: [docs/](https://github.com/AltiumDeveloper/a365-auth/tree/main/docs) (overview, web/server, desktop, gov-cloud, AES, register, token-claims)
 - Reference implementations: `libs/typescript/` (TypeScript) and `libs/dotnet/` (.NET)
 - Conformance vectors: [spec/conformance/](https://github.com/AltiumDeveloper/a365-auth/tree/main/spec/conformance)

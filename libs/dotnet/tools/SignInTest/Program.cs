@@ -5,12 +5,23 @@
 //   dotnet run --project tools/SignInTest -- [options] <clientId>
 //
 // Options mirror the TS harness:
-//   --env prod|dev|gov|dev-gov          Sign-in environment (default: prod)
-//   --workspace-env prod|dev|gov|dev-gov  Endpoint for the workspace exchange (default: --env)
+//   --env prod|dev|gov|dev-gov|aes       Sign-in environment (default: prod)
+//   --workspace-env prod|dev|gov|dev-gov  Endpoint for the workspace exchange (default: --env).
+//                                         Not applicable to AES — an installation is a single
+//                                         environment, so it signs in and exchanges on itself.
+//   --aes-origin <origin>                AES server origin, e.g. https://aes.example.com:9785
+//                                         (required when --env is "aes")
 //   --secure | --no-secure              Force secure=1 on/off (default: auto from token host)
 //   --scopes "<scopes>"                 Space-delimited scopes (default: "openid profile")
-//   --workspace <authId>                Exchange for a workspace token after sign-in
+//   --workspace <authId>                Workspace to obtain a token for. Exercises both routes:
+//                                         the two-trip exchange after a global sign-in (SPEC §5.2)
+//                                         and the one-trip sign-in that requests
+//                                         a365:workspace:{authId} directly. On AES the workspace ID
+//                                         can be omitted — it is discovered from the installation's
+//                                         ClientScopes endpoint (one workspace per installation).
 //   --select-workspace none|strict|optional  Login-into-workspace mode at /authorize (default: none)
+//                                         (not applicable to AES — no workspace-selection prompt;
+//                                          request the workspace scope at sign-in instead)
 //   --refresh                           Exercise refresh (implies offline_access)
 //   --revoke                            Revoke the (latest) refresh token, then prove it fails
 //   --userinfo                          GET /connect/userinfo and print the response
@@ -25,8 +36,11 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using Altium.Auth;
 
-string? clientId = null, env = "prod", workspaceEnv = null, scopes = "openid profile";
-string? workspace = null, code = null, codeVerifier = null, redirectUri = null;
+const string workspaceScopePrefix = "a365:workspace:";
+
+string? clientId = null, workspaceEnv = null;
+string env = "prod", scopes = "openid profile";
+string? workspace = null, code = null, codeVerifier = null, redirectUri = null, aesOrigin = null;
 bool refresh = false, revoke = false, userinfo = false, authorizeUrl = false;
 bool? secure = null;
 var selectWorkspace = WorkspaceSelection.None;
@@ -37,6 +51,7 @@ for (var i = 0; i < args.Length; i++)
     {
         case "--env": env = Env(args[++i]); break;
         case "--workspace-env": workspaceEnv = Env(args[++i]); break;
+        case "--aes-origin": aesOrigin = args[++i]; break;
         case "--secure": secure = true; break;
         case "--no-secure": secure = false; break;
         case "--scopes": scopes = args[++i]; break;
@@ -57,30 +72,36 @@ for (var i = 0; i < args.Length; i++)
     }
 }
 if (clientId is null) Fail("missing <clientId>");
-if ((refresh || revoke) && !scopes!.Split(' ').Contains("offline_access")) scopes += " offline_access";
+if (env == "aes" && aesOrigin is null) Fail("--aes-origin is required when --env is \"aes\"");
+if (selectWorkspace != WorkspaceSelection.None && env == "aes")
+    Fail("--select-workspace is not applicable to AES: no workspace-selection prompt (single workspace per installation)");
+if ((refresh || revoke) && !scopes.Split(' ').Contains("offline_access")) scopes += " offline_access";
 
 var clientSecret = Environment.GetEnvironmentVariable("A365_CLIENT_SECRET");
 var http = new HttpClient();
 
-AltiumAuthOptions MkOptions(string e) => new()
+AltiumAuthOptions MkOptions(string e, string? scopeOverride = null) => new()
 {
     ClientId = clientId!,
-    Scopes = scopes!,
-    Endpoints = EndpointsFor(e),
+    Scopes = scopeOverride ?? scopes,
+    Endpoints = EndpointsFor(e, aesOrigin),
     ClientSecret = clientSecret,
     Secure = secure,
     OpenBrowser = OpenBrowser,
 };
 
-var signInOptions = MkOptions(env!);
-var exchangeOptions = MkOptions(workspaceEnv ?? env!);
+var signInOptions = MkOptions(env);
+var exchangeOptions = MkOptions(workspaceEnv ?? env);
 
 // Authorize-URL mode: print and exit (for confidential/custom-callback clients).
 if (authorizeUrl)
 {
-    var authz = new AltiumAuthClient(http, signInOptions).CreateAuthorizationUrl(redirectUri, selectWorkspace: selectWorkspace);
+    // A known workspace ID can be requested straight from /authorize (one-trip, no exchange).
+    var authzOptions = workspace is null ? signInOptions : MkOptions(env, WorkspaceScopesFor(scopes, workspace));
+    var authz = new AltiumAuthClient(http, authzOptions).CreateAuthorizationUrl(redirectUri, selectWorkspace: selectWorkspace);
     Console.WriteLine("=== authorize URL ===\n");
     Console.WriteLine($"redirect_uri : {redirectUri ?? signInOptions.Endpoints.RedirectUri}");
+    Console.WriteLine($"scope         : {authzOptions.Scopes}");
     Console.WriteLine($"state         : {authz.State}");
     Console.WriteLine($"code_verifier : {authz.CodeVerifier}");
     Console.WriteLine($"\nOpen in a browser to sign in:\n{authz.Url}");
@@ -88,68 +109,33 @@ if (authorizeUrl)
 }
 
 Console.WriteLine("=== a365-auth .NET sign-in E2E ===\n");
-Console.WriteLine($"Client type  : {(clientSecret is null ? "public (PKCE)" : "confidential (HTTP Basic)")}");
+Console.WriteLine($"Client type   : {(clientSecret is null ? "public (PKCE)" : "confidential (HTTP Basic)")}");
 Console.WriteLine($"secure=1      : {(secure is null ? "auto (from token host)" : secure.Value ? "forced on" : "forced off")}");
-Console.WriteLine($"Scopes        : {scopes}");
+Console.WriteLine($"Scopes        : {signInOptions.Scopes}");
 if (selectWorkspace != WorkspaceSelection.None) Console.WriteLine($"selectWorkspace: {selectWorkspace} (login-into-workspace)");
 Console.WriteLine($"Sign-in ({env}) : {(code is null ? signInOptions.Endpoints.AuthorizeEndpoint : "exchange authorization code")}");
 Console.WriteLine($"Token host    : {signInOptions.Endpoints.TokenEndpoint}");
 if (workspace is not null) Console.WriteLine($"Exchange ({workspaceEnv ?? env}): {exchangeOptions.Endpoints.TokenEndpoint}");
-if (workspace is not null && Tier(env!) != Tier(workspaceEnv ?? env!))
+if (workspace is not null && Tier(env) != Tier(workspaceEnv ?? env))
     Console.WriteLine($"\n⚠️  sign-in env '{env}' and workspace-env '{workspaceEnv}' are different environment tiers.\n" +
-        "    The token exchange will likely fail (invalid_token): the Commercial→Gov bridge works\n" +
+        "    The token exchange will likely fail (invalid_token): the Commercial→Gov bridge only works\n" +
         "    within a tier (prod↔gov, dev↔dev-gov), because the token's issuer must be trusted by the endpoint.");
 Console.WriteLine();
 
 try
 {
     using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-    var signInClient = new AltiumAuthClient(http, signInOptions);
-    var tokens = code is not null
-        ? await signInClient.ExchangeCodeAsync(code, codeVerifier, redirectUri, cts.Token)
-        : await signInClient.SignInAsync(selectWorkspace, cts.Token);
-    PrintTokens("Global token:", tokens);
 
-    if (userinfo) await PrintUserinfo(signInOptions, tokens.AccessToken);
-
-    var exchangeClient = new AltiumAuthClient(http, exchangeOptions);
-    var workspaceTokens = tokens;
-    if (workspace is not null)
-    {
-        workspaceTokens = await exchangeClient.SignIntoWorkspaceAsync(tokens.AccessToken, workspace, cts.Token);
-        PrintTokens($"Workspace token ({workspace}):", workspaceTokens);
-    }
-
-    var tokenClient = workspace is not null ? exchangeClient : signInClient;
-    var currentRefresh = workspaceTokens.RefreshToken ?? tokens.RefreshToken;
-
-    if (refresh)
-    {
-        if (currentRefresh is null) Console.WriteLine("\n⚠️  --refresh: no refresh_token returned (is offline_access granted?).");
-        else
-        {
-            Console.WriteLine($"\nRefreshing token: {currentRefresh}");
-            var refreshed = await tokenClient.RefreshTokenAsync(currentRefresh, cts.Token);
-            PrintTokens("Refreshed token:", refreshed);
-            currentRefresh = refreshed.RefreshToken ?? currentRefresh;
-        }
-    }
-
-    if (revoke)
-    {
-        if (currentRefresh is null) Console.WriteLine("\n⚠️  --revoke: no refresh_token available.");
-        else
-        {
-            await tokenClient.RevokeRefreshTokenAsync(currentRefresh, cts.Token);
-            Console.WriteLine("\n🔒 revoked refresh token; verifying a refresh now fails...");
-            try
-            {
-                await tokenClient.RefreshTokenAsync(currentRefresh, cts.Token);
-                Console.WriteLine("⚠️  refresh still succeeded — revocation may not have taken effect.");
-            }
-            catch (Exception ex) { Console.WriteLine($"✅ refresh after revocation rejected, as expected: {ex.Message}"); }
-        }
-    }
+    // 1. Test the two-trip sign-in (global token → workspace token).
+    var (currentTokens, tokenClient) = await TestTwoTripSignInAsync(cts.Token);
+    // 2. Test the one-trip sign-in (workspace scope requested at sign-in). It needs its own
+    //    browser round trip, and an authorization code can only be redeemed once — so it is
+    //    skipped in --exchange-code mode (the code was spent on test 1).
+    if (code is null) await TestOneTripSignInAsync(cts.Token);
+    // 3. Test refresh if requested.
+    if (refresh) currentTokens = await TestRefreshAsync(currentTokens, tokenClient, cts.Token);
+    // 4. Test revocation if requested.
+    if (revoke) await TestRevokeAsync(currentTokens, tokenClient, cts.Token);
 
     Console.WriteLine("\n✅ E2E completed.\n");
     return 0;
@@ -160,10 +146,125 @@ catch (Exception ex)
     return 1;
 }
 
+// ── tests ───────────────────────────────────────────────────────
+
+// Obtain a token via a manual authorization code (confidential/custom redirect) or the
+// interactive ActionWait sign-in.
+async Task<TokenSet> SignInOnceAsync(AltiumAuthClient client, CancellationToken ct) =>
+    code is not null
+        ? await client.ExchangeCodeAsync(code, codeVerifier, redirectUri, ct)
+        : await client.SignInAsync(selectWorkspace, ct);
+
+// AES hosts a single workspace — introspect the exact scope registered for this client via the
+// ClientScopes endpoint (Cloud has no equivalent single scope to introspect; the endpoint is only
+// configured for AES).
+async Task<string[]?> TestScopeIntrospectionAsync(CancellationToken ct)
+{
+    if (signInOptions.Endpoints.ScopeEndpoint is null)
+    {
+        Console.WriteLine("\n⏸️  Skipping scope introspection (no endpoint configured).");
+        return null;
+    }
+
+    AnnounceTest("Client scope introspection");
+    var clientScopes = await AltiumAuthClient.GetClientScopesAsync(http, signInOptions.Endpoints.ScopeEndpoint, clientId!, ct);
+    Console.WriteLine($"\n✅ Client scopes for {clientId} @ {signInOptions.Endpoints.ScopeEndpoint}: " +
+        $"{(clientScopes.Length > 0 ? string.Join(" ", clientScopes) : "(none returned)")}");
+    return clientScopes;
+}
+
+// Returns the tokens (and the client that issued them) that refresh/revoke should operate on:
+// the exchanged workspace token if there was one, else the global token — always at the endpoint
+// that issued it.
+async Task<(TokenSet Tokens, AltiumAuthClient Client)> TestTwoTripSignInAsync(CancellationToken ct)
+{
+    AnnounceTest("Two-trip sign-in (global token → workspace token)");
+
+    var signInClient = new AltiumAuthClient(http, signInOptions);
+    var globalTokens = await SignInOnceAsync(signInClient, ct);
+    PrintTokens("Global token:", globalTokens);
+
+    if (userinfo) await PrintUserinfo(signInOptions, globalTokens.AccessToken);
+
+    if (workspace is null)
+    {
+        Console.WriteLine("\n⏸️  Skipping workspace token exchange (no --workspace provided).");
+        return (globalTokens, signInClient);
+    }
+
+    var exchangeClient = new AltiumAuthClient(http, exchangeOptions);
+    var workspaceTokens = await exchangeClient.SignIntoWorkspaceAsync(globalTokens.AccessToken, workspace, ct);
+    PrintTokens($"Workspace token ({workspace}) [two-trip]:", workspaceTokens);
+    return (workspaceTokens, exchangeClient);
+}
+
+async Task TestOneTripSignInAsync(CancellationToken ct)
+{
+    // The workspace scope comes from --workspace, or — on AES, where the installation hosts
+    // exactly one workspace — from its ClientScopes endpoint. It is *added* to the configured
+    // scopes, never substituted for them (offline_access must survive for --refresh/--revoke).
+    var workspaceScope = workspace is not null
+        ? workspaceScopePrefix + workspace
+        : (await TestScopeIntrospectionAsync(ct))?.FirstOrDefault(s => s.StartsWith(workspaceScopePrefix, StringComparison.Ordinal));
+    if (workspaceScope is null)
+    {
+        // Without a workspace scope this exercises the same path as the global token in
+        // TestTwoTripSignInAsync, so skip it to avoid a duplicate sign-in.
+        Console.WriteLine("\n⏸️  Skipping one-trip workspace sign-in (no workspace scope requested).");
+        return;
+    }
+
+    AnnounceTest("One-trip sign-in (direct workspace token)");
+    var oneTripOptions = MkOptions(env, $"{scopes} {workspaceScope}");
+    var tokens = await SignInOnceAsync(new AltiumAuthClient(http, oneTripOptions), ct);
+    PrintTokens($"Workspace token ({workspaceScope[workspaceScopePrefix.Length..]}) [one-trip]:", tokens);
+    if (userinfo) await PrintUserinfo(oneTripOptions, tokens.AccessToken);
+}
+
+static async Task<TokenSet> TestRefreshAsync(TokenSet currentTokens, AltiumAuthClient tokenClient, CancellationToken ct)
+{
+    if (currentTokens.RefreshToken is null)
+    {
+        Console.WriteLine("\n⚠️  --refresh requested but no refresh_token was returned (is offline_access granted?).");
+        return currentTokens;
+    }
+
+    AnnounceTest("Refresh token");
+    Console.WriteLine($"\nRefreshing token: {currentTokens.RefreshToken}");
+    var refreshed = await tokenClient.RefreshTokenAsync(currentTokens.RefreshToken, ct);
+    PrintTokens("Refreshed token:", refreshed);
+    return refreshed;
+}
+
+static async Task TestRevokeAsync(TokenSet currentTokens, AltiumAuthClient tokenClient, CancellationToken ct)
+{
+    if (currentTokens.RefreshToken is null)
+    {
+        Console.WriteLine("\n⚠️  --revoke requested but no refresh_token is available (is offline_access granted?).");
+        return;
+    }
+
+    AnnounceTest("Revoke token");
+    Console.WriteLine($"\nRevoking token: {currentTokens.RefreshToken}");
+    await tokenClient.RevokeRefreshTokenAsync(currentTokens.RefreshToken, ct);
+    Console.WriteLine("\n🔒 revocation request sent (RFC 7009: 200 for known/unknown tokens).");
+    // Prove it: a refresh with the revoked token should now fail. If it still works, the test
+    // has failed — fail the run rather than printing a ❌ under a green summary.
+    var refreshStillWorks = false;
+    try
+    {
+        await tokenClient.RefreshTokenAsync(currentTokens.RefreshToken, ct);
+        refreshStillWorks = true;
+    }
+    catch (Exception ex) { Console.WriteLine($"\n✅ Refresh after revocation was rejected, as expected: {ex.Message}"); }
+    if (refreshStillWorks)
+        throw new InvalidOperationException("Refresh still succeeded after revocation — the revocation did not take effect.");
+}
+
 // ── helpers ─────────────────────────────────────────────────────
 
 static string Env(string v) =>
-    v is "prod" or "dev" or "gov" or "dev-gov" ? v : FailReturn($"--env must be prod|dev|gov|dev-gov (got \"{v}\")");
+    v is "prod" or "dev" or "gov" or "dev-gov" or "aes" ? v : FailReturn($"--env must be prod|dev|gov|dev-gov|aes (got \"{v}\")");
 
 static WorkspaceSelection ParseSelectWorkspace(string v) => v switch
 {
@@ -176,12 +277,19 @@ static WorkspaceSelection ParseSelectWorkspace(string v) => v switch
 static WorkspaceSelection FailReturnWorkspace(string message) { Fail(message); return WorkspaceSelection.None; }
 
 // Environment tier: a token can only be exchanged within its own tier (prod↔gov, dev↔dev-gov).
-static string Tier(string env) => env is "prod" or "gov" ? "prod" : "dev";
+// AES is its own tier — it never bridges to/from Commercial or Gov.
+static string Tier(string env) => env switch { "prod" or "gov" => "prod", "aes" => "aes", _ => "dev" };
 
-static AltiumEndpoints EndpointsFor(string env) => env switch
+static string WorkspaceScopesFor(string scopes, string? workspace)
+    => string.IsNullOrEmpty(workspace) ? scopes : $"{scopes} {workspaceScopePrefix}{workspace}".Trim();
+
+static void AnnounceTest(string label) => Console.WriteLine($"\n⏺️  Testing: {label}");
+
+static AltiumEndpoints EndpointsFor(string env, string? aesOrigin) => env switch
 {
     "prod" => AltiumEndpoints.CommercialCloud,
     "gov" => AltiumEndpoints.GovCloud,
+    "aes" => AltiumEndpoints.Aes(aesOrigin!), // validated present before EndpointsFor is called
     // dev / dev-gov: authorize+token on the dev host; ActionWait + AuthComplete on dev Commercial.
     "dev" => new AltiumEndpoints(
         "https://auth.dev1.altium.com/connect/authorize",

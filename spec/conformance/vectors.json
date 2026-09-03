@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "note": "Language-neutral conformance vectors for the Altium Identity flow. See README.md for the format and matchers. Extracted from src/index.test.ts and the live Commercial and Gov captures.",
+  "note": "Language-neutral conformance vectors for the Altium Identity flow. See README.md for the format and matchers. Extracted from src/index.test.ts and the live Commercial, Gov, and AES captures.",
 
   "authorizeUrl": [
     {
@@ -72,6 +72,41 @@
         "origin": "https://auth.365-gov.altium.com",
         "pathname": "/connect/authorize",
         "query": { "code_challenge_method": "S256" },
+        "queryAbsent": ["secure"]
+      }
+    },
+    {
+      "id": "authurl-aes-no-secure",
+      "description": "AES authorize URL targets the customer-hosted origin under /unifiedlogin and still carries no secure param (AES follows the Commercial rule, SPEC §5.4).",
+      "config": {
+        "clientId": "aes-client",
+        "scopes": "openid profile",
+        "authEndpoint": "https://aes.example.com:9785/unifiedlogin/connect/authorize",
+        "tokenEndpoint": "https://aes.example.com:9785/unifiedlogin/connect/token",
+        "redirectUri": "https://aes.example.com:9785/unifiedlogin/api/AuthComplete"
+      },
+      "options": { "state": "s", "codeVerifier": "v" },
+      "expect": {
+        "origin": "https://aes.example.com:9785",
+        "pathname": "/unifiedlogin/connect/authorize",
+        "query": { "code_challenge_method": "S256", "redirect_uri": "https://aes.example.com:9785/unifiedlogin/api/AuthComplete" },
+        "queryAbsent": ["secure", "selectWorkspace"]
+      }
+    },
+    {
+      "id": "authurl-aes-workspace-scope-direct",
+      "description": "AES hosts one workspace, so its ID is known up front: the workspace scope is requested directly in the initial authorize scope, making the exchange step (SPEC §5.2 — supported on AES, but unnecessary) a no-op. SPEC §6.",
+      "config": {
+        "clientId": "aes-client",
+        "scopes": "openid profile a365:workspace:11111111-1111-1111-1111-111111111111",
+        "authEndpoint": "https://aes.example.com:9785/unifiedlogin/connect/authorize",
+        "tokenEndpoint": "https://aes.example.com:9785/unifiedlogin/connect/token"
+      },
+      "options": { "state": "s", "codeVerifier": "v" },
+      "expect": {
+        "origin": "https://aes.example.com:9785",
+        "pathname": "/unifiedlogin/connect/authorize",
+        "query": { "scope": "contains:a365:workspace:11111111-1111-1111-1111-111111111111" },
         "queryAbsent": ["secure"]
       }
     }
@@ -198,6 +233,78 @@
       },
       "mockResponse": { "status": 200, "json": { "access_token": "AT3", "token_type": "Bearer" } },
       "expectResult": { "access_token": "AT3" }
+    },
+    {
+      "id": "code-exchange-public-aes",
+      "description": "Public client code exchange on an AES token endpoint: client_id in body, no Basic header, no secure (AES follows the Commercial rule, SPEC §5.4).",
+      "operation": "exchangeCode",
+      "config": {
+        "clientId": "aes-client",
+        "scopes": "openid profile",
+        "tokenEndpoint": "https://aes.example.com:9785/unifiedlogin/connect/token",
+        "redirectUri": "https://aes.example.com:9785/unifiedlogin/api/AuthComplete"
+      },
+      "input": { "code": "auth-code", "codeVerifier": "verifier-123" },
+      "expectRequest": {
+        "endpoint": "https://aes.example.com:9785/unifiedlogin/connect/token",
+        "method": "POST",
+        "authorization": "none",
+        "bodyParams": {
+          "grant_type": "authorization_code",
+          "code": "auth-code",
+          "redirect_uri": "https://aes.example.com:9785/unifiedlogin/api/AuthComplete",
+          "client_id": "aes-client"
+        },
+        "bodyParamsAbsent": ["secure", "client_secret"]
+      },
+      "mockResponse": { "status": 200, "json": { "access_token": "AES-AT", "token_type": "Bearer", "expires_in": 3600, "scope": "openid profile a365:workspace:11111111-1111-1111-1111-111111111111" } },
+      "expectResult": { "access_token": "AES-AT" }
+    },
+    {
+      "id": "workspace-exchange-aes",
+      "description": "Workspace exchange at an AES token endpoint: the grant is available on AES and follows the Commercial rule — no secure=1 (SPEC §5.2, §5.4, §6). Rarely needed in practice (a single workspace whose scope is known at sign-in), but it must not be silently mis-shaped if a client does use it.",
+      "operation": "signIntoWorkspace",
+      "config": {
+        "clientId": "aes-client",
+        "scopes": "openid profile",
+        "authEndpoint": "https://aes.example.com:9785/unifiedlogin/connect/authorize",
+        "tokenEndpoint": "https://aes.example.com:9785/unifiedlogin/connect/token"
+      },
+      "input": { "baseAccessToken": "aes-global-AT", "workspaceAuthId": "11111111-1111-1111-1111-111111111111" },
+      "expectRequest": {
+        "endpoint": "https://aes.example.com:9785/unifiedlogin/connect/token",
+        "method": "POST",
+        "authorization": "none",
+        "bodyParams": {
+          "grant_type": "urn:ietf:params:oauth:grant-type:token-exchange",
+          "subject_token": "aes-global-AT",
+          "subject_token_type": "urn:ietf:params:oauth:token-type:access_token",
+          "scope": "contains:a365:workspace:11111111-1111-1111-1111-111111111111",
+          "client_id": "aes-client"
+        },
+        "bodyParamsAbsent": ["secure", "client_secret"]
+      },
+      "mockResponse": { "status": 200, "json": { "access_token": "AES-WS-AT", "token_type": "Bearer" } },
+      "expectResult": { "access_token": "AES-WS-AT" }
+    },
+    {
+      "id": "refresh-aes-no-secure",
+      "description": "Refresh at an AES token endpoint carries no secure=1 — the host-based Gov heuristic (SPEC §5.4) does not misfire on a non-Altium-hosted host.",
+      "operation": "refreshToken",
+      "config": {
+        "clientId": "aes-client",
+        "scopes": "openid profile",
+        "tokenEndpoint": "https://aes.example.com:9785/unifiedlogin/connect/token"
+      },
+      "input": { "refreshToken": "RT" },
+      "expectRequest": {
+        "endpoint": "https://aes.example.com:9785/unifiedlogin/connect/token",
+        "method": "POST",
+        "bodyParams": { "grant_type": "refresh_token", "refresh_token": "RT", "client_id": "aes-client" },
+        "bodyParamsAbsent": ["scope", "secure"]
+      },
+      "mockResponse": { "status": 200, "json": { "access_token": "AES-AT2", "token_type": "Bearer" } },
+      "expectResult": { "access_token": "AES-AT2" }
     },
     {
       "id": "cross-partition-access-denied",
@@ -331,6 +438,52 @@
         "workspaceId": "<present>",
         "secure": "1"
       }
+    },
+    {
+      "id": "claims-workspace-aes",
+      "description": "AES workspace token — single workspace per installation, requested directly at sign-in (the exchange step is available but unnecessary, and yields the same claims). No workspaceId claim and no secure claim, unlike Commercial/Gov workspace tokens (SPEC §8).",
+      "scenario": "signIn on {origin}/unifiedlogin with scope a365:workspace:{id}",
+      "accessTokenClaims": {
+        "iss": "{origin}/unifiedlogin",
+        "scopeContains": ["a365:workspace:"],
+        "workspaceId": "<absent>",
+        "secure": "<absent>"
+      }
+    }
+  ],
+
+  "clientScopes": [
+    {
+      "id": "clientscopes-returns-scope-array",
+      "description": "GET on the scope endpoint returns the scopes registered for the client, as a JSON array of strings (AES host: includes the installation's single workspace scope).",
+      "input": { "scopeEndpoint": "https://aes.example.com:9785/unifiedlogin/api/ClientScopes", "clientId": "test-client-id" },
+      "mockResponse": { "status": 200, "json": ["a365:workspace:11111111-1111-1111-1111-111111111111", "openid"] },
+      "expectRequest": {
+        "endpoint": "https://aes.example.com:9785/unifiedlogin/api/ClientScopes?clientId=test-client-id",
+        "method": "GET"
+      },
+      "expectResult": ["a365:workspace:11111111-1111-1111-1111-111111111111", "openid"]
+    },
+    {
+      "id": "clientscopes-unknown-client-returns-empty-array",
+      "description": "An unknown clientId returns an empty JSON array from the endpoint itself (not an error, and not the non-array fallback below).",
+      "input": { "scopeEndpoint": "https://aes.example.com:9785/unifiedlogin/api/ClientScopes", "clientId": "unknown-client" },
+      "mockResponse": { "status": 200, "json": [] },
+      "expectResult": []
+    },
+    {
+      "id": "clientscopes-non-array-body-is-an-error",
+      "description": "A 200 whose body is not a JSON array of scope strings is an error, not an empty result: `[]` means \"this client has no scopes\", so a malformed response must never be reported as one.",
+      "input": { "scopeEndpoint": "https://aes.example.com:9785/unifiedlogin/api/ClientScopes", "clientId": "test-client-id" },
+      "mockResponse": { "status": 200, "json": null },
+      "expectErrorContains": "expected a JSON array of strings"
+    },
+    {
+      "id": "clientscopes-non-200-is-an-error",
+      "description": "A non-200 response (server error, or an HTML error page from a misconfigured proxy in front of an on-prem installation) surfaces the status and body instead of degrading to an empty scope list.",
+      "input": { "scopeEndpoint": "https://aes.example.com:9785/unifiedlogin/api/ClientScopes", "clientId": "test-client-id" },
+      "mockResponse": { "status": 500, "text": "<html>Server Error</html>" },
+      "expectErrorContains": "500"
     }
   ]
 }

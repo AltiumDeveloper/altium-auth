@@ -19,6 +19,7 @@ import {
   revokeRefreshToken,
   createAuthorizationUrl,
   exchangeCode,
+  getClientScopes,
 } from "../../src/index";
 import vectors from "../../../../spec/conformance/vectors.json";
 
@@ -35,7 +36,7 @@ function stubFetch(reply: (url: string, opts: Any) => { status: number; body: st
     vi.fn(async (url: string, opts: Any) => {
       calls.push({ url, opts });
       const { status, body } = reply(url, opts);
-      return { status, text: async () => body };
+      return { status, text: async () => body, json: async () => JSON.parse(body) };
     }),
   );
   return calls;
@@ -46,10 +47,13 @@ function bodyText(r: Any): string {
 }
 
 function matchValue(actual: string | null, matcher: Any): void {
-  if (matcher === "<any>") expect(actual).not.toBeNull();
-  else if (typeof matcher === "string" && matcher.startsWith("contains:")) {
+  if (matcher === "<any>") {
+    expect(actual).not.toBeNull();
+  } else if (typeof matcher === "string" && matcher.startsWith("contains:")) {
     expect(actual ?? "").toContain(matcher.slice("contains:".length));
-  } else expect(actual).toBe(matcher);
+  } else {
+    expect(actual).toBe(matcher);
+  }
 }
 
 // ── authorizeUrl ────────────────────────────────────────────────
@@ -108,8 +112,8 @@ describe("conformance: tokenRequest", () => {
       expect(calls.length).toBeGreaterThan(0);
       const { url, opts } = calls[0];
       const er = v.expectRequest ?? {};
-      if (er.endpoint) expect(url).toBe(er.endpoint);
-      if (er.method) expect(opts.method).toBe(er.method);
+      if (er.endpoint) { expect(url).toBe(er.endpoint); }
+      if (er.method) { expect(opts.method).toBe(er.method); }
 
       const auth = opts.headers?.Authorization ?? opts.headers?.authorization;
       if (er.authorization === "none") {
@@ -179,8 +183,8 @@ describe("conformance: revocation", () => {
       expect(calls.length).toBeGreaterThan(0);
       const { url, opts } = calls[0];
       const er = v.expectRequest;
-      if (er.endpoint) expect(url).toBe(er.endpoint);
-      if (er.method) expect(opts.method).toBe(er.method);
+      if (er.endpoint) { expect(url).toBe(er.endpoint); }
+      if (er.method) { expect(opts.method).toBe(er.method); }
 
       const auth = opts.headers?.Authorization ?? opts.headers?.authorization;
       if (er.authorization === "none") {
@@ -197,6 +201,27 @@ describe("conformance: revocation", () => {
       for (const k of er.bodyParamsAbsent ?? []) {
         expect(params.has(k)).toBe(false);
       }
+    });
+  }
+});
+
+// ── clientScopes ────────────────────────────────────────────────
+describe("conformance: clientScopes", () => {
+  for (const v of (vectors as Any).clientScopes) {
+    it(v.id, async () => {
+      const calls = stubFetch(() => ({ status: v.mockResponse.status, body: bodyText(v.mockResponse) }));
+
+      if (v.expectErrorContains) {
+        await expect(getClientScopes(v.input.scopeEndpoint, v.input.clientId)).rejects.toThrow(v.expectErrorContains);
+      } else {
+        const result = await getClientScopes(v.input.scopeEndpoint, v.input.clientId);
+        expect(result).toEqual(v.expectResult);
+      }
+
+      expect(calls.length).toBeGreaterThan(0);
+      const { url } = calls[0];
+      const er = v.expectRequest ?? {};
+      if (er.endpoint) { expect(url).toBe(er.endpoint); }
     });
   }
 });

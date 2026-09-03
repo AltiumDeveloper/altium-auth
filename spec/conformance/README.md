@@ -40,16 +40,27 @@ Input: `pollResponses` (an ordered list the mock returns to successive `POST /aw
 ### `liveClaims`
 Golden decoded **access-token claims** from real runs — integration references (assert after decoding a token obtained from the live server for that scenario).
 
+### `clientScopes`
+Input: `input` (`scopeEndpoint`, `clientId`). Drives `getClientScopes`/`GetClientScopesAsync`
+(the `{base}/api/ClientScopes` endpoint — present in every environment, but only AES returns an
+`a365:workspace:{id}` scope; not really part of the OAuth flows in the other categories).
+`mockResponse`: the GET response. `expectRequest` (optional): `endpoint` (full URL,
+query string included), `method`. Then either `expectResult` (the returned scope array)
+or `expectErrorContains` — a lookup that fails **must** throw rather than degrade to `[]`,
+which is itself a meaningful answer ("this client has no scopes").
+
 ## Coverage checklist
 
-- [x] Authorize URL — Commercial + Gov host, `secure` never on `/authorize`, PKCE `S256`
+- [x] Authorize URL — Commercial + Gov + AES host, `secure` never on `/authorize`, PKCE `S256`
 - [x] Authorize URL — `selectWorkspace` strict/optional/none (SPEC §3.1)
-- [x] Code exchange — public (client_id) vs confidential (Basic)
-- [x] Workspace exchange — non-Gov (no `secure`) vs Gov (`secure=1`, Commercial→Gov bridge)
-- [x] Refresh — no `scope` sent; Commercial vs Gov (`secure`)
+- [x] Authorize URL — AES workspace scope requested directly (one trip, no exchange needed, SPEC §5.2/§6)
+- [x] Code exchange — public (client_id) vs confidential (Basic); Commercial + AES token hosts
+- [x] Workspace exchange — non-Gov (no `secure`) vs Gov (`secure=1`, Commercial→Gov bridge) vs AES (available, no `secure`)
+- [x] Refresh — no `scope` sent; Commercial vs Gov (`secure`) vs AES (no `secure`)
 - [x] Cross-partition exchange → `access_denied`
 - [x] ActionWait — 200/408/410, non-JSON, missing `code`
-- [x] Live claims — `iss` / `secure` / `workspaceId` for global, non-Gov, Gov tokens
+- [x] Live claims — `iss` / `secure` / `workspaceId` for global, non-Gov, Gov, AES tokens
+- [x] ClientScopes — scope array returned, unknown-client empty array, malformed body + non-200 → error (AES host; only AES returns a workspace scope)
 - [x] Revocation — request shape + refresh → `invalid_grant` (spec §9; skipped in the TS runner, no `revoke()` in the lib)
 - [x] userinfo response shape (`../schemas/userinfo.schema.json`; reference)
 - [x] `expires_at` computation (30s skew)

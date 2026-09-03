@@ -2,7 +2,7 @@ site_name: Altium 365 Authentication
 site_description: >-
   Client libraries and specification for Altium 365 authentication —
   OAuth2/OIDC + PKCE, the ActionWait desktop flow, workspace token-exchange,
-  refresh/revocation, and Gov Cloud.
+  refresh/revocation, Gov Cloud, and AES (on-prem) installations.
 site_url: https://altiumdeveloper.github.io/a365-auth/
 repo_url: https://github.com/AltiumDeveloper/a365-auth
 repo_name: AltiumDeveloper/a365-auth
@@ -71,8 +71,9 @@ nav:
   - Guides:
       - Overview: guides/overview.md
       - Web & server apps: guides/web-and-server-apps.md
-      - Desktop & on-prem apps: guides/desktop-and-onprem-apps.md
+      - Desktop apps: guides/desktop-apps.md
       - Gov Cloud: guides/gov-cloud.md
+      - AES (on-prem): guides/aes.md
       - Access token claims: guides/token-claims.md
       - Register your application: guides/register-your-application.md
   - Specification:

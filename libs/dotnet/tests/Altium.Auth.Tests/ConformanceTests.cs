@@ -27,6 +27,7 @@ public class ConformanceTests
     public static IEnumerable<object[]> TokenRequestVectors() => Category("tokenRequest");
     public static IEnumerable<object[]> ActionWaitVectors() => Category("actionWait");
     public static IEnumerable<object[]> RevocationVectors() => Category("revocation", v => v.TryGetProperty("expectRequest", out _));
+    public static IEnumerable<object[]> ClientScopesVectors() => Category("clientScopes");
 
     [Theory]
     [MemberData(nameof(AuthorizeUrlVectors))]
@@ -137,6 +138,42 @@ public class ConformanceTests
         await sut.RevokeRefreshTokenAsync(v.GetProperty("input").GetProperty("refreshToken").GetString()!);
         Assert.NotEmpty(handler.Calls);
         CheckRequest(handler.Calls[0], v.GetProperty("expectRequest"), options);
+    }
+
+    [Theory]
+    [MemberData(nameof(ClientScopesVectors))]
+    public async Task ClientScopes(string id, string json)
+    {
+        _ = id;
+        var v = JsonDocument.Parse(json).RootElement;
+        var input = v.GetProperty("input");
+        var (status, body) = MockBody(v.GetProperty("mockResponse"));
+        var handler = new SeqHandler((_, _, _) => (status, body));
+        using var http = new HttpClient(handler);
+
+        Task<string[]> Run() => AltiumAuthClient.GetClientScopesAsync(
+            http,
+            input.GetProperty("scopeEndpoint").GetString()!,
+            input.GetProperty("clientId").GetString()!
+        );
+
+        if (v.TryGetProperty("expectErrorContains", out var eErr))
+        {
+            var ex = await Assert.ThrowsAnyAsync<Exception>(Run);
+            Assert.Contains(eErr.GetString()!, ex.Message);
+        }
+        else
+        {
+            var expected = v.GetProperty("expectResult").EnumerateArray().Select(e => e.GetString()).ToArray();
+            Assert.Equal(expected, await Run());
+        }
+
+        if (v.TryGetProperty("expectRequest", out var erq))
+        {
+            Assert.NotEmpty(handler.Calls);
+            if (erq.TryGetProperty("endpoint", out var ep)) Assert.Equal(ep.GetString(), handler.Calls[0].Url);
+            if (erq.TryGetProperty("method", out var me)) Assert.Equal(me.GetString(), handler.Calls[0].Method);
+        }
     }
 
     // ── assertions & helpers ────────────────────────────────────

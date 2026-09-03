@@ -2,8 +2,8 @@
 
 Client libraries for **Altium 365 authentication** — OAuth2/OpenID Connect with PKCE,
 the Altium **ActionWait** desktop sign-in flow, workspace token-exchange,
-refresh/revocation, and **Gov Cloud** — built to a single language-neutral
-specification and held to one shared conformance suite.
+refresh/revocation, **Gov Cloud**, and **AES** (on-prem) deployments — built to a
+single language-neutral specification and held to one shared conformance suite.
 
 The spec is the source of truth; each library is a hand-written, idiomatic
 implementation that is *validated by the same vectors*. Change the contract once, and
@@ -13,7 +13,7 @@ every library's CI proves it still conforms.
 
 Pick the flow that matches your application:
 
-- **Desktop / on-prem / native** (can't host a redirect) → [Desktop & on-prem apps](guides/desktop-and-onprem-apps.md)
+- **Desktop** (can't host a redirect) → [Desktop apps](guides/desktop-apps.md)
   — browser sign-in with PKCE over ActionWait.
 - **Web / server backends** (host a redirect) → [Web & server apps](guides/web-and-server-apps.md)
   — the standard authorization-code redirect flow.
@@ -42,4 +42,5 @@ outcomes, so the implementations can't drift. The normative behavior lives in th
 ## Topics
 
 - [Gov Cloud](guides/gov-cloud.md) — Commercial vs Gov and the `secure=1` two-token model
+- [AES (on-prem)](guides/aes.md) — customer-hosted installations of Altium Enterprise Server
 - [Access token claims](guides/token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)

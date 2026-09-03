@@ -16,11 +16,13 @@ export {
   exchangeCode,
   COMMERCIAL_CLOUD_ENDPOINTS,
   GOV_CLOUD_ENDPOINTS,
-} from "./auth";
+  createAesEndpoints,
+  getClientScopes,
+} from "./auth.js";
 export type {
   SignInOptions,
   AuthorizationUrlOptions,
   AuthorizationRequest,
   ExchangeCodeParams,
-} from "./auth";
-export type { OAuthConfig, TokenSet } from "./types";
+} from "./auth.js";
+export type { OAuthConfig, TokenSet } from "./types.js";

@@ -2,7 +2,7 @@
   "name": "@altium-developer/a365-auth",
   "version": "0.1.2",
   "description": "Altium 365 OAuth2 authentication library with PKCE and ActionWait long-polling for browser-based sign-in.",
-  "type": "commonjs",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -20,13 +20,13 @@
     "CHANGELOG.md"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src",
+    "lint": "eslint src test scripts",
     "test": "vitest run",
     "test:conformance": "vitest run --config test/conformance/vitest.config.ts",
     "test:e2e": "tsx scripts/test-signin.ts",
@@ -58,12 +58,12 @@
     "token-exchange"
   ],
   "devDependencies": {
-    "@eslint/js": "^9.0.0",
-    "@types/node": "^20.0.0",
-    "eslint": "^9.0.0",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.1",
+    "eslint": "^10.9.1",
     "tsx": "^4.22.4",
-    "typescript": "^5.4.0",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.0.0",
-    "vitest": "^2.0.0"
+    "vitest": "^4.1.11"
   }
 }

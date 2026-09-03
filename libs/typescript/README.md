@@ -6,11 +6,11 @@
 [![CI](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/typescript-ci.yml/badge.svg)](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/typescript-ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AltiumDeveloper/a365-auth/blob/main/libs/typescript/LICENSE)
 
-Altium 365 OAuth2 / OpenID Connect authentication library. Supports both client types and both clouds:
+Altium 365 OAuth2 / OpenID Connect authentication library. Supports both client types, and Commercial Cloud, Gov Cloud, and AES (on-prem) deployments:
 
-- **Public clients** (desktop, on-prem, native) — browser sign-in with PKCE over Altium's **ActionWait** long-poll: [`signIn`](#signinconfig-options).
-- **Confidential clients** (web/server backends with a secret) — the standard **authorization-code redirect** flow via composable steps: [`createAuthorizationUrl`](#createauthorizationurlconfig-options) + [`exchangeCode`](#exchangecodeconfig-params).
-- **Workspace tokens**, **token refresh**, and first-class **Gov Cloud** support.
+- **Public clients** (desktop, on-prem, native) — browser sign-in with PKCE over Altium's **ActionWait** long-poll: <a href="#signinconfig-options"><code>signIn</code></a>.
+- **Confidential clients** (web/server backends with a secret) — the standard **authorization-code redirect** flow via composable steps: <a href="#createauthorizationurlconfig-options"><code>createAuthorizationUrl</code></a> + <a href="#exchangecodeconfig-params"><code>exchangeCode</code></a>.
+- **Workspace tokens**, **token refresh**, and first-class **Gov Cloud** and **AES** (on-prem) support.
 
 **Zero runtime dependencies.** Runs on Node ≥20, Bun, and Deno (and bundled apps that polyfill Node's `crypto`).
 
@@ -21,8 +21,9 @@ The library implements the flow described in these guides (protocol-level, indep
 - [Authentication overview](../../docs/guides/overview.md) — endpoints, key terms, and the recommended flow
 - [Register your application](../../docs/guides/register-your-application.md) — client types, redirect URLs, credentials
 - [Web / server apps](../../docs/guides/web-and-server-apps.md) — authorization-code redirect flow (confidential clients)
-- [Desktop / on-prem apps](../../docs/guides/desktop-and-onprem-apps.md) — the ActionWait pattern (public clients)
+- [Desktop apps](../../docs/guides/desktop-apps.md) — the ActionWait pattern (public clients)
 - [Gov Cloud](../../docs/guides/gov-cloud.md) — Commercial vs Gov and the `secure=1` two-token model
+- [AES (on-prem)](../../docs/guides/aes.md) — customer-hosted installations
 - [Access token claims](../../docs/guides/token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
 
 ## Installation
@@ -35,9 +36,9 @@ npm install @altium-developer/a365-auth
 
 Only `clientId` and `scopes` are required — the endpoints default to the Altium 365 Commercial Cloud. Pick the flow that matches your app.
 
-### Public apps (desktop / on-prem — ActionWait sign-in)
+### Public apps (desktop — ActionWait sign-in)
 
-For desktop, on-prem, and native clients that **can't host a public redirect**. `signIn` opens the browser, waits for the callback over Altium's ActionWait long-poll, and returns tokens. See [Desktop / on-prem apps](../../docs/guides/desktop-and-onprem-apps.md).
+For desktop clients that **can't host a public redirect**. `signIn` opens the browser, waits for the callback over Altium's ActionWait long-poll, and returns tokens. See [Desktop apps](../../docs/guides/desktop-apps.md).
 
 ```typescript
 import { signIn, signIntoWorkspace } from "@altium-developer/a365-auth";
@@ -125,12 +126,32 @@ const tokens = await signIn({
 
 Commercial and Gov are kept strictly separate: a global token can only be exchanged for a workspace of the matching kind. `secure=1` is driven by which token endpoint you use — Gov endpoint → sent, Commercial endpoint → omitted — so pointing `tokenEndpoint` at the Gov host is all it takes to exchange a Commercial token for a Gov workspace token.
 
-> Gov tokens must never be used against Commercial services, and vice versa. See [docs/gov-cloud.md](../../docs/guides/gov-cloud.md).
+> Gov tokens must never be used against Commercial services, and vice versa. See the [Gov Cloud](../../docs/guides/gov-cloud.md) guide.
 
-### Custom or on-prem installations
+### AES (on-prem)
 
-For on-prem or other custom installations, override any of the four
-endpoints. Anything you omit still falls back to the Commercial Cloud:
+Altium Enterprise Server (AES) is a customer-hosted, on-prem installation — unlike Commercial/Gov Cloud (fixed Altium-hosted domains), there's no fixed host, so use `createAesEndpoints()` to derive the endpoint set from your AES server's origin. AES does not use `secure=1` (same rule as Commercial), and there's no cross-cloud bridging to/from Commercial or Gov.
+
+```typescript
+import { signIn, createAesEndpoints, getClientScopes } from "@altium-developer/a365-auth";
+
+const clientId = "your-aes-client-id";
+const endpoints = createAesEndpoints("https://aes.server.example:9785");
+const scopes = await getClientScopes(endpoints.scopeEndpoint, clientId);
+
+const tokens = await signIn({
+  clientId,
+  scopes: scopes.join(" "),
+  ...endpoints,
+});
+```
+
+See the [AES (on-prem)](../../docs/guides/aes.md) guide.
+
+### Custom Deployments
+
+For other custom deployments, override any of the four endpoints. Anything
+you omit still falls back to the Commercial Cloud:
 
 ```typescript
 import { COMMERCIAL_CLOUD_ENDPOINTS } from "@altium-developer/a365-auth";
@@ -138,9 +159,9 @@ import { COMMERCIAL_CLOUD_ENDPOINTS } from "@altium-developer/a365-auth";
 const config = {
   clientId: "your-client-id",
   scopes: "openid profile",
-  // Point auth + token at an on-prem host; keep the rest on the Commercial Cloud:
-  authEndpoint: "https://auth.my-onprem.example/connect/authorize",
-  tokenEndpoint: "https://auth.my-onprem.example/connect/token",
+  // Point auth + token at a custom deployment; keep the rest on the Commercial Cloud:
+  authEndpoint: "https://auth.my-custom-deployment.example/connect/authorize",
+  tokenEndpoint: "https://auth.my-custom-deployment.example/connect/token",
 };
 
 // Endpoint presets are exported to inspect or spread:
@@ -277,11 +298,13 @@ interface OAuthConfig {
   clientSecret?: string;      // Confidential clients only → HTTP Basic auth
   secure?: boolean;           // Override Gov auto-detection (normally unset)
 
-  // Optional — default to COMMERCIAL_CLOUD_ENDPOINTS. Override for Dev/UAT/on-prem,
-  // or spread GOV_CLOUD_ENDPOINTS for Gov Cloud.
+  // Optional — default to COMMERCIAL_CLOUD_ENDPOINTS. Override individually for
+  // custom installations, spread GOV_CLOUD_ENDPOINTS for Gov Cloud, or spread
+  // createAesEndpoints(origin) for an AES (on-prem) installation.
   authEndpoint?: string;      // default: https://auth.altium.com/connect/authorize
   tokenEndpoint?: string;     // default: https://auth.altium.com/connect/token
-  actionWaitEndpoint?: string; // default: https://actionwait.altium.com/await
+  actionWaitEndpoint?: string;// default: https://actionwait.altium.com/await
+  scopeEndpoint?: string;
   redirectUri?: string;       // default: https://auth.altium.com/api/AuthComplete
 }
 ```
@@ -336,6 +359,7 @@ The library throws descriptive `Error` objects in these scenarios:
 | Empty refresh token | `refreshToken is required — pass the refresh_token from a prior TokenSet.` |
 | Empty authorization code | `code is required — pass the authorization code from the redirect callback.` |
 | Token endpoint returns OAuth error | `Token endpoint {status} {error_code} — {description}` |
+| ClientScopes lookup fails | `ClientScopes endpoint {status}:` / `ClientScopes endpoint returned an unexpected body (expected a JSON array of strings):` |
 
 ## Compatibility
 
@@ -363,6 +387,9 @@ npm run test:e2e -- YOUR_CLIENT_ID
 # Gov Cloud (Dev) — verifies the secure=1 two-token model
 npm run test:e2e -- --env dev-gov YOUR_GOV_CLIENT_ID
 
+# AES (on-prem) — verifies the origin-derived endpoints, no secure=1
+npm run test:e2e -- --env aes --aes-origin https://aes.server.example:9785 YOUR_AES_CLIENT_ID
+
 # Also exchange a workspace token and exercise refresh
 npm run test:e2e -- --workspace <authId> --refresh YOUR_CLIENT_ID
 
@@ -370,7 +397,7 @@ npm run test:e2e -- --workspace <authId> --refresh YOUR_CLIENT_ID
 A365_CLIENT_SECRET=... npm run test:e2e -- YOUR_CLIENT_ID
 ```
 
-Options include `--env prod|dev|gov|dev-gov`, `--workspace-env`, `--secure`/`--no-secure`, `--scopes`, `--workspace`, `--refresh`, `--userinfo`, `--revoke`, plus `--authorize-url`/`--exchange-code`/`--redirect-uri` for confidential (custom-callback) clients — see the header of [`scripts/test-signin.ts`](https://github.com/AltiumDeveloper/a365-auth/blob/main/libs/typescript/scripts/test-signin.ts). The client secret is read from `A365_CLIENT_SECRET` so it never appears in shell history or the process list.
+Options include `--env prod|dev|gov|dev-gov|aes`, `--aes-origin` (required for `--env aes`), `--workspace-env`, `--secure`/`--no-secure`, `--scopes`, `--workspace`, `--refresh`, `--userinfo`, `--revoke`, plus `--authorize-url`/`--exchange-code`/`--redirect-uri` for confidential (custom-callback) clients — see the header of [`scripts/test-signin.ts`](https://github.com/AltiumDeveloper/a365-auth/blob/main/libs/typescript/scripts/test-signin.ts). The client secret is read from `A365_CLIENT_SECRET` so it never appears in shell history or the process list.
 
 See [CONTRIBUTING.md](https://github.com/AltiumDeveloper/a365-auth/blob/main/CONTRIBUTING.md) and [AGENTS.md](https://github.com/AltiumDeveloper/a365-auth/blob/main/AGENTS.md) for the full contributor guide.
 
