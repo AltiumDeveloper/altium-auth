@@ -1,6 +1,6 @@
 # Altium Identity Integration Specification
 
-**Version:** 0.1.0 (DRAFT)
+**Version:** 0.2.0 (DRAFT)
 **Status:** extracted from the validated `@altium-developer/a365-auth` reference implementation and `docs/`, and cross-validated by the .NET (`Altium.Auth`) implementation against the shared conformance vectors. Preview — subject to change as the libraries evolve.
 
 The key words **MUST**, **MUST NOT**, **SHOULD**, and **MAY** are used per [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).

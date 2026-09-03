@@ -7,6 +7,8 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-09-04
+
 - **Move from CommonJS to ESM** for the TypeScript implementation library, and
   update of its package dependencies. The minimum NodeJS version is bumped to v22.
 
@@ -83,6 +85,7 @@ as the shared spec and sibling libraries evolve.
 - Zero runtime dependencies. Runs on Node ≥20, Bun, and Deno.
 - Conforms to the shared, language-neutral vectors in `spec/conformance/vectors.json`.
 
+[0.2.0]: https://github.com/AltiumDeveloper/a365-auth/releases/tag/ts-v0.2.0
 [0.1.2]: https://github.com/AltiumDeveloper/a365-auth/releases/tag/ts-v0.1.2
 [0.1.1]: https://github.com/AltiumDeveloper/a365-auth/releases/tag/ts-v0.1.1
 [0.1.0]: https://github.com/AltiumDeveloper/a365-auth/releases/tag/ts-v0.1.0
