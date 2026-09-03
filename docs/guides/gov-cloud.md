@@ -42,5 +42,7 @@ Hold the **Commercial global token** from sign-in for global services, and use e
 
 ## Related
 
-- [Authentication overview](./overview.md) · [Access token claims](./token-claims.md) (the `secure` claim)
-- [Web and server application flow](./web-and-server-apps.md) · [Desktop application flow](./desktop-apps.md)
+- [Authentication overview](./overview.md)
+- [Access token claims](./token-claims.md) (the `secure` claim)
+- [Web and server application flow](./web-and-server-apps.md)
+- [Desktop application flow](./desktop-apps.md)
