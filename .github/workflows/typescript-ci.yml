@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 22]
+        node: [22, 24, 26] # 2 LTS versions and the current one
     name: Node ${{ matrix.node }}
     steps:
       - uses: actions/checkout@v4
