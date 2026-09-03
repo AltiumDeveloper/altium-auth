@@ -496,9 +496,9 @@ describe("confidential client (clientSecret)", () => {
   });
 });
 
-// ── Gov Cloud tests ─────────────────────────────────────────────
+// ── GovCloud tests ─────────────────────────────────────────────
 
-describe("Gov Cloud", () => {
+describe("GovCloud", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });

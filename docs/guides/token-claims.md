@@ -4,7 +4,7 @@ Altium 365 access tokens are signed JWTs (header `typ: at+jwt`, `alg: RS256`). Y
 
 > **Validate before you trust.** Verify the token's signature against the issuer's JWKS (published in the [discovery document](./overview.md#endpoints)) and check `exp`/`iss`/`aud` before relying on any claim. Decoding alone does not prove authenticity.
 
-Example payload (a Gov Cloud workspace token; identifiers shown as placeholders):
+Example payload (a GovCloud workspace token; identifiers shown as placeholders):
 
 ```json
 {
@@ -23,17 +23,17 @@ Example payload (a Gov Cloud workspace token; identifiers shown as placeholders)
 
 | Claim | Present on | Meaning |
 | --- | --- | --- |
-| `iss` | every token | **Issuer** — the base URL that minted the token, which identifies the cloud: `https://auth.altium.com` (Commercial), `https://auth.365-gov.altium.com` (Gov Cloud), or `{origin}/unifiedlogin` (AES, on-prem). |
+| `iss` | every token | **Issuer** — the base URL that minted the token, which identifies the cloud: `https://auth.altium.com` (Commercial), `https://auth.365-gov.altium.com` (GovCloud), or `{origin}/unifiedlogin` (AES, on-prem). |
 | `sub` | every token | **Subject** — for user tokens, the user's ID (a stable identifier; the same value the [`userinfo`](./web-and-server-apps.md#read-the-users-profile-optional) endpoint returns as `sub`). |
 | `client_id` | every token | The **application** — the registered OAuth client that obtained the token. |
 | `scope` | every token | The granted scopes. A workspace token includes `a365:workspace:{workspaceId}`; `offline_access` means a refresh token was issued alongside it. |
 | `workspaceId` | workspace tokens | The workspace's `authId` — the single workspace this token grants access to (it matches the `a365:workspace:` scope). **Absent on global tokens, and on all AES tokens**. |
-| `secure` | Gov Cloud tokens | `"1"` — marks a Gov Cloud token bound to Gov Cloud. **Absent on Commercial and AES tokens.** |
+| `secure` | GovCloud tokens | `"1"` — marks a GovCloud token bound to GovCloud. **Absent on Commercial and AES tokens.** |
 
 ## Reading the token kind from the claims
 
 - **Global vs. workspace token** — a workspace token has a `workspaceId` claim and an `a365:workspace:{id}` scope; a global token has neither.
-- **Commercial vs. Gov Cloud token** — a Gov Cloud token carries `secure: "1"` and a Gov `iss`; a Commercial token has no `secure` claim. See [Gov Cloud considerations](./gov-cloud.md).
+- **Commercial vs. GovCloud token** — a GovCloud token carries `secure: "1"` and a Gov `iss`; a Commercial token has no `secure` claim. See [GovCloud considerations](./govcloud.md).
 - **AES (on-prem) token** — a workspace token has a `a365:workspace:{id}` scope, but there is **no `workspaceId` claim** and **no `secure` claim** (same as Commercial). `iss` is the AES installation's own `{origin}/unifiedlogin` base. See [AES (on-prem) considerations](./aes.md).
 
 ## Standard claims
@@ -43,4 +43,4 @@ Tokens also carry the usual OAuth 2.0 / OIDC JWT claims — `iat`, `nbf`, `exp` 
 ## Related
 
 - [Authentication overview](./overview.md) · [Web and server application flow](./web-and-server-apps.md)
-- [Gov Cloud considerations](./gov-cloud.md) · [AES (on-prem) considerations](./aes.md)
+- [GovCloud considerations](./govcloud.md) · [AES (on-prem) considerations](./aes.md)

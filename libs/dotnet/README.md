@@ -4,13 +4,13 @@
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AltiumDeveloper/a365-auth/blob/main/LICENSE)
 
 Altium 365 OAuth2 / OpenID Connect authentication client for .NET. Supports both
-client types as well as the different deployment types: Commercial Cloud, Gov Cloud, and AES (on-prem).
+client types as well as the different deployment types: Commercial Cloud, GovCloud, and AES (on-prem).
 
 - **Public clients** (desktop) — browser sign-in with PKCE over Altium's
   **ActionWait** long-poll: `SignInAsync`.
 - **Confidential clients** (web/server backends with a secret) — the standard
   **authorization-code redirect** flow via composable steps: `CreateAuthorizationUrl` and `ExchangeCodeAsync`.
-- **Workspace tokens**, **token refresh / revocation**, and first-class **Gov Cloud** and
+- **Workspace tokens**, **token refresh / revocation**, and first-class **GovCloud** and
   **AES** (on-prem) support.
 
 **Zero dependencies**, `net8.0`. Validated against the same language-neutral
@@ -26,7 +26,7 @@ this package):
 - [Register your application](../../docs/guides/register-your-application.md) — client types, redirect URLs, credentials
 - [Web / server apps](../../docs/guides/web-and-server-apps.md) — authorization-code redirect flow (confidential)
 - [Desktop apps](../../docs/guides/desktop-apps.md) — the ActionWait pattern (public)
-- [Gov Cloud](../../docs/guides/gov-cloud.md) — Commercial vs Gov and the `secure=1` two-token model
+- [GovCloud](../../docs/guides/govcloud.md) — Commercial vs Gov and the `secure=1` two-token model
 - [AES (on-prem)](../../docs/guides/aes.md) — customer-hosted installations
 - [Access token claims](../../docs/guides/token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
 
@@ -99,7 +99,7 @@ TokenSet tokens = await client.ExchangeCodeAsync(code, authz.CodeVerifier, redir
 performs the token exchange. `SignIntoWorkspaceAsync`, `RefreshTokenAsync`, and
 `RevokeRefreshTokenAsync` all apply the `ClientSecret` automatically when it's set.
 
-### Gov Cloud
+### GovCloud
 
 Use the `AltiumEndpoints.GovCloud` preset — that's it. The client detects the Gov token
 endpoint and adds the required `secure=1` to token requests automatically (the two-token
@@ -118,12 +118,12 @@ var options = new AltiumAuthOptions
 Commercial and Gov are kept strictly separate: a global token can only be exchanged for a
 workspace of the matching kind. `secure=1` is driven by which token endpoint you use, so
 pointing the token endpoint at the Gov host is all it takes to exchange a Commercial token
-for a Gov workspace token. See the [Gov Cloud](../../docs/guides/gov-cloud.md) guide.
+for a Gov workspace token. See the [GovCloud](../../docs/guides/govcloud.md) guide.
 
 ### AES (on-prem)
 
 Altium Enterprise Server (AES) is a customer-hosted, on-prem installation — unlike
-Commercial/Gov Cloud (fixed Altium-hosted domains), there's no fixed host, so use
+Commercial/GovCloud (fixed Altium-hosted domains), there's no fixed host, so use
 `AltiumEndpoints.Aes(origin)` to derive the endpoint set from your AES server's origin. AES
 does not use `secure=1` (same rule as Commercial), and there's no cross-cloud bridging
 to/from Commercial or Gov.

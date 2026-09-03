@@ -48,7 +48,7 @@ GET https://auth.altium.com/connect/authorize
 
 If you already know the workspace the user should land on, request it up front: include `a365:workspace:<workspaceId>` in the `scope` parameter above, and the code exchange in Step 2 directly returns the workspace token (and refresh token, with `offline_access`), skipping Steps 3–4 below.
 
-Run the *whole* flow on the host that matches the workspace: `auth.altium.com` for a Commercial workspace, or `auth.365-gov.altium.com` for a Gov Cloud workspace (send `secure=1` on the `/connect/token` requests only).
+Run the *whole* flow on the host that matches the workspace: `auth.altium.com` for a Commercial workspace, or `auth.365-gov.altium.com` for a GovCloud workspace (send `secure=1` on the `/connect/token` requests only).
 
 If you don't know the workspace ahead of time but still want the user to land on one during sign-in, add the optional `selectWorkspace` parameter to the authorize request instead, to have the code exchange return a workspace-scoped token directly. See [Login-into-workspace mode](./overview.md#login-into-workspace-mode) for the values (`none` / `strict` / `optional`) and behavior.
 
@@ -151,7 +151,7 @@ Response (a JSON object of claims; the exact set depends on the granted scopes a
 
 ## Step 3 — Discover the user's workspaces
 
-Query the Altium 365 API with the global access token to list workspaces, then let the user choose one. Include `location.name` — it tells you whether a workspace lives in Gov Cloud, which decides *where* you exchange the token in Step 4.
+Query the Altium 365 API with the global access token to list workspaces, then let the user choose one. Include `location.name` — it tells you whether a workspace lives in GovCloud, which decides *where* you exchange the token in Step 4.
 
 ```graphql
 query {
@@ -166,7 +166,7 @@ query {
 }
 ```
 
-A Gov Cloud workspace reports `location.name = "US GovCloud"`:
+A GovCloud workspace reports `location.name = "US GovCloud"`:
 
 ```json
 {
@@ -201,7 +201,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 &client_secret=<client_secret>
 ```
 
-**Gov Cloud workspace (`location.name = "US GovCloud"`) — exchange on `auth.365-gov.altium.com` and add `secure=1`:**
+**GovCloud workspace (`location.name = "US GovCloud"`) — exchange on `auth.365-gov.altium.com` and add `secure=1`:**
 
 ```
 POST https://auth.365-gov.altium.com/connect/token
@@ -216,7 +216,7 @@ grant_type=urn:ietf:params:oauth:grant-type:token-exchange
 &client_secret=<client_secret>
 ```
 
-Presenting your Commercial global token to the Gov `/token` endpoint with `secure=1` mints a Gov workspace token — one whose `iss` is `https://auth.365-gov.altium.com` and which carries a `secure` claim. Omitting `secure=1` on the Gov endpoint — or exchanging a Gov workspace on `auth.altium.com` — returns `access_denied`. See [Gov Cloud considerations](./gov-cloud.md).
+Presenting your Commercial global token to the Gov `/token` endpoint with `secure=1` mints a Gov workspace token — one whose `iss` is `https://auth.365-gov.altium.com` and which carries a `secure` claim. Omitting `secure=1` on the Gov endpoint — or exchanging a Gov workspace on `auth.altium.com` — returns `access_denied`. See [GovCloud considerations](./govcloud.md).
 
 cURL (Commercial workspace; for a Gov workspace, target `https://auth.365-gov.altium.com` and add `--data-urlencode "secure=1"`):
 
@@ -253,7 +253,7 @@ If you already know the workspace at sign-in time, see [Getting a workspace-scop
 
 ## Refresh the workspace access token
 
-When the workspace access token expires, use the refresh token to get a new one. **Refresh at the endpoint that issued the token:** a Commercial workspace token refreshes on `auth.altium.com`; a Gov Cloud workspace token refreshes on `auth.365-gov.altium.com` **with `secure=1`**.
+When the workspace access token expires, use the refresh token to get a new one. **Refresh at the endpoint that issued the token:** a Commercial workspace token refreshes on `auth.altium.com`; a GovCloud workspace token refreshes on `auth.365-gov.altium.com` **with `secure=1`**.
 
 ```
 POST https://auth.altium.com/connect/token
@@ -311,4 +311,4 @@ A successful request returns `200 OK` with an empty body. Per the revocation sta
 ## Related
 
 - [Authentication overview](./overview.md) · [Register your application](./register-your-application.md)
-- [Gov Cloud considerations](./gov-cloud.md) · [AES (on-prem) considerations](./aes.md)
+- [GovCloud considerations](./govcloud.md) · [AES (on-prem) considerations](./aes.md)

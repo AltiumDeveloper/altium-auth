@@ -2,7 +2,7 @@
  * End-to-end sign-in verification against a live Altium environment.
  *
  * Drives the public (ActionWait) sign-in flow, and optionally the workspace
- * exchange and refresh, against Production, Gov Cloud, or Dev Gov. Confidential
+ * exchange and refresh, against Production, GovCloud, or Dev Gov. Confidential
  * clients are supported by supplying a secret (HTTP Basic).
  *
  * Usage:
