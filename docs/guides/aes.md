@@ -30,7 +30,7 @@ Because the origin varies per installation, both libraries expose a builder
 instead of a fixed constant:
 
 ```ts
-import { createAesEndpoints } from "@altium-developer/a365-auth";
+import { createAesEndpoints } from "@altium-developer/altium-auth";
 const endpoints = createAesEndpoints("https://aes.server.example:9785");
 ```
 

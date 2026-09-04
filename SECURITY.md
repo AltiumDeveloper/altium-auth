@@ -1,7 +1,7 @@
 # Security Policy
 
-This policy covers all libraries in the `a365-auth` repository
-(`@altium-developer/a365-auth` for npm, `Altium.Auth` for NuGet, and any future
+This policy covers all libraries in the `altium-auth` repository
+(`@altium-developer/altium-auth` for npm, `Altium.Auth` for NuGet, and any future
 language libraries under `libs/`).
 
 ## Reporting a vulnerability
@@ -9,7 +9,7 @@ language libraries under `libs/`).
 If you believe you have found a security vulnerability, please report it privately
 rather than opening a public issue.
 
-- Use GitHub's [private vulnerability reporting](https://github.com/AltiumDeveloper/a365-auth/security/advisories/new)
+- Use GitHub's [private vulnerability reporting](https://github.com/AltiumDeveloper/altium-auth/security/advisories/new)
   ("Report a vulnerability" under the repository's **Security** tab), or
 - Email the maintainers at **security@altium.com**.
 

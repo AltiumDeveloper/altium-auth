@@ -29,11 +29,11 @@
     <Authors>Altium</Authors>
     <Company>Altium</Company>
     <Product>Altium.Auth</Product>
-    <Description>Dependency-free .NET client for Altium 365 authentication (OAuth2/OIDC + PKCE, workspace token-exchange, refresh, and the Altium ActionWait desktop flow). Validated against the language-neutral conformance vectors in the a365-auth spec.</Description>
+    <Description>Dependency-free .NET client for Altium 365 authentication (OAuth2/OIDC + PKCE, workspace token-exchange, refresh, and the Altium ActionWait desktop flow). Validated against the language-neutral conformance vectors in the altium-auth spec.</Description>
     <PackageTags>altium;altium365;oauth2;oidc;openid-connect;authentication;pkce</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/AltiumDeveloper/a365-auth</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/AltiumDeveloper/a365-auth</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/AltiumDeveloper/altium-auth</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/AltiumDeveloper/altium-auth</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>

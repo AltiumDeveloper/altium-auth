@@ -9,6 +9,16 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.0] — 2026-09-04
 
+- **Package renamed** from `@altium-developer/a365-auth` to
+  `@altium-developer/altium-auth`, following the rename of the repository from
+  `a365-auth` to `altium-auth`. Update your dependency and import specifiers:
+  ```bash
+  npm uninstall @altium-developer/a365-auth
+  npm install @altium-developer/altium-auth
+  ```
+  The exported API is unchanged. `@altium-developer/a365-auth` receives no
+  further releases.
+
 - **Move from CommonJS to ESM** for the TypeScript implementation library, and
   update of its package dependencies. The minimum NodeJS version is bumped to v22.
 
@@ -55,7 +65,8 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] — Preview
 
-First preview release of `@altium-developer/a365-auth`. Pre-1.0: the API may change
+First preview release, published as `@altium-developer/a365-auth` (renamed to
+`@altium-developer/altium-auth` in 0.2.0). Pre-1.0: the API may change
 as the shared spec and sibling libraries evolve.
 
 ### Added
@@ -85,7 +96,7 @@ as the shared spec and sibling libraries evolve.
 - Zero runtime dependencies. Runs on Node ≥20, Bun, and Deno.
 - Conforms to the shared, language-neutral vectors in `spec/conformance/vectors.json`.
 
-[0.2.0]: https://github.com/AltiumDeveloper/a365-auth/releases/tag/ts-v0.2.0
-[0.1.2]: https://github.com/AltiumDeveloper/a365-auth/releases/tag/ts-v0.1.2
-[0.1.1]: https://github.com/AltiumDeveloper/a365-auth/releases/tag/ts-v0.1.1
-[0.1.0]: https://github.com/AltiumDeveloper/a365-auth/releases/tag/ts-v0.1.0
+[0.2.0]: https://github.com/AltiumDeveloper/altium-auth/releases/tag/ts-v0.2.0
+[0.1.2]: https://github.com/AltiumDeveloper/altium-auth/releases/tag/ts-v0.1.2
+[0.1.1]: https://github.com/AltiumDeveloper/altium-auth/releases/tag/ts-v0.1.1
+[0.1.0]: https://github.com/AltiumDeveloper/altium-auth/releases/tag/ts-v0.1.0

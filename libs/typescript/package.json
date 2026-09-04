@@ -1,5 +1,5 @@
 {
-  "name": "@altium-developer/a365-auth",
+  "name": "@altium-developer/altium-auth",
   "version": "0.2.0",
   "description": "Altium 365 OAuth2 authentication library with PKCE and ActionWait long-polling for browser-based sign-in.",
   "type": "module",
@@ -36,13 +36,13 @@
   "author": "Altium Limited (https://www.altium.com)",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AltiumDeveloper/a365-auth.git",
+    "url": "git+https://github.com/AltiumDeveloper/altium-auth.git",
     "directory": "libs/typescript"
   },
   "bugs": {
-    "url": "https://github.com/AltiumDeveloper/a365-auth/issues"
+    "url": "https://github.com/AltiumDeveloper/altium-auth/issues"
   },
-  "homepage": "https://github.com/AltiumDeveloper/a365-auth/tree/main/libs/typescript#readme",
+  "homepage": "https://github.com/AltiumDeveloper/altium-auth/tree/main/libs/typescript#readme",
   "publishConfig": {
     "access": "public"
   },

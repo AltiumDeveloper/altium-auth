@@ -1,4 +1,4 @@
-# a365-auth
+# altium-auth
 
 Client libraries for **Altium 365 authentication** (OAuth2/OIDC + PKCE, workspace
 token-exchange, refresh/revocation, and the Altium **ActionWait** desktop flow),
@@ -20,7 +20,7 @@ spec/                     Normative spec + JSON Schemas + conformance vectors (t
     README.md             Vector format + matchers
 docs/                     Conceptual auth guides (language-neutral)
 libs/
-  typescript/             @altium-developer/a365-auth
+  typescript/             @altium-developer/altium-auth
   dotnet/                 Altium.Auth
 .github/workflows/        Per-library CI + release (path-filtered)
 ```
@@ -32,14 +32,14 @@ needs to build/test/publish lives under that library's `libs/<lang>/` directory.
 
 | Library | Package | Version | Status |
 | --- | --- | --- | --- |
-| [`libs/typescript`](libs/typescript) | [`@altium-developer/a365-auth`](https://www.npmjs.com/package/@altium-developer/a365-auth) | [![npm](https://img.shields.io/npm/v/@altium-developer/a365-auth?label=npm)](https://www.npmjs.com/package/@altium-developer/a365-auth) | 🧪 preview |
+| [`libs/typescript`](libs/typescript) | [`@altium-developer/altium-auth`](https://www.npmjs.com/package/@altium-developer/altium-auth) | [![npm](https://img.shields.io/npm/v/@altium-developer/altium-auth?label=npm)](https://www.npmjs.com/package/@altium-developer/altium-auth) | 🧪 preview |
 | [`libs/dotnet`](libs/dotnet) | `Altium.Auth` | _not yet published_ | 🧪 preview |
 
 ## Documentation
 
 The conceptual guides in [`docs/`](docs/) and the specification are published as a
 [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) site at
-**<https://altiumdeveloper.github.io/a365-auth/>**. The site is built **from source in
+**<https://altiumdeveloper.github.io/altium-auth/>**. The site is built **from source in
 CI** (`.github/workflows/docs.yml`) — nothing generated is committed. Preview locally:
 
 ```bash
