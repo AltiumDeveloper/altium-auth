@@ -33,7 +33,7 @@ needs to build/test/publish lives under that library's `libs/<lang>/` directory.
 | Library | Package | Version | Status |
 | --- | --- | --- | --- |
 | [`libs/typescript`](libs/typescript) | [`@altium-developer/altium-auth`](https://www.npmjs.com/package/@altium-developer/altium-auth) | [![npm](https://img.shields.io/npm/v/@altium-developer/altium-auth?label=npm)](https://www.npmjs.com/package/@altium-developer/altium-auth) | 🧪 preview |
-| [`libs/dotnet`](libs/dotnet) | `Altium.Auth` | _not yet published_ | 🧪 preview |
+| [`libs/dotnet`](libs/dotnet) | [`Altium.Auth`](https://www.nuget.org/packages/Altium.Auth) | [![nuget](https://img.shields.io/nuget/v/Altium.Auth?label=nuget)](https://www.nuget.org/packages/Altium.Auth) | 🧪 preview |
 
 ## Documentation
 
