@@ -1,7 +1,7 @@
 # Altium.Auth
 
-[![CI](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/dotnet-ci.yml/badge.svg)](https://github.com/AltiumDeveloper/a365-auth/actions/workflows/dotnet-ci.yml)
-[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AltiumDeveloper/a365-auth/blob/main/LICENSE)
+[![CI](https://github.com/AltiumDeveloper/altium-auth/actions/workflows/dotnet-ci.yml/badge.svg)](https://github.com/AltiumDeveloper/altium-auth/actions/workflows/dotnet-ci.yml)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AltiumDeveloper/altium-auth/blob/main/LICENSE)
 
 Altium 365 OAuth2 / OpenID Connect authentication client for .NET. Supports both
 client types as well as the different deployment types: Commercial Cloud, GovCloud, and AES (on-prem).
@@ -14,7 +14,7 @@ client types as well as the different deployment types: Commercial Cloud, GovClo
   **AES** (on-prem) support.
 
 **Zero dependencies**, `net8.0`. Validated against the same language-neutral
-[conformance vectors](https://github.com/AltiumDeveloper/a365-auth/blob/main/spec/conformance/vectors.json) as the TypeScript library —
+[conformance vectors](https://github.com/AltiumDeveloper/altium-auth/blob/main/spec/conformance/vectors.json) as the TypeScript library —
 see <a href="#how-its-built">How it's built</a>.
 
 ## Documentation
@@ -240,9 +240,9 @@ message (timeout, cancellation, or a CSRF `state` mismatch).
 
 `Altium.Auth` is **dependency-free by design**: it acquires tokens and never validates
 JWTs, so it needs no OIDC/JWT library. Its behavior is pinned by
-the shared, language-neutral vectors in [`spec/conformance/vectors.json`](https://github.com/AltiumDeveloper/a365-auth/blob/main/spec/conformance/vectors.json) —
+the shared, language-neutral vectors in [`spec/conformance/vectors.json`](https://github.com/AltiumDeveloper/altium-auth/blob/main/spec/conformance/vectors.json) —
 the exact contract the TypeScript library passes. This proves the two implementations are
-behavior-identical. Spec: [`spec/SPEC.md`](https://github.com/AltiumDeveloper/a365-auth/blob/main/spec/SPEC.md).
+behavior-identical. Spec: [`spec/SPEC.md`](https://github.com/AltiumDeveloper/altium-auth/blob/main/spec/SPEC.md).
 
 ## Development
 
@@ -285,13 +285,13 @@ Options mirror the TS harness: `--env prod|dev|gov|dev-gov|aes`, `--aes-origin` 
 `--authorize-url`/`--exchange-code`/`--code-verifier`/`--redirect-uri` for
 confidential/custom-callback clients.
 
-See [CONTRIBUTING.md](https://github.com/AltiumDeveloper/a365-auth/blob/main/CONTRIBUTING.md) and [AGENTS.md](https://github.com/AltiumDeveloper/a365-auth/blob/main/AGENTS.md) for the
+See [CONTRIBUTING.md](https://github.com/AltiumDeveloper/altium-auth/blob/main/CONTRIBUTING.md) and [AGENTS.md](https://github.com/AltiumDeveloper/altium-auth/blob/main/AGENTS.md) for the
 repo-wide, spec-first contribution model.
 
 ## Security
 
-Please report vulnerabilities privately — see [SECURITY.md](https://github.com/AltiumDeveloper/a365-auth/blob/main/SECURITY.md).
+Please report vulnerabilities privately — see [SECURITY.md](https://github.com/AltiumDeveloper/altium-auth/blob/main/SECURITY.md).
 
 ## License
 
-[MIT](https://github.com/AltiumDeveloper/a365-auth/blob/main/LICENSE) © Altium Limited
+[MIT](https://github.com/AltiumDeveloper/altium-auth/blob/main/LICENSE) © Altium Limited

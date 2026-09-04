@@ -1,5 +1,5 @@
 /**
- * @altium-developer/a365-auth — Altium 365 OAuth2 authentication library.
+ * @altium-developer/altium-auth — Altium 365 OAuth2 authentication library.
  *
  * Provides browser-based PKCE sign-in with ActionWait long-polling and
  * workspace-scoped token exchange. Storage is the caller's concern — the

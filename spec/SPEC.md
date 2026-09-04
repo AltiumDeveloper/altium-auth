@@ -1,7 +1,7 @@
 # Altium Identity Integration Specification
 
 **Version:** 0.2.0 (DRAFT)
-**Status:** extracted from the validated `@altium-developer/a365-auth` reference implementation and `docs/`, and cross-validated by the .NET (`Altium.Auth`) implementation against the shared conformance vectors. Preview — subject to change as the libraries evolve.
+**Status:** extracted from the validated `@altium-developer/altium-auth` reference implementation and `docs/`, and cross-validated by the .NET (`Altium.Auth`) implementation against the shared conformance vectors. Preview — subject to change as the libraries evolve.
 
 The key words **MUST**, **MUST NOT**, **SHOULD**, and **MAY** are used per [RFC 2119](https://datatracker.ietf.org/doc/html/rfc2119).
 
@@ -229,6 +229,6 @@ Errors follow the OAuth 2.0 error response shape (`error`, optional `error_descr
 ---
 
 ## References
-- Conceptual guides: [docs/](https://github.com/AltiumDeveloper/a365-auth/tree/main/docs) (overview, web/server, desktop, gov-cloud, AES, register, token-claims)
+- Conceptual guides: [docs/](https://github.com/AltiumDeveloper/altium-auth/tree/main/docs) (overview, web/server, desktop, gov-cloud, AES, register, token-claims)
 - Reference implementations: `libs/typescript/` (TypeScript) and `libs/dotnet/` (.NET)
-- Conformance vectors: [spec/conformance/](https://github.com/AltiumDeveloper/a365-auth/tree/main/spec/conformance)
+- Conformance vectors: [spec/conformance/](https://github.com/AltiumDeveloper/altium-auth/tree/main/spec/conformance)

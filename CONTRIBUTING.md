@@ -1,4 +1,4 @@
-# Contributing to a365-auth
+# Contributing to altium-auth
 
 This is a **spec-central monorepo**: a single language-neutral contract
 (`spec/`) with idiomatic client libraries (`libs/<lang>/`) that are all held to the
@@ -17,8 +17,8 @@ implemented identically in every library. Change the contract, not just a librar
 ```
 spec/            Normative spec (SPEC.md) + JSON Schemas + conformance vectors
 docs/            Conceptual, language-neutral guides
-libs/typescript/ @altium-developer/a365-auth  (npm)
-libs/dotnet/     Altium.Auth                   (nuget.org)
+libs/typescript/ @altium-developer/altium-auth  (npm)
+libs/dotnet/     Altium.Auth                    (nuget.org)
 .github/workflows/  Per-library, path-filtered CI + tag-prefixed release
 ```
 
@@ -28,8 +28,8 @@ under its `libs/<lang>/` directory.
 ## Development setup
 
 ```bash
-git clone https://github.com/AltiumDeveloper/a365-auth.git
-cd a365-auth
+git clone https://github.com/AltiumDeveloper/altium-auth.git
+cd altium-auth
 ```
 
 Then work inside the library you're changing:

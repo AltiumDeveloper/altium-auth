@@ -24,7 +24,7 @@ spec/
 docs/                         Human-visible conceptual guides (language-neutral). In-repo and kept in
                               lock-step with the spec + code — see "Documentation is part of the contract".
 libs/
-  typescript/                 @altium-developer/a365-auth (npm). Reference implementation.
+  typescript/                 @altium-developer/altium-auth (npm). Reference implementation.
     src/  test/conformance/   Unit tests live in src; the conformance runner reads ../../../../spec/…
   dotnet/                     Altium.Auth (nuget). Dependency-free by design.
     tests/Altium.Auth.Tests   xUnit conformance runner over the shared vectors.

@@ -3,9 +3,9 @@ site_description: >-
   Client libraries and specification for Altium 365 authentication —
   OAuth2/OIDC + PKCE, the ActionWait desktop flow, workspace token-exchange,
   refresh/revocation, GovCloud, and AES (on-prem) installations.
-site_url: https://altiumdeveloper.github.io/a365-auth/
-repo_url: https://github.com/AltiumDeveloper/a365-auth
-repo_name: AltiumDeveloper/a365-auth
+site_url: https://altiumdeveloper.github.io/altium-auth/
+repo_url: https://github.com/AltiumDeveloper/altium-auth
+repo_name: AltiumDeveloper/altium-auth
 edit_uri: edit/main/docs/
 copyright: Copyright &copy; Altium
 

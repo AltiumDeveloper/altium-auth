@@ -273,7 +273,7 @@ async function main() {
   // Use this for confidential/custom-redirect clients that can't use ActionWait.
   if (args.authorizeUrl) {
     const authz = createAuthorizationUrl(signInConfig, { redirectUri: args.redirectUri, selectWorkspace: args.selectWorkspace });
-    console.log("=== a365-auth authorize URL ===\n");
+    console.log("=== altium-auth authorize URL ===\n");
     console.log(`redirect_uri : ${args.redirectUri ?? signInConfig.redirectUri}`);
     console.log(`state         : ${authz.state}`);
     console.log(`code_verifier : ${authz.codeVerifier}`);
@@ -284,7 +284,7 @@ async function main() {
     process.exit(0);
   }
 
-  console.log("=== a365-auth sign-in E2E test ===\n");
+  console.log("=== altium-auth sign-in E2E test ===\n");
   console.log(`Client type   : ${clientSecret ? "confidential (HTTP Basic)" : "public (PKCE)"}`);
   console.log(`secure=1      : ${args.secure === undefined ? "auto (from token endpoint)" : args.secure ? "forced on" : "forced off"}`);
   console.log(`Scopes        : ${signInConfig.scopes}`);

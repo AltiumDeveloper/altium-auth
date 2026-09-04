@@ -1,7 +1,7 @@
 # Conformance vectors
 
 Language-neutral test vectors that pin down the Altium-specific behavior in
-[SPEC.md](https://github.com/AltiumDeveloper/a365-auth/blob/main/spec/SPEC.md).
+[SPEC.md](https://github.com/AltiumDeveloper/altium-auth/blob/main/spec/SPEC.md).
 Every SDK (TS, .NET, Java, …) should run these against
 a mock IdP and assert the same outgoing requests and outcomes, so all
 implementations stay consistent.

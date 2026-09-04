@@ -108,7 +108,7 @@ if (authorizeUrl)
     return 0;
 }
 
-Console.WriteLine("=== a365-auth .NET sign-in E2E ===\n");
+Console.WriteLine("=== altium-auth .NET sign-in E2E ===\n");
 Console.WriteLine($"Client type   : {(clientSecret is null ? "public (PKCE)" : "confidential (HTTP Basic)")}");
 Console.WriteLine($"secure=1      : {(secure is null ? "auto (from token host)" : secure.Value ? "forced on" : "forced off")}");
 Console.WriteLine($"Scopes        : {signInOptions.Scopes}");
