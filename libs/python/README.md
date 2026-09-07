@@ -64,11 +64,13 @@ config = AltiumAuthConfig(
 ```python
 from altium_auth import AltiumAuthClient, AltiumAuthConfig
 
-client = AltiumAuthClient(AltiumAuthConfig(
-    client_id="your-client-id",
-    client_secret="your-client-secret",   # confidential client → HTTP Basic
-    scopes="openid profile offline_access",
-))
+client = AltiumAuthClient(
+    AltiumAuthConfig(
+        client_id="your-client-id",
+        client_secret="your-client-secret",  # confidential client → HTTP Basic
+        scopes="openid profile offline_access",
+    )
+)
 redirect_uri = "https://my-service.example.com/oauth/callback"
 
 # On your login route: build the URL, stash state + verifier, then redirect.
@@ -91,10 +93,14 @@ tokens = client.exchange_code(
 ```python
 from altium_auth import AltiumAuthClient, AltiumAuthConfig, GOV_CLOUD_ENDPOINTS
 
-client = AltiumAuthClient(AltiumAuthConfig(
-    client_id="your-gov-client-id", scopes="openid profile", endpoints=GOV_CLOUD_ENDPOINTS,
-))
-tokens = client.sign_in()   # secure=1 is added to token requests automatically
+client = AltiumAuthClient(
+    AltiumAuthConfig(
+        client_id="your-gov-client-id",
+        scopes="openid profile",
+        endpoints=GOV_CLOUD_ENDPOINTS,
+    )
+)
+tokens = client.sign_in()  # secure=1 is added to token requests automatically
 ```
 
 ### AES (on-prem)
@@ -104,9 +110,13 @@ from altium_auth import AltiumAuthClient, AltiumAuthConfig, aes_endpoints
 
 endpoints = aes_endpoints("https://aes.server.example:9785")
 scopes = AltiumAuthClient.get_client_scopes(endpoints.scope_endpoint, "your-aes-client-id")
-client = AltiumAuthClient(AltiumAuthConfig(
-    client_id="your-aes-client-id", scopes=" ".join(scopes), endpoints=endpoints,
-))
+client = AltiumAuthClient(
+    AltiumAuthConfig(
+        client_id="your-aes-client-id",
+        scopes=" ".join(scopes),
+        endpoints=endpoints,
+    )
+)
 tokens = client.sign_in()
 ```
 
@@ -116,6 +126,7 @@ The library is synchronous. From an event loop, bridge with the stdlib:
 
 ```python
 import asyncio
+
 tokens = await asyncio.to_thread(client.refresh_token, refresh_token)
 ```
 
