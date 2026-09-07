@@ -1,0 +1,70 @@
+import json
+
+import pytest
+
+from altium_auth import AltiumAuthClient, AltiumAuthConfig, _http
+from altium_auth.errors import ActionWaitError, StateMismatchError
+
+
+def _make_client():
+    return AltiumAuthClient(
+        AltiumAuthConfig(client_id="c", scopes="openid profile", open_browser=lambda url: None)
+    )
+
+
+class _Seq:
+    def __init__(self, polls):
+        self.polls, self.i = polls, 0
+
+    def __call__(self, method, url, *, headers=None, data=None, timeout=30.0):
+        if "actionwait" in url:
+            status, body = self.polls[min(self.i, len(self.polls) - 1)]
+            self.i += 1
+            if "<echo>" in body:
+                body = body.replace("<echo>", json.loads(data.decode())["token"])
+            return _http.Response(status=status, text=body)
+        return _http.Response(status=200, text='{"access_token": "AT", "token_type": "Bearer"}')
+
+
+def test_signin_success(monkeypatch):
+    monkeypatch.setattr(
+        _http, "request", _Seq([(200, '{"data": {"code": "code-1", "state": "<echo>"}}')])
+    )
+    assert _make_client().sign_in(timeout=2.0).access_token == "AT"
+
+
+def test_signin_reconnect_then_success(monkeypatch):
+    monkeypatch.setattr(
+        _http, "request", _Seq([(408, ""), (200, '{"data": {"code": "c", "state": "<echo>"}}')])
+    )
+    assert _make_client().sign_in(timeout=2.0).access_token == "AT"
+
+
+def test_signin_410_cancelled(monkeypatch):
+    monkeypatch.setattr(_http, "request", _Seq([(410, "")]))
+    with pytest.raises(ActionWaitError) as ei:
+        _make_client().sign_in(timeout=2.0)
+    assert "cancelled" in str(ei.value)
+
+
+def test_signin_non_json(monkeypatch):
+    monkeypatch.setattr(_http, "request", _Seq([(200, "not json")]))
+    with pytest.raises(ActionWaitError) as ei:
+        _make_client().sign_in(timeout=2.0)
+    assert "not JSON" in str(ei.value)
+
+
+def test_signin_missing_code(monkeypatch):
+    monkeypatch.setattr(_http, "request", _Seq([(200, '{"data": {}}')]))
+    with pytest.raises(ActionWaitError) as ei:
+        _make_client().sign_in(timeout=2.0)
+    assert "missing data.code" in str(ei.value)
+
+
+def test_signin_state_mismatch(monkeypatch):
+    monkeypatch.setattr(
+        _http, "request", _Seq([(200, '{"data": {"code": "c", "state": "attacker-state"}}')])
+    )
+    with pytest.raises(StateMismatchError) as ei:
+        _make_client().sign_in(timeout=2.0)
+    assert "State mismatch" in str(ei.value)
