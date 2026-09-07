@@ -215,6 +215,13 @@ function endpointsFor(env: Env, aesOrigin?: string) {
   };
 }
 
+/** Environment tier: a token can only be exchanged within its own tier (prod↔gov, dev↔dev-gov). AES is its own tier. */
+function tierOf(env: Env): string {
+  if (env === "prod" || env === "gov") { return "prod"; }
+  if (env === "aes") { return "aes"; }
+  return "dev";
+}
+
 /** Decode a JWT payload for human-readable output (no signature verification). */
 function decodeJwt(jwt: string): unknown {
   const parts = jwt.split(".");
@@ -307,8 +314,14 @@ async function main() {
     // 1. Test the two-trip sign-in (global token → workspace token).
     const { tokens, config: tokenConfig } = await testTwoTripSignIn(args, signInConfig, exchangeConfig);
     let currentTokens = tokens;
-    // 2. Test the one-trip sign-in (direct workspace token, if workspace ID is known and code not already used for test 1).
-    if (!args.code) {
+    // 2. Test the one-trip sign-in (direct workspace token). It requests the workspace scope at
+    //    sign-in on args.env's host, so it only applies when the workspace is on the same tier —
+    //    in bridge mode (e.g. --workspace-env gov) a cross-tier scope is denied (use the two-trip
+    //    exchange above). It also needs its own browser round trip and a code can only be redeemed
+    //    once, so it is skipped in --exchange-code mode (the code was spent on test 1).
+    if (!args.code && tierOf(args.env) !== tierOf(exchangeEnv)) {
+      console.log(`\n⏸️  Skipping one-trip sign-in: workspace is on the '${exchangeEnv}' tier, sign-in on '${args.env}'. A cross-tier workspace scope at /authorize is denied — use the two-trip exchange (above).`);
+    } else if (!args.code) {
       const oneTripConfig = { ...signInConfig };
       if (args.workspace) {
         console.log(`Adding scope for workspace ${args.workspace} to test one-trip sign-in.`);
