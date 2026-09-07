@@ -26,7 +26,9 @@ def test_response_json():
 
 
 def test_request_returns_body_on_success(monkeypatch):
-    monkeypatch.setattr(_http.urllib.request, "urlopen", lambda req, timeout: _FakeResp(200, b'{"ok": true}'))
+    monkeypatch.setattr(
+        _http.urllib.request, "urlopen", lambda req, timeout: _FakeResp(200, b'{"ok": true}')
+    )
     r = _http.request("GET", "https://x/y")
     assert r.status == 200
     assert r.json() == {"ok": True}

@@ -1,5 +1,3 @@
-import pytest
-
 from altium_auth.errors import (
     ActionWaitError,
     AltiumAuthError,

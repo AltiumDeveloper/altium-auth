@@ -41,7 +41,7 @@ def request(
     Returns a Response for any HTTP status (including 4xx/5xx, needed for the
     ActionWait 408/410 protocol). Only network-level failures raise TransportError.
     """
-    req = urllib.request.Request(url, data=data, method=method, headers=headers or {})
+    req = urllib.request.Request(url, data=data, method=method, headers=headers or {})  # noqa: S310
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310
             return Response(status=resp.status, text=resp.read().decode("utf-8", "replace"))

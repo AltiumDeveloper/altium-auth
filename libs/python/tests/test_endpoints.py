@@ -1,7 +1,6 @@
 from altium_auth.endpoints import (
     COMMERCIAL_CLOUD_ENDPOINTS,
     GOV_CLOUD_ENDPOINTS,
-    AltiumEndpoints,
     aes_endpoints,
 )
 
@@ -34,6 +33,7 @@ def test_aes_endpoints_derived_from_origin():
 
 def test_endpoints_frozen():
     import dataclasses
+
     import pytest
 
     with pytest.raises(dataclasses.FrozenInstanceError):
