@@ -11,10 +11,16 @@ import json
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
+from importlib.metadata import PackageNotFoundError, version
 from typing import Any
 from urllib.parse import urlparse
 
 from .errors import TransportError
+
+try:
+    _USER_AGENT = f"altium-auth-python/{version('altium-auth')}"
+except PackageNotFoundError:  # pragma: no cover - source checkout without install
+    _USER_AGENT = "altium-auth-python"
 
 
 @dataclass(frozen=True)
@@ -47,7 +53,13 @@ def request(
     scheme = urlparse(url).scheme.lower()
     if scheme not in ("http", "https"):
         raise TransportError(f"unsupported URL scheme {scheme!r} (expected http or https): {url}")
-    req = urllib.request.Request(url, data=data, method=method, headers=headers or {})  # noqa: S310
+    # Identify the client with a product User-Agent. The stdlib default
+    # ("Python-urllib/x.y") is blocked (HTTP 403) by Altium's edge WAF; a product UA
+    # passes (the fetch/.NET references implicitly send a non-python UA). Overridable.
+    merged = {"User-Agent": _USER_AGENT}
+    if headers:
+        merged.update(headers)
+    req = urllib.request.Request(url, data=data, method=method, headers=merged)  # noqa: S310
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310
             return Response(status=resp.status, text=resp.read().decode("utf-8", "replace"))

@@ -57,3 +57,30 @@ def test_request_rejects_non_http_scheme():
     # which takes an unvalidated endpoint URL).
     with pytest.raises(TransportError):
         _http.request("GET", "ftp://x/y")
+
+
+def test_request_sets_product_user_agent(monkeypatch):
+    # stdlib urllib's default "Python-urllib/x.y" UA is blocked (403) by Altium's
+    # edge WAF; we must send a product UA instead.
+    captured = {}
+
+    def fake(req, timeout):
+        captured["ua"] = req.get_header("User-agent")
+        return _FakeResp(200, b"{}")
+
+    monkeypatch.setattr(_http.urllib.request, "urlopen", fake)
+    _http.request("GET", "https://x/y")
+    assert captured["ua"] is not None
+    assert captured["ua"].startswith("altium-auth-python/")
+
+
+def test_request_user_agent_is_overridable(monkeypatch):
+    captured = {}
+
+    def fake(req, timeout):
+        captured["ua"] = req.get_header("User-agent")
+        return _FakeResp(200, b"{}")
+
+    monkeypatch.setattr(_http.urllib.request, "urlopen", fake)
+    _http.request("GET", "https://x/y", headers={"User-Agent": "custom/9"})
+    assert captured["ua"] == "custom/9"
