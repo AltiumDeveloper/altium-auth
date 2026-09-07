@@ -22,6 +22,7 @@ docs/                     Conceptual auth guides (language-neutral)
 libs/
   typescript/             @altium-developer/altium-auth
   dotnet/                 Altium.Auth
+  python/                 altium-auth (PyPI)
 .github/workflows/        Per-library CI + release (path-filtered)
 ```
 
@@ -34,6 +35,7 @@ needs to build/test/publish lives under that library's `libs/<lang>/` directory.
 | --- | --- | --- | --- |
 | [`libs/typescript`](libs/typescript) | [`@altium-developer/altium-auth`](https://www.npmjs.com/package/@altium-developer/altium-auth) | [![npm](https://img.shields.io/npm/v/@altium-developer/altium-auth?label=npm)](https://www.npmjs.com/package/@altium-developer/altium-auth) | 🧪 preview |
 | [`libs/dotnet`](libs/dotnet) | [`Altium.Auth`](https://www.nuget.org/packages/Altium.Auth) | [![nuget](https://img.shields.io/nuget/v/Altium.Auth?label=nuget)](https://www.nuget.org/packages/Altium.Auth) | 🧪 preview |
+| [`libs/python`](libs/python) | [`altium-auth`](https://pypi.org/project/altium-auth/) | [![pypi](https://img.shields.io/pypi/v/altium-auth?label=pypi)](https://pypi.org/project/altium-auth/) | 🧪 preview |
 
 ## Documentation
 
@@ -68,16 +70,16 @@ The conformance vectors are the enforcement layer:
 Which shared vectors each library executes. `live` = behavioral reference that
 needs a real server (skipped by offline runners in both).
 
-| Vector group | TypeScript | .NET |
-| --- | --- | --- |
-| authorizeUrl | ✅ | ✅ |
-| tokenRequest (exchange/workspace/refresh, Gov `secure=1`, AES host, cross-partition) | ✅ | ✅ |
-| actionWait (200/408/410/non-JSON/missing-code/CSRF) | ✅ | ✅ |
-| clientScopes (scope introspection) | ✅ | ✅ |
-| revocation — `revoke-refresh-token` | ✅ | ✅ |
-| revocation — `revoke-then-refresh-invalid-grant` | live | live |
-| userinfo (response shape) | schema ref | schema ref |
-| liveClaims (decoded token claims) | live | live |
+| Vector group | TypeScript | .NET | Python |
+| --- | --- | --- | --- |
+| authorizeUrl | ✅ | ✅ | ✅ |
+| tokenRequest (exchange/workspace/refresh, Gov `secure=1`, AES host, cross-partition) | ✅ | ✅ | ✅ |
+| actionWait (200/408/410/non-JSON/missing-code/CSRF) | ✅ | ✅ | ✅ |
+| clientScopes (scope introspection) | ✅ | ✅ | ✅ |
+| revocation — `revoke-refresh-token` | ✅ | ✅ | ✅ |
+| revocation — `revoke-then-refresh-invalid-grant` | live | live | live |
+| userinfo (response shape) | schema ref | schema ref | schema ref |
+| liveClaims (decoded token claims) | live | live | live |
 
 ## Versioning & releases
 
@@ -86,6 +88,7 @@ needs a real server (skipped by offline runners in both).
 - **Libraries version independently** and publish from tag-prefixed releases:
   - `ts-v*` → npm (`.github/workflows/typescript-release.yml`)
   - `dotnet-v*` → nuget.org (`.github/workflows/dotnet-release.yml`)
+  - `py-v*` → PyPI (`.github/workflows/python-release.yml`)
 - Package `repository.directory` metadata points consumers at the right subdirectory.
 
 ## Adding a new language
