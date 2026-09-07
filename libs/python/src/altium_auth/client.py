@@ -285,6 +285,10 @@ class AltiumAuthClient:
                         f"ActionWait returned 200 but body is not JSON: {_truncate(resp.text)}"
                     ) from None
                 data = parsed.get("data") if isinstance(parsed, dict) else None
+                if isinstance(data, dict) and isinstance(data.get("error"), str) and data["error"]:
+                    desc = data.get("error_description")
+                    suffix = f" — {desc}" if isinstance(desc, str) and desc else ""
+                    raise ActionWaitError(f"ActionWait sign-in failed: {data['error']}{suffix}")
                 code = data.get("code") if isinstance(data, dict) else None
                 state = data.get("state") if isinstance(data, dict) else None
                 if not isinstance(code, str) or not code:

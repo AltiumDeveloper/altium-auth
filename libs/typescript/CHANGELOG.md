@@ -7,6 +7,12 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **Surface OAuth errors delivered via the ActionWait callback** — a `200` whose
+  `data` carries an `error` (e.g. `access_denied`, including a cross-partition
+  workspace scope requested at sign-in) now fails with that error instead of a
+  generic "missing data.code". Mirrors SPEC §4.3 and the new `aw-error-in-data`
+  conformance vector.
+
 ## [0.2.0] — 2026-09-04
 
 - **Package renamed** from `@altium-developer/a365-auth` to

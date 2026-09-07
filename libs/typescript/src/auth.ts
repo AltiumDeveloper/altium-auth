@@ -196,6 +196,11 @@ async function pollActionWait(
           throw new Error(`ActionWait returned 200 but body is not JSON: ${truncate(res.text())}`);
         }
         const data = parsed?.data as Record<string, unknown>;
+        const oauthError = data?.error;
+        if (typeof oauthError === "string" && oauthError.length > 0) {
+          const desc = typeof data?.error_description === "string" ? data.error_description : "";
+          throw new Error(`ActionWait sign-in failed: ${oauthError}${desc ? ` — ${desc}` : ""}`);
+        }
         const code = data?.code;
         const state = data?.state;
 
