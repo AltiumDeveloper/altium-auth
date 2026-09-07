@@ -12,6 +12,7 @@ import urllib.error
 import urllib.request
 from dataclasses import dataclass
 from typing import Any
+from urllib.parse import urlparse
 
 from .errors import TransportError
 
@@ -41,6 +42,11 @@ def request(
     Returns a Response for any HTTP status (including 4xx/5xx, needed for the
     ActionWait 408/410 protocol). Only network-level failures raise TransportError.
     """
+    # Only http(s) may reach urlopen — hardens against non-web schemes (file:, ftp:, …)
+    # reaching the transport, including via get_client_scopes' unvalidated endpoint URL.
+    scheme = urlparse(url).scheme.lower()
+    if scheme not in ("http", "https"):
+        raise TransportError(f"unsupported URL scheme {scheme!r} (expected http or https): {url}")
     req = urllib.request.Request(url, data=data, method=method, headers=headers or {})  # noqa: S310
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310

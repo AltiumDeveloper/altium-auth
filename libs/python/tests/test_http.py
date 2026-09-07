@@ -50,3 +50,10 @@ def test_request_raises_transport_error_on_network_failure(monkeypatch):
     monkeypatch.setattr(_http.urllib.request, "urlopen", _raise)
     with pytest.raises(TransportError):
         _http.request("POST", "https://x/y")
+
+
+def test_request_rejects_non_http_scheme():
+    # Defense-in-depth: only http(s) may reach urlopen (covers get_client_scopes,
+    # which takes an unvalidated endpoint URL).
+    with pytest.raises(TransportError):
+        _http.request("GET", "ftp://x/y")
