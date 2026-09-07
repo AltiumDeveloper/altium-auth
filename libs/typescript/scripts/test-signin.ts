@@ -215,13 +215,6 @@ function endpointsFor(env: Env, aesOrigin?: string) {
   };
 }
 
-/** Environment tier: a token can only be exchanged within its own tier (prod↔gov, dev↔dev-gov). AES is its own tier. */
-function tierOf(env: Env): string {
-  if (env === "prod" || env === "gov") { return "prod"; }
-  if (env === "aes") { return "aes"; }
-  return "dev";
-}
-
 /** Decode a JWT payload for human-readable output (no signature verification). */
 function decodeJwt(jwt: string): unknown {
   const parts = jwt.split(".");
@@ -315,12 +308,13 @@ async function main() {
     const { tokens, config: tokenConfig } = await testTwoTripSignIn(args, signInConfig, exchangeConfig);
     let currentTokens = tokens;
     // 2. Test the one-trip sign-in (direct workspace token). It requests the workspace scope at
-    //    sign-in on args.env's host, so it only applies when the workspace is on the same tier —
-    //    in bridge mode (e.g. --workspace-env gov) a cross-tier scope is denied (use the two-trip
-    //    exchange above). It also needs its own browser round trip and a code can only be redeemed
-    //    once, so it is skipped in --exchange-code mode (the code was spent on test 1).
-    if (!args.code && tierOf(args.env) !== tierOf(exchangeEnv)) {
-      console.log(`\n⏸️  Skipping one-trip sign-in: workspace is on the '${exchangeEnv}' tier, sign-in on '${args.env}'. A cross-tier workspace scope at /authorize is denied — use the two-trip exchange (above).`);
+    //    sign-in on args.env's host, so it only applies when the workspace lives in that same
+    //    environment — in bridge mode (e.g. --workspace-env gov) the workspace is on another
+    //    partition, so a direct scope request is denied (use the two-trip exchange above). It also
+    //    needs its own browser round trip and a code can only be redeemed once, so it is skipped in
+    //    --exchange-code mode (the code was spent on test 1).
+    if (!args.code && exchangeEnv !== args.env) {
+      console.log(`\n⏸️  Skipping one-trip sign-in: the workspace lives in '${exchangeEnv}' but sign-in is on '${args.env}'. Requesting that workspace scope at the '${args.env}' /authorize endpoint is cross-partition (access_denied) — use the two-trip exchange (above).`);
     } else if (!args.code) {
       const oneTripConfig = { ...signInConfig };
       if (args.workspace) {

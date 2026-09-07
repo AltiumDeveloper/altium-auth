@@ -201,14 +201,16 @@ async Task<(TokenSet Tokens, AltiumAuthClient Client)> TestTwoTripSignInAsync(Ca
 async Task TestOneTripSignInAsync(CancellationToken ct)
 {
     // The one-trip test requests the workspace scope at sign-in on `env`'s host, so it only
-    // applies when the workspace is on the same tier. In bridge mode (e.g. --workspace-env gov)
-    // a cross-tier scope would be denied — skip it (the two-trip exchange above is the right path).
+    // applies when the workspace lives in that same environment. In bridge mode (e.g.
+    // --workspace-env gov) the workspace is on another partition, so a direct scope request is
+    // denied — skip it (the two-trip exchange above is the right path). prod and gov are the same
+    // *tier* (exchange-compatible) but different *partitions*, so compare envs, not tiers.
     var oneTripExchangeEnv = workspaceEnv ?? env;
-    if (Tier(env) != Tier(oneTripExchangeEnv))
+    if (oneTripExchangeEnv != env)
     {
-        Console.WriteLine($"\n⏸️  Skipping one-trip sign-in: workspace is on the '{oneTripExchangeEnv}' " +
-            $"tier, sign-in on '{env}'. A cross-tier workspace scope at /authorize is denied — " +
-            "use the two-trip exchange (above).");
+        Console.WriteLine($"\n⏸️  Skipping one-trip sign-in: the workspace lives in '{oneTripExchangeEnv}' " +
+            $"but sign-in is on '{env}'. Requesting that workspace scope at the '{env}' /authorize " +
+            "endpoint is cross-partition (access_denied) — use the two-trip exchange (above).");
         return;
     }
 
