@@ -1,0 +1,48 @@
+name: Python CI
+
+# Runs only when the Python library or the shared spec/vectors change.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "libs/python/**"
+      - "spec/**"
+      - ".github/workflows/python-ci.yml"
+  pull_request:
+    paths:
+      - "libs/python/**"
+      - "spec/**"
+      - ".github/workflows/python-ci.yml"
+
+defaults:
+  run:
+    working-directory: libs/python
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    name: Python ${{ matrix.python }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+
+      - run: uv sync --extra dev
+
+      - run: uv run ruff check .
+
+      - run: uv run ruff format --check .
+
+      - run: uv run mypy
+
+      # Unit + conformance against the shared, language-neutral vectors in spec/.
+      - run: uv run pytest
+
+      - run: uv build

@@ -1,0 +1,13 @@
+# Python build + tooling artifacts
+.venv/
+dist/
+build/
+*.egg-info/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# uv lockfile — not committed for a library (dev-tool pins only; CI resolves fresh)
+uv.lock

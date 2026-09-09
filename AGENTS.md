@@ -28,6 +28,8 @@ libs/
     src/  test/conformance/   Unit tests live in src; the conformance runner reads ../../../../spec/…
   dotnet/                     Altium.Auth (nuget). Dependency-free by design.
     tests/Altium.Auth.Tests   xUnit conformance runner over the shared vectors.
+  python/                     altium-auth (PyPI). Dependency-free (stdlib only).
+    tests/conformance/        pytest conformance runner over the shared vectors.
 .github/workflows/            Per-library, path-filtered CI + tag-prefixed release.
 ```
 
@@ -67,9 +69,16 @@ libs/
 6. If the capability is user-exercisable (a new option, flag, method, or grant),
    surface it in **each library's live E2E harness** so it can be tried against a real
    environment — TS `libs/typescript/scripts/test-signin.ts`, .NET
-   `libs/dotnet/tools/SignInTest`. These harnesses are **not** unit-tested (they need
-   network + a browser), so they only stay correct if updated in lockstep with the API —
-   an unsurfaced capability, or a stale call after a signature change, is a defect.
+   `libs/dotnet/tools/SignInTest`, Python `libs/python/tools/signin_test.py`. **These
+   harnesses share ONE CLI contract**: the same flags, option names, accepted values,
+   and behavior in every language, so an identical command works against any
+   implementation (`--env`, `--workspace-env`, `--aes-origin`, `--secure`/`--no-secure`,
+   `--scopes`, `--workspace`, `--select-workspace`, `--refresh`, `--userinfo`, `--revoke`,
+   `--authorize-url`/`--exchange-code`/`--code-verifier`/`--redirect-uri`; secret via
+   `A365_CLIENT_SECRET`). Adding or renaming a flag in one means doing it in all. These
+   harnesses are **not** unit-tested (they need network + a browser), so they only stay
+   correct if updated in lockstep — an unsurfaced capability, a divergent CLI, or a stale
+   call after a signature change, is a defect.
 
 **Fix a bug in one library:**
 1. If it's a behavior bug, first add a vector that fails against the buggy behavior.
@@ -96,13 +105,20 @@ cd libs/typescript && npm ci && npm run lint && npm run typecheck \
 
 # .NET (solution-level; the src project builds with analyzers as errors)
 dotnet test libs/dotnet/Altium.Auth.sln -c Release
+
+# Python
+cd libs/python && uv sync --extra dev && uv run ruff check . \
+  && uv run ruff format --check . && uv run mypy && uv run pytest && cd ../..
 ```
 
 Live end-to-end (needs network + a browser — never in CI): each library ships a
-sign-in tool — TS `npm run test:e2e`, .NET `dotnet run --project libs/dotnet/tools/SignInTest`.
-Keep them at feature parity: every new user-facing capability gets a flag/option here in
-**both** harnesses (see playbook step 6). CI builds `tools/SignInTest` so signature drift
-can't silently break it; the TS harness is type-checked when you run it via `tsx`.
+sign-in tool with an **identical CLI** — TS `npm run test:e2e`, .NET
+`dotnet run --project libs/dotnet/tools/SignInTest`, Python
+`uv run python libs/python/tools/signin_test.py`. Keep them at feature *and* interface
+parity: every new user-facing capability gets the *same* flag/option in **all three**
+harnesses (see playbook step 6), so one command works everywhere. CI builds
+`tools/SignInTest` so signature drift can't silently break it; the TS harness is
+type-checked when you run it via `tsx`.
 
 ## Definition of done (agent PR)
 
@@ -111,8 +127,9 @@ can't silently break it; the TS harness is type-checked when you run it via `tsx
 - [ ] **Every affected library passes its conformance runner** + unit tests + lint/typecheck/build.
 - [ ] Cross-language parity kept, or a gap recorded in the root README conformance matrix.
 - [ ] Affected `docs/*.md` guides + library READMEs updated; CHANGELOGs updated.
-- [ ] Live E2E harnesses (`scripts/test-signin.ts`, `tools/SignInTest`) expose any new
-      user-facing capability and still build/type-check — kept at parity across languages.
+- [ ] Live E2E harnesses (`scripts/test-signin.ts`, `tools/SignInTest`,
+      `libs/python/tools/signin_test.py`) expose any new user-facing capability with the
+      *same* CLI flags in every language and still build/type-check — kept at parity.
 - [ ] No secrets in code, tests, or CLI args (secrets come from env only).
 
 ## Documentation is part of the contract
