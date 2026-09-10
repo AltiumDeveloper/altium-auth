@@ -1,8 +1,7 @@
 name: .NET Release
 
-# TEMPLATE — publishes libs/dotnet (Altium.Auth) to nuget.org when a tag like
-# `dotnet-v1.0.0` is pushed. Requires a NUGET_API_KEY secret. Before enabling,
-# finalize the package version + a project-level README (<PackageReadmeFile>).
+# Publishes libs/dotnet (Altium.Auth) to nuget.org when a tag like
+# `dotnet-v1.0.0` is pushed.
 on:
   push:
     tags:
@@ -15,18 +14,26 @@ defaults:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           dotnet-version: "8.0.x"
 
       # Gate the release on conformance before packing.
-      - run: dotnet test tests/Altium.Auth.Tests -c Release
+      - run: dotnet test Altium.Auth.sln -c Release
 
-      - run: dotnet pack src/Altium.Auth -c Release -o "${{ runner.temp }}/nupkg"
+      - run: dotnet pack src/Altium.Auth -c Release -o "${{ runner.temp }}/nupkg" -p:Version="${GITHUB_REF_NAME#dotnet-v}"
+
+      - uses: NuGet/login@v1
+        id: login
+        with:
+          user: Altium
 
       - run: dotnet nuget push "${{ runner.temp }}/nupkg/*.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
         env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
