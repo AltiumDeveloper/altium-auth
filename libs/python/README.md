@@ -17,13 +17,13 @@ Altium 365 OAuth2 / OpenID Connect authentication for Python. Supports both clie
 
 The library implements the protocol described in the language-neutral guides (start here if you're new to Altium Identity):
 
-- [Authentication overview](../../docs/guides/overview.md)
-- [Register your application](../../docs/guides/register-your-application.md)
-- [Web / server apps](../../docs/guides/web-and-server-apps.md)
-- [Desktop apps](../../docs/guides/desktop-apps.md)
-- [GovCloud](../../docs/guides/govcloud.md)
-- [AES (on-prem)](../../docs/guides/aes.md)
-- [Access token claims](../../docs/guides/token-claims.md)
+- [Authentication overview](https://altiumdeveloper.github.io/altium-auth/guides/overview/)
+- [Register your application](https://altiumdeveloper.github.io/altium-auth/guides/register-your-application/)
+- [Web / server apps](https://altiumdeveloper.github.io/altium-auth/guides/web-and-server-apps/)
+- [Desktop apps](https://altiumdeveloper.github.io/altium-auth/guides/desktop-apps/)
+- [GovCloud](https://altiumdeveloper.github.io/altium-auth/guides/govcloud/)
+- [AES (on-prem)](https://altiumdeveloper.github.io/altium-auth/guides/aes/)
+- [Access token claims](https://altiumdeveloper.github.io/altium-auth/guides/token-claims/)
 
 ## Installation
 
@@ -149,7 +149,7 @@ tokens = await asyncio.to_thread(client.refresh_token, refresh_token)
 - `TokenSet(access_token, token_type, expires_in, expires_at, refresh_token, id_token, scope)` — `expires_at` computed with a 30 s clock-skew buffer.
 - `WorkspaceSelection` — `NONE` / `STRICT` / `OPTIONAL`.
 
-> `access_token` is a signed JWT — decode it to read `iss`, `workspaceId`, `secure`, and scopes. See [Access token claims](../../docs/guides/token-claims.md).
+> `access_token` is a signed JWT — decode it to read `iss`, `workspaceId`, `secure`, and scopes. See [Access token claims](https://altiumdeveloper.github.io/altium-auth/guides/token-claims/).
 
 ## Error handling
 

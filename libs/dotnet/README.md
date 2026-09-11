@@ -22,13 +22,13 @@ see <a href="#how-its-built">How it's built</a>.
 The client implements the flow described in these protocol-level guides (independent of
 this package):
 
-- [Authentication overview](../../docs/guides/overview.md) — endpoints, key terms, recommended flow
-- [Register your application](../../docs/guides/register-your-application.md) — client types, redirect URLs, credentials
-- [Web / server apps](../../docs/guides/web-and-server-apps.md) — authorization-code redirect flow (confidential)
-- [Desktop apps](../../docs/guides/desktop-apps.md) — the ActionWait pattern (public)
-- [GovCloud](../../docs/guides/govcloud.md) — Commercial vs Gov and the `secure=1` two-token model
-- [AES (on-prem)](../../docs/guides/aes.md) — customer-hosted installations
-- [Access token claims](../../docs/guides/token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
+- [Authentication overview](https://altiumdeveloper.github.io/altium-auth/guides/overview/) — endpoints, key terms, recommended flow
+- [Register your application](https://altiumdeveloper.github.io/altium-auth/guides/register-your-application/) — client types, redirect URLs, credentials
+- [Web / server apps](https://altiumdeveloper.github.io/altium-auth/guides/web-and-server-apps/) — authorization-code redirect flow (confidential)
+- [Desktop apps](https://altiumdeveloper.github.io/altium-auth/guides/desktop-apps/) — the ActionWait pattern (public)
+- [GovCloud](https://altiumdeveloper.github.io/altium-auth/guides/govcloud/) — Commercial vs Gov and the `secure=1` two-token model
+- [AES (on-prem)](https://altiumdeveloper.github.io/altium-auth/guides/aes/) — customer-hosted installations
+- [Access token claims](https://altiumdeveloper.github.io/altium-auth/guides/token-claims/) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
 
 ## Quick start
 
@@ -70,7 +70,7 @@ To prompt the user to select a workspace **during sign-in** (login-into-workspac
 TokenSet tokens = await client.SignInAsync(WorkspaceSelection.Optional);
 ```
 
-See [Login-into-workspace mode](../../docs/guides/overview.md#login-into-workspace-mode).
+See [Login-into-workspace mode](https://altiumdeveloper.github.io/altium-auth/guides/overview/#login-into-workspace-mode).
 
 ### Confidential apps (web / server — authorization-code redirect)
 
@@ -118,7 +118,7 @@ var options = new AltiumAuthOptions
 Commercial and Gov are kept strictly separate: a global token can only be exchanged for a
 workspace of the matching kind. `secure=1` is driven by which token endpoint you use, so
 pointing the token endpoint at the Gov host is all it takes to exchange a Commercial token
-for a Gov workspace token. See the [GovCloud](../../docs/guides/govcloud.md) guide.
+for a Gov workspace token. See the [GovCloud](https://altiumdeveloper.github.io/altium-auth/guides/govcloud/) guide.
 
 ### AES (on-prem)
 
@@ -145,7 +145,7 @@ var options = new AltiumAuthOptions
 };
 ```
 
-See the [AES (on-prem)](../../docs/guides/aes.md) guide.
+See the [AES (on-prem)](https://altiumdeveloper.github.io/altium-auth/guides/aes/) guide.
 
 ### Refresh & sign-out
 
@@ -197,7 +197,7 @@ A record of the endpoints (`AuthorizeEndpoint`, `TokenEndpoint`, `ActionWaitEndp
 `AltiumEndpoints.CommercialCloud` (default) and `AltiumEndpoints.GovCloud` — plus
 `AltiumEndpoints.Aes(origin)`, a factory that derives the endpoint set for an AES (on-prem)
 installation from its server origin, including `ScopeEndpoint`
-for [scope introspection](../../docs/guides/aes.md#single-workspace) — use
+for [scope introspection](https://altiumdeveloper.github.io/altium-auth/guides/aes/#single-workspace) — use
 `AltiumAuthClient.GetClientScopesAsync` (GET with a `clientId` query parameter) to discover
 the exact `a365:workspace:{id}` scope for the installation's single workspace.
 `ScopeEndpoint` is `null` in the Cloud presets: the endpoint exists there too
@@ -221,7 +221,7 @@ public sealed class TokenSet
 ```
 
 > `AccessToken` is a signed JWT — decode it to read `iss`, `workspaceId`, `secure`, and
-> scopes. See [Access token claims](../../docs/guides/token-claims.md).
+> scopes. See [Access token claims](https://altiumdeveloper.github.io/altium-auth/guides/token-claims/).
 
 ## Error handling
 
