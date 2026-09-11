@@ -3,16 +3,14 @@
 // token-acquisition client, so it needs no JWT/JWKS validation stack; the small
 // OAuth surface is hand-rolled and pinned by the conformance vectors.
 using System.Net.Http.Headers;
-using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 
 namespace Altium.Auth;
 
 /// <inheritdoc/>
 public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options) : IAltiumAuthClient
 {
-    private static string Truncate(string s) => s.Length > 500 ? s[..500] : s;
+    private static string Truncate(string s) => s.Length > 500 ? s.Substring(0, 500) : s;
 
     private static string Base64Url(byte[] bytes) =>
         Convert.ToBase64String(bytes).Replace('+', '-').Replace('/', '_').TrimEnd('=');
@@ -38,29 +36,19 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
     private async Task<TokenSet> TokenRequestAsync(Dictionary<string, string> form, CancellationToken ct)
     {
         var res = await http.SendAsync(BuildTokenRequest(options.Endpoints.TokenEndpoint, form), ct).ConfigureAwait(false);
-        var body = await res.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        var body = await Compat.ReadStringAsync(res.Content, ct).ConfigureAwait(false);
         var status = (int)res.StatusCode;
 
         if (status is not (200 or 201))
         {
-            string err = "", desc = "";
-            try
-            {
-                var e = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(body);
-                if (e is not null)
-                {
-                    if (e.TryGetValue("error", out var ev) && ev.ValueKind == JsonValueKind.String) err = ev.GetString()!;
-                    if (e.TryGetValue("error_description", out var dv) && dv.ValueKind == JsonValueKind.String) desc = dv.GetString()!;
-                }
-            }
-            catch (JsonException) { /* non-JSON error body */ }
+            var e = Json.ReadOrNull<TokenErrorResponse>(body);
+            var err = e?.Error ?? "";
+            var desc = e?.ErrorDescription ?? "";
             var suffix = desc.Length > 0 ? $" — {desc}" : "";
             throw new InvalidOperationException($"Token endpoint {status} {err}{suffix} (body: {Truncate(body)})");
         }
 
-        TokenSet? tok;
-        try { tok = JsonSerializer.Deserialize<TokenSet>(body); }
-        catch (JsonException) { throw new InvalidOperationException($"Token endpoint returned non-JSON body: {Truncate(body)}"); }
+        var tok = Json.ReadOrNull<TokenSet>(body);
         if (tok is null) throw new InvalidOperationException($"Token endpoint returned non-JSON body: {Truncate(body)}");
 
         if (tok.ExpiresIn is int ein && tok.ExpiresAt is null)
@@ -71,8 +59,8 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
     /// <inheritdoc />
     public AuthorizationRequest CreateAuthorizationUrl(string? redirectUri = null, string? state = null, string? codeVerifier = null, WorkspaceSelection selectWorkspace = WorkspaceSelection.None)
     {
-        var verifier = codeVerifier ?? Base64Url(RandomNumberGenerator.GetBytes(32));
-        var challenge = Base64Url(SHA256.HashData(Encoding.ASCII.GetBytes(verifier)));
+        var verifier = codeVerifier ?? Base64Url(Compat.RandomBytes(32));
+        var challenge = Base64Url(Compat.Sha256(Encoding.ASCII.GetBytes(verifier)));
         var st = state ?? Guid.NewGuid().ToString();
         var redirect = redirectUri ?? options.Endpoints.RedirectUri;
 
@@ -111,7 +99,7 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
             ["code"] = code,
             ["redirect_uri"] = redirectUri ?? options.Endpoints.RedirectUri,
         };
-        if (!string.IsNullOrEmpty(codeVerifier)) form["code_verifier"] = codeVerifier;
+        if (codeVerifier is { Length: > 0 }) form["code_verifier"] = codeVerifier;
         return TokenRequestAsync(form, ct);
     }
 
@@ -167,7 +155,7 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
         {
             var req = new HttpRequestMessage(HttpMethod.Post, options.Endpoints.ActionWaitEndpoint)
             {
-                Content = new StringContent(JsonSerializer.Serialize(new { token }), Encoding.UTF8, "application/json"),
+                Content = new StringContent(Json.Write(new ActionWaitRequest { Token = token }), Encoding.UTF8, "application/json"),
             };
             var res = await http.SendAsync(req, ct).ConfigureAwait(false);
             var status = (int)res.StatusCode;
@@ -175,17 +163,15 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
             if (status == 408) continue;                                  // normal reconnect
             if (status == 410) throw new InvalidOperationException("Sign-in cancelled.");
 
-            var body = await res.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+            var body = await Compat.ReadStringAsync(res.Content, ct).ConfigureAwait(false);
             if (status == 200)
             {
-                JsonElement root;
-                try { root = JsonDocument.Parse(body).RootElement; }
-                catch (JsonException) { throw new InvalidOperationException($"ActionWait returned 200 but body is not JSON: {Truncate(body)}"); }
-                if (root.ValueKind != JsonValueKind.Object || root.TryGetProperty("data", out var data) is false)
+                var data = Json.ReadOrNull<ActionWaitResponse>(body)?.Data;
+                if (data is null)
                     throw new InvalidOperationException($"ActionWait returned 200 but body is not JSON: {Truncate(body)}");
 
-                var code = data.TryGetProperty("code", out var c) && c.ValueKind == JsonValueKind.String ? c.GetString() : null;
-                var state = data.TryGetProperty("state", out var s) && s.ValueKind == JsonValueKind.String ? s.GetString() : null;
+                var code = data.Code;
+                var state = data.State;
                 if (string.IsNullOrEmpty(code)) throw new InvalidOperationException($"ActionWait returned 200 but body is missing data.code: {Truncate(body)}");
                 if (string.IsNullOrEmpty(state)) throw new InvalidOperationException($"ActionWait returned 200 but body is missing data.state: {Truncate(body)}");
                 return (code!, state!);
@@ -220,15 +206,12 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
     {
         var url = $"{scopeEndpoint}?clientId={Uri.EscapeDataString(clientId)}";
         var res = await http.GetAsync(url, ct).ConfigureAwait(false);
-        var body = await res.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+        var body = await Compat.ReadStringAsync(res.Content, ct).ConfigureAwait(false);
         var status = (int)res.StatusCode;
 
         if (status != 200) throw new InvalidOperationException($"ClientScopes endpoint {status}: {Truncate(body)}");
 
-        string[]? scopes = null;
-        try { scopes = JsonSerializer.Deserialize<string[]>(body); }
-        catch (JsonException) { /* reported by the shared error below */ }
-        return scopes ?? throw new InvalidOperationException(
+        return Json.ReadOrNull<string[]>(body) ?? throw new InvalidOperationException(
             $"ClientScopes endpoint returned an unexpected body (expected a JSON array of strings): {Truncate(body)}");
     }
 
