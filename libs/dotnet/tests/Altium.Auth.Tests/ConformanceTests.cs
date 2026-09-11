@@ -4,6 +4,7 @@
 //
 //   dotnet test libs/dotnet/tests/Altium.Auth.Tests   (or open Altium.Auth.sln)
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using Altium.Auth;
@@ -46,7 +47,7 @@ public class ConformanceTests
         Assert.Equal(expect.GetProperty("pathname").GetString(), u.AbsolutePath);
         if (expect.TryGetProperty("query", out var query))
             foreach (var p in query.EnumerateObject())
-                Assert.True(MatchString(q.GetValueOrDefault(p.Name), p.Value), $"query {p.Name}");
+                Assert.True(MatchString(Lookup(q, p.Name), p.Value), $"query {p.Name}");
         if (expect.TryGetProperty("queryAbsent", out var qa))
             foreach (var k in qa.EnumerateArray())
                 Assert.False(q.ContainsKey(k.GetString()!), $"query {k.GetString()} should be absent");
@@ -192,7 +193,7 @@ public class ConformanceTests
         var form = ParseForm(call.Body);
         if (erq.TryGetProperty("bodyParams", out var bp))
             foreach (var p in bp.EnumerateObject())
-                Assert.True(MatchString(form.GetValueOrDefault(p.Name), p.Value), $"bodyParam {p.Name}='{form.GetValueOrDefault(p.Name)}'");
+                Assert.True(MatchString(Lookup(form, p.Name), p.Value), $"bodyParam {p.Name}='{Lookup(form, p.Name)}'");
         if (erq.TryGetProperty("bodyParamsAbsent", out var ba))
             foreach (var k in ba.EnumerateArray())
                 Assert.False(form.ContainsKey(k.GetString()!), $"bodyParam {k.GetString()} should be absent");
@@ -218,9 +219,12 @@ public class ConformanceTests
     {
         var m = matcher.GetString() ?? "";
         if (m == "<any>") return actual is not null;
-        if (m.StartsWith("contains:")) return (actual ?? "").Contains(m["contains:".Length..]);
+        if (m.StartsWith("contains:")) return (actual ?? "").Contains(m.Substring("contains:".Length));
         return actual == m;
     }
+
+    private static string? Lookup(Dictionary<string, string> d, string key) =>
+        d.TryGetValue(key, out var v) ? v : null;
 
     private static string? Opt(JsonElement e, string name) =>
         e.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() : null;
@@ -246,11 +250,11 @@ public class ConformanceTests
     private static Dictionary<string, string> ParseForm(string body)
     {
         var d = new Dictionary<string, string>();
-        foreach (var pair in body.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        foreach (var pair in body.Split(new[] { '&' }, StringSplitOptions.RemoveEmptyEntries))
         {
             var idx = pair.IndexOf('=');
             if (idx < 0) { d[Uri.UnescapeDataString(pair.Replace('+', ' '))] = ""; continue; }
-            d[Uri.UnescapeDataString(pair[..idx].Replace('+', ' '))] = Uri.UnescapeDataString(pair[(idx + 1)..].Replace('+', ' '));
+            d[Uri.UnescapeDataString(pair.Substring(0, idx).Replace('+', ' '))] = Uri.UnescapeDataString(pair.Substring(idx + 1).Replace('+', ' '));
         }
         return d;
     }
@@ -276,7 +280,7 @@ public class ConformanceTests
         private int _i;
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct)
         {
-            var body = req.Content is null ? "" : await req.Content.ReadAsStringAsync(ct);
+            var body = req.Content is null ? "" : await req.Content.ReadAsStringAsync();
             Calls.Add(new Call { Url = req.RequestUri!.ToString(), Method = req.Method.Method, Authorization = req.Headers.Authorization?.ToString(), Body = body });
             var (status, respBody) = reply(req, body, _i++);
             return new HttpResponseMessage((HttpStatusCode)status) { Content = new StringContent(respBody, Encoding.UTF8) };
