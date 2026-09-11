@@ -13,7 +13,8 @@ client types as well as the different deployment types: Commercial Cloud, GovClo
 - **Workspace tokens**, **token refresh / revocation**, and first-class **GovCloud** and
   **AES** (on-prem) support.
 
-**Zero dependencies**, `net8.0`. Validated against the same language-neutral
+**Zero dependencies** on `net10.0`, `net8.0`, and `netstandard2.0` (.NET Framework
+4.6.1+, including 4.8). Validated against the same language-neutral
 [conformance vectors](https://github.com/AltiumDeveloper/altium-auth/blob/main/spec/conformance/vectors.json) as the TypeScript library —
 see <a href="#how-its-built">How it's built</a>.
 
@@ -233,7 +234,12 @@ message (timeout, cancellation, or a CSRF `state` mismatch).
 
 ## Compatibility
 
-- **.NET 8.0+** (`net8.0`). Dependency-free.
+- **`net10.0`**, **`net8.0`**, and **`netstandard2.0`** — the last covering .NET
+  Framework 4.6.1+ (4.8 included) and any other netstandard2.0 runtime.
+- **Dependency-free on every target.** JSON is read with the BCL's
+  `DataContractJsonSerializer`, so a .NET Framework project installs the package
+  without `System.Text.Json` or its transitive assemblies and the binding redirects
+  they bring.
 - You provide the `HttpClient`; the client sets headers/bodies but does not own the transport.
 
 ## How it's built
@@ -256,6 +262,11 @@ dotnet test Altium.Auth.sln -c Release      # runs the xUnit conformance suite
 # Or target a single project:
 dotnet test tests/Altium.Auth.Tests -c Release
 ```
+
+The vectors run on every target the package ships. `net48` is included only on
+Windows (there is no runtime to host it elsewhere), so it runs in CI and in a local
+`dotnet test` on Windows — that leg is what proves the `netstandard2.0` asset works
+on .NET Framework, not just that it compiles.
 
 The shipped library (`src/Altium.Auth`) builds with analyzers + `TreatWarningsAsErrors`
 (see `.editorconfig`), so `dotnet build` is the style/quality gate.
