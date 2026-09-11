@@ -1,9 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <!-- On Windows the same vectors also run on net48, against the netstandard2.0
+         asset .NET Framework consumers resolve. Elsewhere there is no runtime to
+         host them, so net48 is left out rather than aborting `dotnet test`. -->
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net8.0;net10.0;net48</TargetFrameworks>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -12,6 +17,21 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net48'">
+    <!-- System.Text.Json's transitive assemblies need redirects under .NET Framework —
+         the churn the shipped library avoids by not depending on it. -->
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+  </PropertyGroup>
+
+  <!-- Test-only, never reaches the shipped package: the harness itself reads
+       vectors.json, and net48 needs the reference assemblies to compile off Windows. -->
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
 
   <ItemGroup>

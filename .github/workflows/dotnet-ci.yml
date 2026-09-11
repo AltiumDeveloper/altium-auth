@@ -26,10 +26,27 @@ jobs:
 
       - uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
-      # xUnit conformance harness against the shared vectors.
+      # xUnit conformance harness against the shared vectors (net8.0 + net10.0).
       - run: dotnet test Altium.Auth.sln -c Release
 
       # Build the live E2E tool so API changes can't silently break it (it isn't a test).
       - run: dotnet build tools/SignInTest -c Release
+
+  # The same vectors on .NET Framework, against the netstandard2.0 asset a 4.8
+  # project resolves — the target this package exists to support.
+  framework:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - run: dotnet test tests/Altium.Auth.Tests -c Release -f net48
