@@ -402,6 +402,12 @@
       "description": "200 whose data.state does not match the wait token is rejected (CSRF guard); the code is NOT exchanged.",
       "pollResponses": [{ "status": 200, "json": { "data": { "code": "c", "state": "attacker-state" } } }],
       "expect": { "outcome": "errorContains", "errorContains": "State mismatch" }
+    },
+    {
+      "id": "aw-error-in-data",
+      "description": "200 whose data carries a delivered OAuth error (e.g. access_denied — a cross-partition workspace scope requested at sign-in) surfaces that error, not a generic 'missing data.code' (SPEC §4.3).",
+      "pollResponses": [{ "status": 200, "json": { "actionResult": "OK", "data": { "error": "access_denied", "state": "<stateEchoesToken>" } } }],
+      "expect": { "outcome": "errorContains", "errorContains": "access_denied" }
     }
   ],
 

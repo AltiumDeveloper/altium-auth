@@ -100,7 +100,7 @@ Request body (`Content-Type: application/json`):
 { "token": "<wait_token>" }
 ```
 Responses:
-- `200` — result ready. Body: `{ "data": { "code": "<code>", "state": "<wait_token>" } }`. The client **MUST** verify `data.state` equals its wait token before using `data.code`.
+- `200` — result ready. The body's `data` object carries **either** the authorization result `{ "code": "<code>", "state": "<wait_token>" }` **or** a delivered OAuth error `{ "error": "<error>", "error_description"?: "<text>", "state": "<wait_token>" }` (e.g. `access_denied` — including when a workspace scope is requested at sign-in on the wrong partition, §6). On the success shape the client **MUST** verify `data.state` equals its wait token before using `data.code`; on the error shape it **MUST** surface `error` (terminal — do not reconnect). A `200` whose `data` has neither `code` nor `error` is a protocol error.
 - `408` — the poll's server-side hold interval elapsed. This is **normal**; the client **MUST** immediately reconnect with the **same** token. The hold interval is an unspecified implementation detail and clients **MUST NOT** depend on any particular duration; it is distinct from the client's own overall sign-in timeout, which spans the whole reconnect loop.
 - `410` — the wait token is no longer valid (consumed/superseded). Terminal; the client **MUST** restart sign-in with a new token.
 - Other status — treat as an error.

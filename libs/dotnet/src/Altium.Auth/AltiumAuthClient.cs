@@ -184,6 +184,16 @@ public sealed class AltiumAuthClient(HttpClient http, AltiumAuthOptions options)
                 if (root.ValueKind != JsonValueKind.Object || root.TryGetProperty("data", out var data) is false)
                     throw new InvalidOperationException($"ActionWait returned 200 but body is not JSON: {Truncate(body)}");
 
+                // The callback may deliver an OAuth error in `data` instead of a code (SPEC §4.3).
+                if (data.TryGetProperty("error", out var errEl) && errEl.ValueKind == JsonValueKind.String
+                    && errEl.GetString() is { Length: > 0 } oauthError)
+                {
+                    var errDesc = data.TryGetProperty("error_description", out var descEl)
+                        && descEl.ValueKind == JsonValueKind.String ? descEl.GetString() : null;
+                    throw new InvalidOperationException(
+                        $"ActionWait sign-in failed: {oauthError}{(string.IsNullOrEmpty(errDesc) ? "" : $" — {errDesc}")}");
+                }
+
                 var code = data.TryGetProperty("code", out var c) && c.ValueKind == JsonValueKind.String ? c.GetString() : null;
                 var state = data.TryGetProperty("state", out var s) && s.ValueKind == JsonValueKind.String ? s.GetString() : null;
                 if (string.IsNullOrEmpty(code)) throw new InvalidOperationException($"ActionWait returned 200 but body is missing data.code: {Truncate(body)}");

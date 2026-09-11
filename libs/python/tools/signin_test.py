@@ -250,6 +250,19 @@ def _test_two_trip(
 def _test_one_trip(
     args: argparse.Namespace, client_secret: str | None, sign_in_config: AltiumAuthConfig
 ) -> None:
+    # The one-trip test requests the workspace scope at sign-in on args.env's host, so it only
+    # applies when the workspace lives in that same environment. In bridge mode (e.g.
+    # --workspace-env gov) the workspace is on another partition, so a direct scope request is
+    # denied — skip it (the two-trip exchange above is the right path). NB: prod and gov are the
+    # same *tier* (exchange-compatible) but different *partitions*, so compare envs, not tiers.
+    exchange_env = args.workspace_env or args.env
+    if exchange_env != args.env:
+        print(
+            f"\n⏸️  Skipping one-trip sign-in: the workspace lives in '{exchange_env}' but sign-in "
+            f"is on '{args.env}'. Requesting that workspace scope at the '{args.env}' /authorize "
+            "endpoint is cross-partition (access_denied) — use the two-trip exchange (above)."
+        )
+        return
     # The workspace scope comes from --workspace, or — on AES — from ClientScopes. It is *added*
     # to the configured scopes, never substituted (offline_access must survive --refresh/--revoke).
     if args.workspace:

@@ -307,8 +307,15 @@ async function main() {
     // 1. Test the two-trip sign-in (global token → workspace token).
     const { tokens, config: tokenConfig } = await testTwoTripSignIn(args, signInConfig, exchangeConfig);
     let currentTokens = tokens;
-    // 2. Test the one-trip sign-in (direct workspace token, if workspace ID is known and code not already used for test 1).
-    if (!args.code) {
+    // 2. Test the one-trip sign-in (direct workspace token). It requests the workspace scope at
+    //    sign-in on args.env's host, so it only applies when the workspace lives in that same
+    //    environment — in bridge mode (e.g. --workspace-env gov) the workspace is on another
+    //    partition, so a direct scope request is denied (use the two-trip exchange above). It also
+    //    needs its own browser round trip and a code can only be redeemed once, so it is skipped in
+    //    --exchange-code mode (the code was spent on test 1).
+    if (!args.code && exchangeEnv !== args.env) {
+      console.log(`\n⏸️  Skipping one-trip sign-in: the workspace lives in '${exchangeEnv}' but sign-in is on '${args.env}'. Requesting that workspace scope at the '${args.env}' /authorize endpoint is cross-partition (access_denied) — use the two-trip exchange (above).`);
+    } else if (!args.code) {
       const oneTripConfig = { ...signInConfig };
       if (args.workspace) {
         console.log(`Adding scope for workspace ${args.workspace} to test one-trip sign-in.`);
