@@ -32,5 +32,5 @@ public sealed class AltiumAuthOptions
 
     /// <summary>Whether token requests must carry secure=1 (SPEC §5.4).</summary>
     public bool UseSecure =>
-        Secure ?? new Uri(Endpoints.TokenEndpoint).Host.Contains("gov", StringComparison.OrdinalIgnoreCase);
+        Secure ?? Compat.ContainsIgnoreCase(new Uri(Endpoints.TokenEndpoint).Host, "gov");
 }
