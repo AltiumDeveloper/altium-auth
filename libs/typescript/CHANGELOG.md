@@ -7,6 +7,11 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- **TLS failures during the ActionWait poll are detected again.** `fetch` reports a
+  certificate failure as a `TypeError` whose `cause` carries the error code, so the
+  check missed every real one and the poll retried until it timed out. It now walks
+  the cause chain and fails fast, as the spec requires. Contract 0.3.0.
+
 - **Surface OAuth errors delivered via the ActionWait callback** — a `200` whose
   `data` carries an `error` (e.g. `access_denied`, including a cross-partition
   workspace scope requested at sign-in) now fails with that error instead of a

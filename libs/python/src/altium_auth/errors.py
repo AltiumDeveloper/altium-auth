@@ -43,3 +43,7 @@ class StateMismatchError(ActionWaitError):
 
 class TransportError(AltiumAuthError):
     """A network-level failure talking to an endpoint."""
+
+
+class TlsError(TransportError):
+    """A TLS/certificate failure: a configuration error, never retried (SPEC 4.3)."""

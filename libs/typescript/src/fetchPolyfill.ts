@@ -92,9 +92,12 @@ const TLS_ERROR_CODES = new Set([
   "HOSTNAME_MISMATCH",
 ]);
 
+/** True when a TLS/certificate failure appears anywhere in the error's cause chain. */
 export function isTlsError(err: unknown): err is Error {
-  if (err instanceof Error && "code" in err) {
-    return TLS_ERROR_CODES.has(String(err.code));
+  for (let e: unknown = err; e instanceof Error; e = (e as { cause?: unknown }).cause) {
+    if ("code" in e && TLS_ERROR_CODES.has(String((e as { code?: unknown }).code))) {
+      return true;
+    }
   }
   return false;
 }

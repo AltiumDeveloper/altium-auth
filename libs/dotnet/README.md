@@ -45,7 +45,10 @@ For apps that **can't host a public redirect**. `SignInAsync` invokes your
 using Altium.Auth;
 using System.Diagnostics;
 
-var http = new HttpClient();
+// ActionWait holds each poll open longer than HttpClient's 100s default. The client
+// reconnects when that timeout fires, but clearing it avoids the pointless round trips —
+// the CancellationToken below is the real deadline.
+var http = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
 var options = new AltiumAuthOptions
 {
     ClientId = "your-client-id",
@@ -55,7 +58,8 @@ var options = new AltiumAuthOptions
 var client = new AltiumAuthClient(http, options);
 
 // Opens the browser and waits for the sign-in callback.
-TokenSet tokens = await client.SignInAsync();
+using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+TokenSet tokens = await client.SignInAsync(cts.Token);
 
 // Persist `tokens` yourself — the client never stores them.
 
@@ -230,7 +234,8 @@ Methods throw on empty required arguments and on non-success responses. The mess
 includes the HTTP status and the OAuth `error`/`error_description` when present — e.g. a
 Gov workspace exchange on a Commercial endpoint surfaces `access_denied`; a refresh with a
 revoked/expired token surfaces `invalid_grant`. ActionWait failures surface a descriptive
-message (timeout, cancellation, or a CSRF `state` mismatch).
+message (cancellation, a TLS/certificate failure, or a CSRF `state` mismatch). A transport
+timeout or dropped connection mid-poll is *not* a failure — like a `408`, the client reconnects.
 
 ## Compatibility
 
@@ -240,7 +245,9 @@ message (timeout, cancellation, or a CSRF `state` mismatch).
   `DataContractJsonSerializer`, so a .NET Framework project installs the package
   without `System.Text.Json` or its transitive assemblies and the binding redirects
   they bring.
-- You provide the `HttpClient`; the client sets headers/bodies but does not own the transport.
+- You provide the `HttpClient`; the client sets headers/bodies but does not own the transport — so
+  its `Timeout` is yours to set (`SignInAsync` long-polls; see the note in
+  [Public apps](#public-apps-desktop--actionwait-sign-in)).
 
 ## How it's built
 
