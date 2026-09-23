@@ -45,9 +45,7 @@ For apps that **can't host a public redirect**. `SignInAsync` invokes your
 using Altium.Auth;
 using System.Diagnostics;
 
-// ActionWait holds each poll open longer than HttpClient's 100s default. The client
-// reconnects when that timeout fires, but clearing it avoids the pointless round trips —
-// the CancellationToken below is the real deadline.
+// ActionWait long-polls: the CancellationToken below is the real deadline.
 var http = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
 var options = new AltiumAuthOptions
 {
@@ -168,6 +166,69 @@ if (tokens.RefreshToken is not null)
     await client.RevokeRefreshTokenAsync(tokens.RefreshToken);
 ```
 
+## Use from PowerShell
+
+`Altium.Auth` has no dependencies on any target, so PowerShell can drive it directly —
+no SDK, no compiler, no wrapper module. Both editions work: **PowerShell 7+** loads the
+`net8.0` asset, and **Windows PowerShell 5.1** loads the `netstandard2.0` one, which
+matters because 5.1 is still the default on Windows Server.
+
+Grab the assembly straight from nuget.org and load the asset for your edition:
+
+```powershell
+$lib = if ($PSVersionTable.PSEdition -eq 'Desktop') { 'netstandard2.0' } else { 'net8.0' }
+$ver = (Invoke-RestMethod 'https://api.nuget.org/v3-flatcontainer/altium.auth/index.json').versions[-1]
+Invoke-WebRequest "https://api.nuget.org/v3-flatcontainer/altium.auth/$ver/altium.auth.$ver.nupkg" -OutFile pkg.zip
+Expand-Archive pkg.zip -DestinationPath pkg -Force
+Add-Type -Path "./pkg/lib/$lib/Altium.Auth.dll"
+```
+
+Then the flow is the C# one, one PowerShell idiom at a time:
+
+```powershell
+$http = [System.Net.Http.HttpClient]::new()
+$http.Timeout = [System.Threading.Timeout]::InfiniteTimeSpan   # the CTS below is the real deadline
+$options = [Altium.Auth.AltiumAuthOptions]@{     # hashtable cast sets the init-only properties
+    ClientId    = 'your-client-id'
+    Scopes      = 'openid profile offline_access'
+    OpenBrowser = { param($url) Start-Process $url }   # ScriptBlock → Action[string]
+}
+$client = [Altium.Auth.AltiumAuthClient]::new($http, $options)
+$cts = [System.Threading.CancellationTokenSource]::new([timespan]::FromMinutes(5))
+
+$tokens = $client.SignInAsync([Altium.Auth.WorkspaceSelection]::None, $cts.Token).GetAwaiter().GetResult()
+$tokens = $client.SignIntoWorkspaceAsync($tokens.AccessToken, 'workspace-id-here', $cts.Token).GetAwaiter().GetResult()
+
+Invoke-RestMethod https://api.altium.com/... `
+    -Headers @{ Authorization = "Bearer $($tokens.AccessToken)" }
+```
+
+Things that bite in PowerShell specifically:
+
+| | |
+| --- | --- |
+| Awaiting | No `await` — call `.GetAwaiter().GetResult()`. Safe here: PowerShell installs no `SynchronizationContext`, so there is no deadlock. |
+| Timeouts | Two of them: clear `$http.Timeout` (the ActionWait hold outlasts the 100s default, so it would otherwise reconnect every 100s), and pass a `CancellationTokenSource` token so the script can't wait forever. |
+| Errors | Exceptions arrive wrapped — read `$_.Exception.InnerException` for the real `Token endpoint 400 …` message. |
+| Optional args | PowerShell can omit trailing optional parameters, but `$null` for a `string?` becomes `""` — pass `[NullString]::Value` if you need a real null. |
+| Env presets | `[Altium.Auth.AltiumEndpoints]::GovCloud`, `::Aes('https://aes.example:9785')`, or `::new($authorize, $token, $actionWait, $redirect)`. |
+| Windows PowerShell 5.1 | Load the `netstandard2.0` asset. Call `Add-Type -AssemblyName System.Security` before using DPAPI, and force TLS 1.2 (`[Net.ServicePointManager]::SecurityProtocol`) on older Windows, where the .NET Framework default still negotiates TLS 1.0 and nuget.org refuses it. |
+| Unattended runs | There is no client-credentials grant, so a script signs in interactively once and reuses the result. Check `ExpiresAt` before reaching for `offline_access`: access-token lifetimes are per-client and can be long (30 days on the client we tested), which may be all an unattended script needs. |
+
+[`tools/powershell/Get-AltiumToken.ps1`](https://github.com/AltiumDeveloper/altium-auth/blob/main/libs/dotnet/tools/powershell/Get-AltiumToken.ps1) is a
+ready-to-run script that does all of the above: downloads and caches the assembly,
+signs in, optionally exchanges for a workspace token, and with `-TokenFile` persists the
+token set DPAPI-encrypted for the current Windows user so later runs refresh silently —
+falling back to an interactive sign-in if the saved refresh token is rejected.
+
+```powershell
+# First run opens the browser; later runs refresh from the saved token set.
+./Get-AltiumToken.ps1 -ClientId $id -WorkspaceId $authId -TokenFile ~/.altium-tokens
+```
+
+If you downloaded the script (or run it from a UNC/`\\wsl$` path), Windows blocks it as
+untrusted — `Unblock-File ./Get-AltiumToken.ps1`, or run `pwsh -ExecutionPolicy Bypass`.
+
 ## API reference
 
 Constructor: `new AltiumAuthClient(HttpClient http, AltiumAuthOptions options)` — implements `IAltiumAuthClient`.
@@ -245,6 +306,8 @@ timeout or dropped connection mid-poll is *not* a failure — like a `408`, the 
   `DataContractJsonSerializer`, so a .NET Framework project installs the package
   without `System.Text.Json` or its transitive assemblies and the binding redirects
   they bring.
+- **PowerShell 7+ and Windows PowerShell 5.1** can load and drive the assembly
+  directly — see [Use from PowerShell](#use-from-powershell).
 - You provide the `HttpClient`; the client sets headers/bodies but does not own the transport — so
   its `Timeout` is yours to set (`SignInAsync` long-polls; see the note in
   [Public apps](#public-apps-desktop--actionwait-sign-in)).
