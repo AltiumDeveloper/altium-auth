@@ -9,21 +9,7 @@ name: Docs
 on:
   push:
     branches: [main]
-    paths:
-      - "docs/**"
-      - "spec/**"
-      - "mkdocs.yml"
-      - "overrides/**"
-      - "requirements-docs.txt"
-      - ".github/workflows/docs.yml"
   pull_request:
-    paths:
-      - "docs/**"
-      - "spec/**"
-      - "mkdocs.yml"
-      - "overrides/**"
-      - "requirements-docs.txt"
-      - ".github/workflows/docs.yml"
 
 permissions:
   contents: read
@@ -43,6 +29,7 @@ jobs:
           cache: pip
           cache-dependency-path: requirements-docs.txt
       - run: pip install -r requirements-docs.txt
+      - run: "! grep -rn '](\\.\\./\\.\\./docs/' libs/*/README.md"
       - run: mkdocs build --strict
       - uses: actions/upload-pages-artifact@v5
         with:

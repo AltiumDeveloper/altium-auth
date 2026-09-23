@@ -18,13 +18,13 @@ Altium 365 OAuth2 / OpenID Connect authentication library. Supports both client 
 
 The library implements the flow described in these guides (protocol-level, independent of this package) — start here if you're new to Altium Identity:
 
-- [Authentication overview](../../docs/guides/overview.md) — endpoints, key terms, and the recommended flow
-- [Register your application](../../docs/guides/register-your-application.md) — client types, redirect URLs, credentials
-- [Web / server apps](../../docs/guides/web-and-server-apps.md) — authorization-code redirect flow (confidential clients)
-- [Desktop apps](../../docs/guides/desktop-apps.md) — the ActionWait pattern (public clients)
-- [GovCloud](../../docs/guides/govcloud.md) — Commercial vs Gov and the `secure=1` two-token model
-- [AES (on-prem)](../../docs/guides/aes.md) — customer-hosted installations
-- [Access token claims](../../docs/guides/token-claims.md) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
+- [Authentication overview](https://altiumdeveloper.github.io/altium-auth/guides/overview/) — endpoints, key terms, and the recommended flow
+- [Register your application](https://altiumdeveloper.github.io/altium-auth/guides/register-your-application/) — client types, redirect URLs, credentials
+- [Web / server apps](https://altiumdeveloper.github.io/altium-auth/guides/web-and-server-apps/) — authorization-code redirect flow (confidential clients)
+- [Desktop apps](https://altiumdeveloper.github.io/altium-auth/guides/desktop-apps/) — the ActionWait pattern (public clients)
+- [GovCloud](https://altiumdeveloper.github.io/altium-auth/guides/govcloud/) — Commercial vs Gov and the `secure=1` two-token model
+- [AES (on-prem)](https://altiumdeveloper.github.io/altium-auth/guides/aes/) — customer-hosted installations
+- [Access token claims](https://altiumdeveloper.github.io/altium-auth/guides/token-claims/) — what's inside a token (`iss`, `workspaceId`, `secure`, scopes)
 
 ## Installation
 
@@ -38,7 +38,7 @@ Only `clientId` and `scopes` are required — the endpoints default to the Altiu
 
 ### Public apps (desktop — ActionWait sign-in)
 
-For desktop clients that **can't host a public redirect**. `signIn` opens the browser, waits for the callback over Altium's ActionWait long-poll, and returns tokens. See [Desktop apps](../../docs/guides/desktop-apps.md).
+For desktop clients that **can't host a public redirect**. `signIn` opens the browser, waits for the callback over Altium's ActionWait long-poll, and returns tokens. See [Desktop apps](https://altiumdeveloper.github.io/altium-auth/guides/desktop-apps/).
 
 ```typescript
 import { signIn, signIntoWorkspace } from "@altium-developer/altium-auth";
@@ -75,7 +75,7 @@ const tokens = await signIn(config, {
 
 ### Confidential apps (web / server — authorization-code redirect)
 
-For web/server backends that **host their own redirect endpoint**. Set `clientSecret` on the config to authenticate as a confidential client (HTTP Basic), and drive the flow with two composable steps. See [Web / server apps](../../docs/guides/web-and-server-apps.md).
+For web/server backends that **host their own redirect endpoint**. Set `clientSecret` on the config to authenticate as a confidential client (HTTP Basic), and drive the flow with two composable steps. See [Web / server apps](https://altiumdeveloper.github.io/altium-auth/guides/web-and-server-apps/).
 
 ```typescript
 import { createAuthorizationUrl, exchangeCode } from "@altium-developer/altium-auth";
@@ -126,7 +126,7 @@ const tokens = await signIn({
 
 Commercial and Gov are kept strictly separate: a global token can only be exchanged for a workspace of the matching kind. `secure=1` is driven by which token endpoint you use — Gov endpoint → sent, Commercial endpoint → omitted — so pointing `tokenEndpoint` at the Gov host is all it takes to exchange a Commercial token for a Gov workspace token.
 
-> Gov tokens must never be used against Commercial services, and vice versa. See the [GovCloud](../../docs/guides/govcloud.md) guide.
+> Gov tokens must never be used against Commercial services, and vice versa. See the [GovCloud](https://altiumdeveloper.github.io/altium-auth/guides/govcloud/) guide.
 
 ### AES (on-prem)
 
@@ -146,7 +146,7 @@ const tokens = await signIn({
 });
 ```
 
-See the [AES (on-prem)](../../docs/guides/aes.md) guide.
+See the [AES (on-prem)](https://altiumdeveloper.github.io/altium-auth/guides/aes/) guide.
 
 ### Custom Deployments
 
@@ -323,11 +323,11 @@ interface TokenSet {
 }
 ```
 
-> `access_token` is a signed JWT — decode it to read `iss`, `workspaceId`, `secure`, and scopes. See [Access token claims](../../docs/guides/token-claims.md).
+> `access_token` is a signed JWT — decode it to read `iss`, `workspaceId`, `secure`, and scopes. See [Access token claims](https://altiumdeveloper.github.io/altium-auth/guides/token-claims/).
 
 ### `AuthorizationUrlOptions` / `SignInOptions`
 
-Both `createAuthorizationUrl` and `signIn` accept a `selectWorkspace` option for [login-into-workspace mode](../../docs/guides/overview.md#login-into-workspace-mode):
+Both `createAuthorizationUrl` and `signIn` accept a `selectWorkspace` option for [login-into-workspace mode](https://altiumdeveloper.github.io/altium-auth/guides/overview/#login-into-workspace-mode):
 
 ```typescript
 // In AuthorizationUrlOptions (createAuthorizationUrl) and SignInOptions (signIn):
