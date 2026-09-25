@@ -11,12 +11,18 @@ cached under LocalAppData.
 With -TokenFile, the token set is persisted DPAPI-encrypted for the current Windows
 user and later runs refresh it silently instead of prompting the browser again.
 
+Press Ctrl+C at any point to cancel the sign-in.
+
+.NOTES
+Windows blocks scripts downloaded from the internet. Run Unblock-File on this file
+first, or start it with: powershell -ExecutionPolicy Bypass -File .\Get-AltiumToken.ps1
+
 .EXAMPLE
 ./Get-AltiumToken.ps1 -ClientId 00000000-0000-0000-0000-000000000000
 
 .EXAMPLE
 $t = ./Get-AltiumToken.ps1 -ClientId $id -WorkspaceId $authId -TokenFile ~/.altium-tokens
-Invoke-RestMethod https://api.altium.com/... -Headers @{ Authorization = "Bearer $($t.AccessToken)" }
+Invoke-RestMethod https://eur.365.altium.com/api/graphql -Method Post -ContentType 'application/json' -Headers @{ Authorization = "Bearer $($t.AccessToken)" } -Body '{"query":"{ desWorkspaceInfos { name url } }"}'
 #>
 [CmdletBinding()]
 param(
@@ -30,11 +36,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $isDesktop = $PSVersionTable.PSEdition -eq 'Desktop'
-if ($isDesktop) {
-    [Net.ServicePointManager]::SecurityProtocol =
-        [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-    Add-Type -AssemblyName System.Security
-}
+if ($isDesktop) { Add-Type -AssemblyName System.Security }
 
 function Get-AltiumAuthAssembly {
     param([string]$Version)
@@ -46,10 +48,10 @@ function Get-AltiumAuthAssembly {
     $lib = if ($isDesktop) { 'netstandard2.0' } else { 'net8.0' }
     $dll = Join-Path $cache "lib/$lib/Altium.Auth.dll"
     if (-not (Test-Path $dll)) {
-        $nupkg = Join-Path ([System.IO.Path]::GetTempPath()) "altium.auth.$Version.nupkg"
-        Invoke-WebRequest "$feed/$Version/altium.auth.$Version.nupkg" -OutFile $nupkg
-        Expand-Archive $nupkg -DestinationPath $cache -Force
-        Remove-Item $nupkg
+        $zip = Join-Path ([System.IO.Path]::GetTempPath()) "altium.auth.$Version.zip"
+        Invoke-WebRequest "$feed/$Version/altium.auth.$Version.nupkg" -OutFile $zip -UseBasicParsing
+        Expand-Archive $zip -DestinationPath $cache -Force
+        Remove-Item $zip
     }
     if (-not (Test-Path $dll)) {
         throw "Altium.Auth $Version ships no $lib asset; this PowerShell edition needs one."
@@ -57,10 +59,14 @@ function Get-AltiumAuthAssembly {
     $dll
 }
 
-function Invoke-Sync {
+function Wait-Task {
     param($Task)
-    try { $Task.GetAwaiter().GetResult() }
+    try {
+        while (-not $Task.IsCompleted) { Start-Sleep -Milliseconds 200 }
+        $Task.GetAwaiter().GetResult()
+    }
     catch { if ($_.Exception.InnerException) { throw $_.Exception.InnerException } else { throw } }
+    finally { if (-not $Task.IsCompleted) { $cts.Cancel() } }
 }
 
 function Resolve-TokenFilePath {
@@ -100,14 +106,14 @@ $tokens = $null
 $saved = Read-TokenFile $TokenFile
 if ($saved.RefreshToken) {
     Write-Verbose 'Refreshing the saved token set.'
-    try { $tokens = Invoke-Sync $client.RefreshTokenAsync($saved.RefreshToken, $cts.Token) }
+    try { $tokens = Wait-Task $client.RefreshTokenAsync($saved.RefreshToken, $cts.Token) }
     catch { Write-Warning "Refresh failed ($($_.Exception.Message)). Signing in interactively instead." }
 }
 if (-not $tokens) {
     Write-Host "Opening the browser to sign in (waiting up to $TimeoutMinutes minute(s))..."
-    $tokens = Invoke-Sync $client.SignInAsync([Altium.Auth.WorkspaceSelection]::None, $cts.Token)
+    $tokens = Wait-Task $client.SignInAsync([Altium.Auth.WorkspaceSelection]::None, $cts.Token)
     if ($WorkspaceId) {
-        $tokens = Invoke-Sync $client.SignIntoWorkspaceAsync($tokens.AccessToken, $WorkspaceId, $cts.Token)
+        $tokens = Wait-Task $client.SignIntoWorkspaceAsync($tokens.AccessToken, $WorkspaceId, $cts.Token)
     }
 }
 

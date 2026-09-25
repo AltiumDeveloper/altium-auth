@@ -168,12 +168,12 @@ if (tokens.RefreshToken is not null)
 
 ## Use from PowerShell
 
-`Altium.Auth` has no dependencies on any target, so PowerShell can drive it directly —
-no SDK, no compiler, no wrapper module. Both editions work: **PowerShell 7+** loads the
-`net8.0` asset, and **Windows PowerShell 5.1** loads the `netstandard2.0` one, which
-matters because 5.1 is still the default on Windows Server.
+`Altium.Auth` has no dependencies on any target, so PowerShell can load it directly with
+no SDK, compiler or wrapper module. PowerShell 7+ loads the `net8.0` asset and Windows
+PowerShell 5.1 loads the `netstandard2.0` one.
 
-Grab the assembly straight from nuget.org and load the asset for your edition:
+Download the package from nuget.org and load the asset for your edition. Keep the `.zip`
+extension: `Expand-Archive` on 5.1 refuses a `.nupkg`.
 
 ```powershell
 $lib = if ($PSVersionTable.PSEdition -eq 'Desktop') { 'netstandard2.0' } else { 'net8.0' }
@@ -183,51 +183,72 @@ Expand-Archive pkg.zip -DestinationPath pkg -Force
 Add-Type -Path "./pkg/lib/$lib/Altium.Auth.dll"
 ```
 
-Then the flow is the C# one, one PowerShell idiom at a time:
+Then sign in and call the API:
 
 ```powershell
 $http = [System.Net.Http.HttpClient]::new()
-$http.Timeout = [System.Threading.Timeout]::InfiniteTimeSpan   # the CTS below is the real deadline
-$options = [Altium.Auth.AltiumAuthOptions]@{     # hashtable cast sets the init-only properties
+$http.Timeout = [System.Threading.Timeout]::InfiniteTimeSpan
+$options = [Altium.Auth.AltiumAuthOptions]@{
     ClientId    = 'your-client-id'
-    Scopes      = 'openid profile offline_access'
-    OpenBrowser = { param($url) Start-Process $url }   # ScriptBlock → Action[string]
+    Scopes      = 'openid profile'
+    OpenBrowser = { param($url) Start-Process $url }
 }
 $client = [Altium.Auth.AltiumAuthClient]::new($http, $options)
 $cts = [System.Threading.CancellationTokenSource]::new([timespan]::FromMinutes(5))
 
-$tokens = $client.SignInAsync([Altium.Auth.WorkspaceSelection]::None, $cts.Token).GetAwaiter().GetResult()
-$tokens = $client.SignIntoWorkspaceAsync($tokens.AccessToken, 'workspace-id-here', $cts.Token).GetAwaiter().GetResult()
+function Wait-Task($task) {
+    try {
+        while (-not $task.IsCompleted) { Start-Sleep -Milliseconds 200 }
+        $task.GetAwaiter().GetResult()
+    }
+    finally { if (-not $task.IsCompleted) { $cts.Cancel() } }
+}
 
-Invoke-RestMethod https://api.altium.com/... `
-    -Headers @{ Authorization = "Bearer $($tokens.AccessToken)" }
+$tokens = Wait-Task $client.SignInAsync([Altium.Auth.WorkspaceSelection]::None, $cts.Token)
+
+$body = @{ query = '{ desWorkspaceInfos { authId name url } }' } | ConvertTo-Json
+Invoke-RestMethod https://eur.365.altium.com/api/graphql -Method Post -ContentType 'application/json' `
+    -Headers @{ Authorization = "Bearer $($tokens.AccessToken)" } -Body $body
 ```
 
-Things that bite in PowerShell specifically:
+The hashtable cast is how PowerShell sets the options' init-only properties, and the
+ScriptBlock converts to the `Action<string>` that `OpenBrowser` expects. PowerShell has no
+`await`, so `Wait-Task` polls the task rather than blocking on `GetAwaiter().GetResult()`,
+which would ignore Ctrl+C until the deadline. When you do press Ctrl+C, its `finally`
+cancels the sign-in. `$http.Timeout` is cleared because the ActionWait long-poll outlasts
+`HttpClient`'s 100-second default, which leaves the `CancellationTokenSource` as the only
+deadline. If a call fails, the real message is on `$_.Exception.InnerException`.
 
-| | |
-| --- | --- |
-| Awaiting | No `await` — call `.GetAwaiter().GetResult()`. Safe here: PowerShell installs no `SynchronizationContext`, so there is no deadlock. |
-| Timeouts | Two of them: clear `$http.Timeout` (the ActionWait hold outlasts the 100s default, so it would otherwise reconnect every 100s), and pass a `CancellationTokenSource` token so the script can't wait forever. |
-| Errors | Exceptions arrive wrapped — read `$_.Exception.InnerException` for the real `Token endpoint 400 …` message. |
-| Optional args | PowerShell can omit trailing optional parameters, but `$null` for a `string?` becomes `""` — pass `[NullString]::Value` if you need a real null. |
-| Env presets | `[Altium.Auth.AltiumEndpoints]::GovCloud`, `::Aes('https://aes.example:9785')`, or `::new($authorize, $token, $actionWait, $redirect)`. |
-| Windows PowerShell 5.1 | Load the `netstandard2.0` asset. Call `Add-Type -AssemblyName System.Security` before using DPAPI, and force TLS 1.2 (`[Net.ServicePointManager]::SecurityProtocol`) on older Windows, where the .NET Framework default still negotiates TLS 1.0 and nuget.org refuses it. |
-| Unattended runs | There is no client-credentials grant, so a script signs in interactively once and reuses the result. Check `ExpiresAt` before reaching for `offline_access`: access-token lifetimes are per-client and can be long (30 days on the client we tested), which may be all an unattended script needs. |
+There is no client-credentials grant, so a script can't get a token with nobody present.
+It signs in interactively once and reuses the result. Check `ExpiresAt` before reaching for
+`offline_access`: lifetimes are set per client and can be long (30 days on the client we
+tested).
 
-[`tools/powershell/Get-AltiumToken.ps1`](https://github.com/AltiumDeveloper/altium-auth/blob/main/libs/dotnet/tools/powershell/Get-AltiumToken.ps1) is a
-ready-to-run script that does all of the above: downloads and caches the assembly,
-signs in, optionally exchanges for a workspace token, and with `-TokenFile` persists the
-token set DPAPI-encrypted for the current Windows user so later runs refresh silently —
-falling back to an interactive sign-in if the saved refresh token is rejected.
+### The ready-made script
+
+[`tools/powershell/Get-AltiumToken.ps1`](https://github.com/AltiumDeveloper/altium-auth/blob/main/libs/dotnet/tools/powershell/Get-AltiumToken.ps1)
+does all of the above: it downloads and caches the assembly, picks the right asset, signs in
+and optionally exchanges for a workspace token with `-WorkspaceId`.
+
+Windows blocks scripts downloaded from the internet, so unblock it before the first run, or
+start it with `powershell -ExecutionPolicy Bypass -File .\Get-AltiumToken.ps1`.
 
 ```powershell
-# First run opens the browser; later runs refresh from the saved token set.
-./Get-AltiumToken.ps1 -ClientId $id -WorkspaceId $authId -TokenFile ~/.altium-tokens
+Unblock-File ./Get-AltiumToken.ps1
+./Get-AltiumToken.ps1 -ClientId $id -WorkspaceId $authId
 ```
 
-If you downloaded the script (or run it from a UNC/`\\wsl$` path), Windows blocks it as
-untrusted — `Unblock-File ./Get-AltiumToken.ps1`, or run `pwsh -ExecutionPolicy Bypass`.
+### Keeping tokens between runs
+
+The script can also save the token set so later runs skip the browser. With `-TokenFile`,
+it encrypts the tokens with DPAPI, so only the same Windows user on the same machine can
+read them, and on the next run it refreshes silently from the saved refresh token. If the
+refresh is rejected it falls back to an interactive sign-in. None of this is needed for a
+one-off script, but it helps for anything scheduled.
+
+```powershell
+./Get-AltiumToken.ps1 -ClientId $id -Scopes 'openid profile offline_access' -TokenFile ~/.altium-tokens
+```
 
 ## API reference
 
