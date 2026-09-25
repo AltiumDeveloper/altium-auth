@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- A TLS failure during the ActionWait poll now fails fast instead of reconnecting, and
+  surfaces as the new `TlsError` (a `TransportError` subclass). Contract 0.3.0.
+
 ## 0.2.0
 
 Initial release. Implements the Altium 365 auth spec (`spec/SPEC.md`, contract 0.2.0)
