@@ -1,0 +1,50 @@
+name: Go CI
+
+# Runs only when the Go library or the shared spec/vectors change.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "libs/go/**"
+      - "spec/**"
+      - ".github/workflows/go-ci.yml"
+  pull_request:
+    paths:
+      - "libs/go/**"
+      - "spec/**"
+      - ".github/workflows/go-ci.yml"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: libs/go
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        go: [oldstable, stable] # the two supported Go releases
+    name: Go ${{ matrix.go }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go }}
+          cache-dependency-path: libs/go/go.mod
+
+      - name: gofmt
+        run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
+
+      - run: go vet ./...
+
+      # Pinned (2026.2.2): bump deliberately, never @latest.
+      - run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./...
+
+      # Unit + conformance against the shared, language-neutral vectors in spec/.
+      # Also builds tools/signintest so harness signature drift can't slip through.
+      - run: go test -race ./...

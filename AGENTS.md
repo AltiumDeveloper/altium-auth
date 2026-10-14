@@ -30,6 +30,8 @@ libs/
     tests/Altium.Auth.Tests   xUnit conformance runner over the shared vectors.
   python/                     altium-auth (PyPI). Dependency-free (stdlib only).
     tests/conformance/        pytest conformance runner over the shared vectors.
+  go/                         github.com/AltiumDeveloper/altium-auth/libs/go. Dependency-free (stdlib only).
+    conformance_test.go       go test conformance runner over the shared vectors.
 .github/workflows/            Per-library, path-filtered CI + tag-prefixed release.
 ```
 
@@ -69,7 +71,8 @@ libs/
 6. If the capability is user-exercisable (a new option, flag, method, or grant),
    surface it in **each library's live E2E harness** so it can be tried against a real
    environment — TS `libs/typescript/scripts/test-signin.ts`, .NET
-   `libs/dotnet/tools/SignInTest`, Python `libs/python/tools/signin_test.py`. **These
+   `libs/dotnet/tools/SignInTest`, Python `libs/python/tools/signin_test.py`, Go
+   `libs/go/tools/signintest`. **These
    harnesses share ONE CLI contract**: the same flags, option names, accepted values,
    and behavior in every language, so an identical command works against any
    implementation (`--env`, `--workspace-env`, `--aes-origin`, `--secure`/`--no-secure`,
@@ -109,15 +112,21 @@ dotnet test libs/dotnet/Altium.Auth.sln -c Release
 # Python
 cd libs/python && uv sync --extra dev && uv run ruff check . \
   && uv run ruff format --check . && uv run mypy && uv run pytest && cd ../..
+
+# Go (also builds tools/signintest)
+cd libs/go && test -z "$(gofmt -l .)" && go vet ./... \
+  && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./... \
+  && go test -race ./... && cd ../..
 ```
 
 Live end-to-end (needs network + a browser — never in CI): each library ships a
 sign-in tool with an **identical CLI** — TS `npm run test:e2e`, .NET
 `dotnet run --project libs/dotnet/tools/SignInTest`, Python
-`uv run python libs/python/tools/signin_test.py`. Keep them at feature *and* interface
-parity: every new user-facing capability gets the *same* flag/option in **all three**
-harnesses (see playbook step 6), so one command works everywhere. CI builds
-`tools/SignInTest` so signature drift can't silently break it; the TS harness is
+`uv run python libs/python/tools/signin_test.py`, Go `go run ./tools/signintest` (in
+`libs/go`). Keep them at feature *and* interface parity: every new user-facing
+capability gets the *same* flag/option in **all** harnesses (see playbook step 6),
+so one command works everywhere. CI builds `tools/SignInTest` and the Go
+`tools/signintest` so signature drift can't silently break them; the TS harness is
 type-checked when you run it via `tsx`.
 
 ## Definition of done (agent PR)
@@ -128,7 +137,7 @@ type-checked when you run it via `tsx`.
 - [ ] Cross-language parity kept, or a gap recorded in the root README conformance matrix.
 - [ ] Affected `docs/*.md` guides + library READMEs updated; CHANGELOGs updated.
 - [ ] Live E2E harnesses (`scripts/test-signin.ts`, `tools/SignInTest`,
-      `libs/python/tools/signin_test.py`) expose any new user-facing capability with the
+      `libs/python/tools/signin_test.py`, `libs/go/tools/signintest`) expose any new user-facing capability with the
       *same* CLI flags in every language and still build/type-check — kept at parity.
 - [ ] No secrets in code, tests, or CLI args (secrets come from env only).
 
