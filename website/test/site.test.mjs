@@ -23,12 +23,11 @@ test('every page of the former site keeps its URL', () => {
   assert.deepEqual(allPages().map((page) => page.route).sort(), [...PUBLISHED_ROUTES].sort());
 });
 
-test('every sidebar section has its icon rule, and every category its subtitle', () => {
+test('every sidebar section has its icon rule', () => {
   const css = readFileSync(new URL('../src/css/custom.css', import.meta.url), 'utf8');
   for (const section of SECTIONS) {
     const rule = new RegExp(`\\.bc-${section.icon} \\{([^}]*)\\}`).exec(css)?.[1];
     assert.ok(rule?.includes('--bc-img') && rule.includes('--bc-bg'), `.bc-${section.icon} needs --bc-img and --bc-bg`);
-    if (section.route) assert.ok(rule.includes('--section-path'), `.bc-${section.icon} needs --section-path`);
   }
 });
 

@@ -13,9 +13,8 @@ const path = require('node:path');
 const REPO_ROOT = path.resolve(__dirname, '..');
 
 // The sidebar sections, in sidebar order, like the namespaces of the Altium Designer SDK reference: each has a
-// coloured icon and its source directory as a subtitle (`icon` → `.bc-<icon>` in src/css/custom.css, which sets
-// `--bc-img`, `--bc-bg` and `--section-path`). `route` is the section's landing page (a generated index of its pages),
-// `kind` the search kind (src/search/engine.mjs KINDS).
+// coloured icon (`icon` → `.bc-<icon>` in src/css/custom.css, which sets `--bc-img` and `--bc-bg`). Home is a single
+// link; the others are always-expanded groups of their pages. `kind` is the search kind (src/search/engine.mjs KINDS).
 // Page `file`s are repository-relative; `route` is the page URL below the base URL.
 const SECTIONS = [
   {
@@ -32,8 +31,6 @@ const SECTIONS = [
     label: 'Guides',
     kind: 'guide',
     icon: 'guides',
-    route: '/guides/',
-    description: 'The authentication flows, protocol-level and independent of any library.',
     pages: [
       { file: 'docs/guides/overview.md', route: '/guides/overview/', label: 'Overview', description: 'Endpoints, key terms, and the recommended authentication flow.' },
       { file: 'docs/guides/web-and-server-apps.md', route: '/guides/web-and-server-apps/', label: 'Web & server apps', description: 'The authorization-code redirect flow for confidential clients.' },
@@ -49,8 +46,6 @@ const SECTIONS = [
     label: 'Libraries',
     kind: 'library',
     icon: 'libraries',
-    route: '/libraries/',
-    description: 'One idiomatic client per language, each validated by the same conformance vectors.',
     pages: [
       { file: 'libs/typescript/README.md', route: '/libraries/typescript/', label: 'TypeScript', description: '@altium-developer/altium-auth on npm: installation, quick start, and API reference.' },
       { file: 'libs/dotnet/README.md', route: '/libraries/dotnet/', label: '.NET', description: 'Altium.Auth on NuGet: installation, quick start, PowerShell use, and API reference.' },
@@ -62,8 +57,6 @@ const SECTIONS = [
     label: 'Specification',
     kind: 'spec',
     icon: 'specification',
-    route: '/specification/',
-    description: 'The normative contract every library implements, and the vectors that prove it.',
     pages: [
       { file: 'spec/SPEC.md', route: '/specification/spec/', label: 'Integration spec', description: 'The normative Altium delta over standard OAuth 2.0 / OIDC that every library implements.' },
       { file: 'spec/conformance/README.md', route: '/specification/conformance/', label: 'Conformance vectors', description: 'The language-neutral vectors every library runs, and their matchers.' },

@@ -12,21 +12,14 @@ const BRANCH = 'main';
 const DEVELOPER_CENTER = 'https://developer.altium.com/';
 const DEVELOPER_CENTER_DOCS = 'https://www.altium.com/documentation/altium-developer-center';
 
-// The sidebar: Home, then one collapsible category per section, in pages.cjs order. Like the namespaces of the
-// Altium Designer SDK reference, each carries a coloured icon and its source directory as a subtitle (`bc-<icon>` and
-// `section-root` in src/css/custom.css), and links to a generated index of its pages.
+// The sidebar: the Home link, then one group per section, in pages.cjs order. Like the namespaces of the Altium
+// Designer SDK reference, each carries a coloured icon (`bc-<icon>` in src/css/custom.css). There is little content,
+// so the groups are always expanded and their titles are labels, not links (`section-root`).
 function sidebarItems() {
   return SECTIONS.map((section) => {
     const docs = section.pages.map((page) => ({ type: 'doc', id: docId(page.file) }));
-    if (!section.route) return { ...docs[0], className: `bc-${section.icon}` };
-    return {
-      type: 'category',
-      label: section.label,
-      collapsed: true,
-      className: `bc-${section.icon} section-root`,
-      link: { type: 'generated-index', slug: section.route, title: section.label, description: section.description },
-      items: docs,
-    };
+    if (section.id === 'home') return { ...docs[0], className: `bc-${section.icon}` };
+    return { type: 'category', label: section.label, collapsible: false, className: `bc-${section.icon} section-root`, items: docs };
   });
 }
 

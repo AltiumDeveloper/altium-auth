@@ -262,8 +262,8 @@ html {
 
 /* ---------- Sidebar sections ----------
  * Home, Guides, Libraries and Specification, laid out like the namespaces of the Altium Designer SDK reference: a
- * coloured icon, the title, and the source directory below it. `.bc-<icon>` (website/pages.cjs `icon`) sets the
- * swatch colour, the glyph and the subtitle; every section needs a rule (test/site.test.mjs). */
+ * coloured icon and the title. `.bc-<icon>` (website/pages.cjs `icon`) sets the swatch colour and the glyph; every
+ * section needs a rule (test/site.test.mjs). */
 .bc-home {
   --bc-bg: #cccccc;
   --bc-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%230b0d11%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M3%2010.5L12%203l9%207.5V20a1%201%200%200%201-1%201h-5v-6H9v6H4a1%201%200%200%201-1-1z%22%2F%3E%3C%2Fsvg%3E");
@@ -271,17 +271,14 @@ html {
 .bc-guides {
   --bc-bg: #93c47d;
   --bc-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%230b0d11%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M2%204h6a4%204%200%200%201%204%204v13a3%203%200%200%200-3-3H2z%22%2F%3E%3Cpath%20d%3D%22M22%204h-6a4%204%200%200%200-4%204v13a3%203%200%200%201%203-3h7z%22%2F%3E%3C%2Fsvg%3E");
-  --section-path: "docs/guides";
 }
 .bc-libraries {
   --bc-bg: #f6b26b;
   --bc-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%230b0d11%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M21%208l-9-5-9%205v8l9%205%209-5z%22%2F%3E%3Cpath%20d%3D%22M3%208l9%205%209-5M12%2013v8%22%2F%3E%3C%2Fsvg%3E");
-  --section-path: "libs/";
 }
 .bc-specification {
   --bc-bg: #6fa8dc;
   --bc-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%230b0d11%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22M6%203h8l4%204v14H6z%22%2F%3E%3Cpath%20d%3D%22M14%203v4h4M9%2014l2%202%204-4%22%2F%3E%3C%2Fsvg%3E");
-  --section-path: "spec/";
 }
 
 /* The swatch itself: section categories and the Home link. */
@@ -307,16 +304,13 @@ html {
   font-weight: 550;
 }
 
-/* Section categories: the title, with the source directory below it, smaller and subdued. */
-.menu__list-item.section-root > .menu__list-item-collapsible > .menu__link > span::after {
-  content: var(--section-path);
-  display: block;
-  margin-top: 0.05rem;
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 0.7rem;
-  font-weight: 400;
-  line-height: 1.3;
-  color: var(--ifm-color-emphasis-600);
+/* Section titles are labels: the groups are always expanded and have no page of their own. */
+.menu__list-item.section-root > .menu__list-item-collapsible > .menu__link,
+.menu__list-item.section-root > .menu__link {
+  color: var(--ifm-font-color-base);
+  background: none;
+  cursor: default;
+  pointer-events: none;
 }
 
 /* Pages of a section line up under its title, past the icon. */
