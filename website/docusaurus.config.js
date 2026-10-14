@@ -1,37 +1,34 @@
 // @ts-check
 // Docusaurus site for docs/ (guides), spec/ (SPEC.md + conformance README) and libs/*/README.md, read in place: one
-// docs plugin instance per directory, so nothing is copied and "Edit this page" opens the real source.
+// docs plugin over the repository root that includes only the pages listed in pages.cjs, so nothing is copied,
+// relative links between the files work as they do on GitHub, and "Edit this page" opens the real source.
 // The look (src/css, src/theme, search) follows the other Altium developer reference sites:
 // https://github.com/AltiumDeveloper/ad-sdk-docs and https://github.com/AltiumDeveloper/platform-api-docs.
-const path = require('node:path');
 const { themes } = require('prism-react-renderer');
-const { REPO_ROOT, SECTIONS, docId, frontMatterFor } = require('./pages.cjs');
+const { REPO_ROOT, SECTIONS, allPages, docId, frontMatterFor } = require('./pages.cjs');
 
 const REPO = 'https://github.com/AltiumDeveloper/altium-auth';
 const BRANCH = 'main';
 const DEVELOPER_CENTER = 'https://developer.altium.com/';
 const DEVELOPER_CENTER_DOCS = 'https://www.altium.com/documentation/altium-developer-center';
 
-// Docs plugin options for one section of pages.cjs.
-function docsOptions(section) {
-  return {
-    path: path.join(REPO_ROOT, section.dir),
-    routeBasePath: section.route,
-    include: section.pages.map((page) => page.file),
-    sidebarPath: require.resolve('./sidebars.js'),
-    sidebarItemsGenerator: () => sidebarItems(section),
-    editUrl: ({ docPath }) => `${REPO}/edit/${BRANCH}/${section.dir}/${docPath}`,
-  };
+// The sidebar: Home, then one collapsible category per section, in pages.cjs order. Like the namespaces of the
+// Altium Designer SDK reference, each carries a coloured icon and its source directory as a subtitle (`bc-<icon>` and
+// `section-root` in src/css/custom.css), and links to a generated index of its pages.
+function sidebarItems() {
+  return SECTIONS.map((section) => {
+    const docs = section.pages.map((page) => ({ type: 'doc', id: docId(page.file) }));
+    if (!section.route) return { ...docs[0], className: `bc-${section.icon}` };
+    return {
+      type: 'category',
+      label: section.label,
+      collapsed: true,
+      className: `bc-${section.icon} section-root`,
+      link: { type: 'generated-index', slug: section.route, title: section.label, description: section.description },
+      items: docs,
+    };
+  });
 }
-
-// The section's sidebar in pages.cjs order: the home page on its own, the other pages under a small-caps heading.
-function sidebarItems(section) {
-  const docs = section.pages.map((page) => ({ type: 'doc', id: docId(page.file) }));
-  const lead = docs[0]?.id === 'index' ? [docs.shift()] : [];
-  return [...lead, { type: 'category', label: section.label, collapsible: false, items: docs }];
-}
-
-const [guides, ...others] = SECTIONS;
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -62,7 +59,6 @@ const config = {
     // Search: src/theme/SearchBar over static/search-index.json (npm run search:index), also published under a
     // content-hashed name (usePluginData('search-index').file).
     './plugins/search-index.cjs',
-    ...others.map((section) => ['@docusaurus/plugin-content-docs', { id: section.id, ...docsOptions(section) }]),
   ],
   presets: [
     [
@@ -70,7 +66,14 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         blog: false,
-        docs: docsOptions(guides),
+        docs: {
+          path: REPO_ROOT,
+          routeBasePath: '/',
+          include: allPages().map((page) => page.file),
+          sidebarPath: require.resolve('./sidebars.js'),
+          sidebarItemsGenerator: sidebarItems,
+          editUrl: ({ docPath }) => `${REPO}/edit/${BRANCH}/${docPath}`,
+        },
         theme: { customCss: './src/css/custom.css' },
       }),
     ],
@@ -83,13 +86,6 @@ const config = {
         title: 'Altium 365 Authentication',
         logo: { alt: 'Altium', src: 'img/altium-logo.svg', width: 90, height: 20 },
         items: [
-          ...SECTIONS.map((section) => ({
-            type: 'docSidebar',
-            sidebarId: 'pages',
-            docsPluginId: section.id,
-            label: section.label,
-            position: 'left',
-          })),
           { href: DEVELOPER_CENTER, label: 'Developer Center', position: 'right' },
           { href: REPO, label: 'GitHub', position: 'right' },
         ],

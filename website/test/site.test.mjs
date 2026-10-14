@@ -1,5 +1,6 @@
 // Unit tests for the site scripts: page URLs (pages.cjs), Markdown helpers and search ranking. Run with `npm test`.
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import test from 'node:test';
 import { absoluteLinks, pageSections, pageTitle, readPages } from '../scripts/lib/markdown.mjs';
@@ -7,7 +8,7 @@ import { buildIndex } from '../scripts/search-index.mjs';
 import { loadIndex, search } from '../src/search/engine.mjs';
 
 const require = createRequire(import.meta.url);
-const { allPages } = require('../pages.cjs');
+const { SECTIONS, allPages } = require('../pages.cjs');
 
 // The URLs of the former MkDocs site. Package READMEs on npm, NuGet and PyPI link to them, so they must not move.
 const PUBLISHED_ROUTES = [
@@ -20,6 +21,15 @@ const PUBLISHED_ROUTES = [
 
 test('every page of the former site keeps its URL', () => {
   assert.deepEqual(allPages().map((page) => page.route).sort(), [...PUBLISHED_ROUTES].sort());
+});
+
+test('every sidebar section has its icon rule, and every category its subtitle', () => {
+  const css = readFileSync(new URL('../src/css/custom.css', import.meta.url), 'utf8');
+  for (const section of SECTIONS) {
+    const rule = new RegExp(`\\.bc-${section.icon} \\{([^}]*)\\}`).exec(css)?.[1];
+    assert.ok(rule?.includes('--bc-img') && rule.includes('--bc-bg'), `.bc-${section.icon} needs --bc-img and --bc-bg`);
+    if (section.route) assert.ok(rule.includes('--section-path'), `.bc-${section.icon} needs --section-path`);
+  }
 });
 
 test('pageSections: ## and ### sections with Docusaurus anchors, code left out', () => {

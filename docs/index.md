@@ -23,22 +23,22 @@ New to Altium Identity? Start with the [Overview](guides/overview.md), then
 
 ## Libraries
 
-Full API reference and examples for each library are on this site (the **Libraries** tab):
+Full API reference and examples for each library are on this site (the **Libraries** section):
 
 | Library | Docs |
 | --- | --- |
-| `@altium-developer/altium-auth` | [TypeScript](/libraries/typescript/) |
-| `Altium.Auth` | [.NET](/libraries/dotnet/) |
-| `altium-auth` | [Python](/libraries/python/) |
+| `@altium-developer/altium-auth` | [TypeScript](../libs/typescript/README.md) |
+| `Altium.Auth` | [.NET](../libs/dotnet/README.md) |
+| `altium-auth` | [Python](../libs/python/README.md) |
 
 All are in **preview** — the API may change as the spec and libraries evolve.
 
 ## How it stays in sync
 
-The [conformance vectors](/specification/conformance/) are the enforcement layer: every library
+The [conformance vectors](../spec/conformance/README.md) are the enforcement layer: every library
 runs the **same** `spec/conformance/vectors.json` and asserts the same requests and
 outcomes, so the implementations can't drift. The normative behavior lives in the
-[integration spec](/specification/spec/).
+[integration spec](../spec/SPEC.md).
 
 ## Topics
 

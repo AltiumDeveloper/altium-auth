@@ -31,7 +31,7 @@ libs/
   python/                     altium-auth (PyPI). Dependency-free (stdlib only).
     tests/conformance/        pytest conformance runner over the shared vectors.
 website/                      Docusaurus site over docs/, spec/ and libs/*/README.md (read in place, nothing
-                              copied). pages.cjs lists every published page: URL, order, sidebar label.
+                              copied). pages.cjs lists every published page: URL, sidebar section, order, label.
 .github/workflows/            Per-library, path-filtered CI + tag-prefixed release; docs.yml builds + deploys the site.
 ```
 
@@ -157,10 +157,11 @@ The site renders the sources as they are:
 - **Plain Markdown, no front matter.** `.md` is parsed as CommonMark, not MDX, so the same
   file renders on GitHub, the site and the package registries. Titles come from the `# H1`;
   sidebar labels, order and descriptions come from `website/pages.cjs`.
-- **A new page is added to `website/pages.cjs`.** Only listed files are published (the
-  equivalent of the old MkDocs `nav`); a link to an unlisted page fails the build.
-- **Links:** between guides, relative `.md` links (`./govcloud.md#separate-issuer`); from a
-  guide to the spec or a library, a site path (`/libraries/python/`). Library READMEs and
+- **A new page is added to `website/pages.cjs`,** in its sidebar section (Home, Guides,
+  Libraries, Specification). Only listed files are published (the equivalent of the old
+  MkDocs `nav`); a link to an unlisted page fails the build.
+- **Links:** from `docs/`, relative `.md` links to the file (`./govcloud.md#separate-issuer`,
+  `../libs/python/README.md`) — they work on GitHub and on the site. Library READMEs and
   `spec/` link the site by absolute URL — they are published elsewhere too.
 - **Anchors** are GitHub's (`## Step 1 — Request` → `#step-1--request`), so a link that
   works on GitHub works on the site. The build fails on a broken link or anchor.
