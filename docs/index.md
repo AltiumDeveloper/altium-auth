@@ -27,17 +27,18 @@ Full API reference and examples for each library are on this site (the **Librari
 
 | Library | Docs |
 | --- | --- |
-| `@altium-developer/altium-auth` | [TypeScript](libraries/typescript.md) |
-| `Altium.Auth` | [.NET](libraries/dotnet.md) |
+| `@altium-developer/altium-auth` | [TypeScript](/libraries/typescript/) |
+| `Altium.Auth` | [.NET](/libraries/dotnet/) |
+| `altium-auth` | [Python](/libraries/python/) |
 
-Both are in **preview** — the API may change as the spec and libraries evolve.
+All are in **preview** — the API may change as the spec and libraries evolve.
 
 ## How it stays in sync
 
-The [conformance vectors](specification/conformance.md) are the enforcement layer: every library
+The [conformance vectors](/specification/conformance/) are the enforcement layer: every library
 runs the **same** `spec/conformance/vectors.json` and asserts the same requests and
 outcomes, so the implementations can't drift. The normative behavior lives in the
-[integration spec](specification/spec.md).
+[integration spec](/specification/spec/).
 
 ## Topics
 

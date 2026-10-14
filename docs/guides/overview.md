@@ -40,7 +40,7 @@ Prepend the base URL for your environment — for example, `https://auth.altium.
 The recommended flow is the same for web and desktop apps — only *how* you obtain the authorization code differs (a redirect you host, or the [ActionWait](./desktop-apps.md) pattern). In both cases:
 
 1. **Sign in on `https://auth.altium.com`** to get a **global access token**. Use it for accessing global resources such as listing the user's workspaces.
-2. **Discover the user's workspaces** with the global token. See [Discover the user's workspaces](./web-and-server-apps.md#step-3-discover-the-users-workspaces).
+2. **Discover the user's workspaces** with the global token. See [Discover the user's workspaces](./web-and-server-apps.md#step-3--discover-the-users-workspaces).
 3. **Exchange the global token for a workspace access token — at the endpoint that matches the workspace:**
     - **Commercial workspace** → exchange on Commercial Cloud endpoint (`https://auth.altium.com`, no `secure=1`).
     - **GovCloud workspace** → exchange on GovCloud endpoint (`https://auth.365-gov.altium.com`, with `secure=1`). See [GovCloud considerations](./govcloud.md).
@@ -92,7 +92,7 @@ When you know at sign-in time that the user should land on a workspace, you don'
 
 Run the *whole* flow on the host that matches the workspace: `auth.altium.com` for a Commercial workspace, or `auth.365-gov.altium.com` for a GovCloud workspace (send `secure=1` on the `/connect/token` requests only).
 
-When a workspace is selected, the authorization code exchange returns a workspace-scoped access token directly. See [Step 1](./web-and-server-apps.md#step-1-request-authorization-with-pkce) in the web guide, or the `selectWorkspace` option in the library API references.
+When a workspace is selected, the authorization code exchange returns a workspace-scoped access token directly. See [Step 1](./web-and-server-apps.md#step-1--request-authorization-with-pkce) in the web guide, or the `selectWorkspace` option in the library API references.
 
 The `a365:workspace:{workspaceId}` scope plays two roles today: it transfers **workspace context** (which workspace the token is for) and grants **access to that workspace's resources**. It is the same scope across Altium 365 and Altium Enterprise Server. Additional scopes may appear in the discovery document over time; this guide uses `a365:workspace:{workspaceId}`.
 

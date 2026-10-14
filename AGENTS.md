@@ -30,7 +30,9 @@ libs/
     tests/Altium.Auth.Tests   xUnit conformance runner over the shared vectors.
   python/                     altium-auth (PyPI). Dependency-free (stdlib only).
     tests/conformance/        pytest conformance runner over the shared vectors.
-.github/workflows/            Per-library, path-filtered CI + tag-prefixed release.
+website/                      Docusaurus site over docs/, spec/ and libs/*/README.md (read in place, nothing
+                              copied). pages.cjs lists every published page: URL, order, sidebar label.
+.github/workflows/            Per-library, path-filtered CI + tag-prefixed release; docs.yml builds + deploys the site.
 ```
 
 ## Prime directives
@@ -109,6 +111,9 @@ dotnet test libs/dotnet/Altium.Auth.sln -c Release
 # Python
 cd libs/python && uv sync --extra dev && uv run ruff check . \
   && uv run ruff format --check . && uv run mypy && uv run pytest && cd ../..
+
+# Docs site (after any change to docs/, spec/ or a library README)
+cd website && npm ci && npm run typecheck && npm test && npm run build && cd ..
 ```
 
 Live end-to-end (needs network + a browser — never in CI): each library ships a
@@ -144,8 +149,23 @@ They are the human-facing counterpart to the machine-checked vectors:
 
 When you change the spec or a library's public behavior, update the affected guide(s) and
 README(s) in the same change. Keep guides as clean, standalone Markdown with working
-in-tree links — they are intended to be published as a static site (mkdocs → GitHub
+in-tree links — they are published as a static site (Docusaurus in `website/` → GitHub
 Pages), so avoid repo-only constructs that won't render off GitHub.
+
+The site renders the sources as they are:
+
+- **Plain Markdown, no front matter.** `.md` is parsed as CommonMark, not MDX, so the same
+  file renders on GitHub, the site and the package registries. Titles come from the `# H1`;
+  sidebar labels, order and descriptions come from `website/pages.cjs`.
+- **A new page is added to `website/pages.cjs`.** Only listed files are published (the
+  equivalent of the old MkDocs `nav`); a link to an unlisted page fails the build.
+- **Links:** between guides, relative `.md` links (`./govcloud.md#separate-issuer`); from a
+  guide to the spec or a library, a site path (`/libraries/python/`). Library READMEs and
+  `spec/` link the site by absolute URL — they are published elsewhere too.
+- **Anchors** are GitHub's (`## Step 1 — Request` → `#step-1--request`), so a link that
+  works on GitHub works on the site. The build fails on a broken link or anchor.
+- **Page URLs never change.** The READMEs on npm/NuGet/PyPI link to them; `website/test`
+  pins the list.
 
 ## Non-negotiable semantics (see SPEC.md for the full text)
 

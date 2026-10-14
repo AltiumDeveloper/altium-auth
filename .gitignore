@@ -18,10 +18,7 @@ spec/TRACKER.md
 # Test / coverage output
 coverage/
 
-# MkDocs build output (built in CI, never committed)
-site/
-
-# Python virtualenv + caches (local docs tooling)
+# Python virtualenv + caches
 .venv/
 venv/
 .env/

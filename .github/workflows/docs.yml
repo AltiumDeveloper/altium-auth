@@ -1,15 +1,27 @@
 name: Docs
 
-# Builds the MkDocs site from source (docs/ + spec/) and deploys to GitHub Pages.
-# Unlike committing built HTML, the site is built fresh in CI — nothing generated is
-# checked in. PRs build with --strict to catch broken links/nav before merge; only
-# main deploys.
+# Builds the Docusaurus site in website/ from source (docs/, spec/, libs/*/README.md, read in place) and deploys it
+# to GitHub Pages. Nothing generated is checked in. PRs run the whole build, which fails on broken links or anchors,
+# a search index that points at a missing page or anchor, or a broken llms.txt surface; only main deploys.
 #
 # One-time repo setting: Settings → Pages → Build and deployment → Source = GitHub Actions.
 on:
   push:
     branches: [main]
+    paths:
+      - "docs/**"
+      - "spec/**"
+      - "libs/*/README.md"
+      - "website/**"
+      - ".github/workflows/docs.yml"
   pull_request:
+    paths:
+      - "docs/**"
+      - "spec/**"
+      - "libs/*/README.md"
+      - "website/**"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -18,25 +30,33 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
+defaults:
+  run:
+    working-directory: website
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-node@v7
         with:
-          python-version: "3.x"
-          cache: pip
-          cache-dependency-path: requirements-docs.txt
-      - run: pip install -r requirements-docs.txt
-      - run: "! grep -rn '](\\.\\./\\.\\./docs/' libs/*/README.md"
-      - run: mkdocs build --strict
+          node-version: 22
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+      # The READMEs are also published to npm, NuGet and PyPI, where repo-relative links break: link the site instead.
+      - run: "! grep -rn '](\\.\\./\\.\\./docs/' ../libs/*/README.md"
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      # search:index → docusaurus build → search:check → llms → llms:check
+      - run: npm run build
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: site
+          path: website/build
 
   deploy:
-    # Deploy only from main; PRs stop after a successful --strict build.
+    # Deploy only from main; PRs stop after a successful build.
     if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest

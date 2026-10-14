@@ -8,3 +8,12 @@ updates:
       actions:
         patterns:
           - "*"
+  # The docs site (website/) only: the libraries have no runtime dependencies. Build-time tooling, never shipped.
+  - package-ecosystem: npm
+    directory: /website
+    schedule:
+      interval: weekly
+    groups:
+      docusaurus:
+        patterns:
+          - "*"
