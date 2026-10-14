@@ -156,7 +156,9 @@ The site renders the sources as they are:
 
 - **Plain Markdown, no front matter.** `.md` is parsed as CommonMark, not MDX, so the same
   file renders on GitHub, the site and the package registries. Titles come from the `# H1`;
-  sidebar labels, order and descriptions come from `website/pages.cjs`.
+  sidebar labels, order and descriptions come from `website/pages.cjs`. The one exception is
+  the home page, `docs/index.mdx`: MDX for its call-to-action buttons and cards (the same
+  `hero-actions` / `bc-grid` markup as the other Altium reference sites).
 - **A new page is added to `website/pages.cjs`,** in its sidebar section (Home, Guides,
   Libraries, Specification). Only listed files are published (the equivalent of the old
   MkDocs `nav`); a link to an unlisted page fails the build.

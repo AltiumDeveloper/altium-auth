@@ -23,7 +23,7 @@ const SECTIONS = [
     kind: 'guide',
     icon: 'home',
     pages: [
-      { file: 'docs/index.md', route: '/', label: 'Home', description: 'Client libraries and specification for Altium 365 authentication.' },
+      { file: 'docs/index.mdx', route: '/', label: 'Home', description: 'Client libraries and specification for Altium 365 authentication.' },
     ],
   },
   {

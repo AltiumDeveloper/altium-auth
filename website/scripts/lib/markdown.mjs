@@ -73,12 +73,23 @@ export function pageSections(source) {
     .filter((section) => section.heading || section.text);
 }
 
-// The published pages (pages.cjs) with their sources read and titled.
+// The Markdown of an MDX page (the home page): its layout wrappers dropped and its card markup turned into Markdown,
+// `[<i className="bc-icon …"></i><strong>T</strong> <em>E</em> <span>D</span>](url)` → `[**T**](url) `E`: D`.
+export function mdxToMarkdown(source) {
+  return source
+    .replace(/^<\/?div[^>]*>\n\n?/gm, '')
+    .replace(/\[<i [^>]*><\/i><strong>(.*?)<\/strong>\s*(?:<em>(.*?)<\/em>)?\s*(?:<span>(.*?)<\/span>)?\]\(([^)\s]+)\)/g,
+      (_, title, extra, text, url) => `- [**${title}**](${url})${extra ? ` \`${extra}\`` : ''}${text ? `: ${text}` : ''}`)
+    .replace(/&amp;/g, '&');
+}
+
+// The published pages (pages.cjs) with their sources read and titled; MDX pages as Markdown.
 export async function readPages() {
   const { readFile } = await import('node:fs/promises');
   return Promise.all(allPages().map(async (page) => {
     const source = await readFile(page.source, 'utf8');
-    return { ...page, text: source, title: pageTitle(source) ?? page.label };
+    const text = page.file.endsWith('.mdx') ? mdxToMarkdown(source) : source;
+    return { ...page, text, title: pageTitle(text) ?? page.label };
   }));
 }
 
@@ -92,6 +103,8 @@ export function absoluteLinks(text, page, pages, siteUrl) {
     const [path, hash] = target.split('#');
     const fragment = hash ? `#${hash}` : '';
     if (!path) return `${twin(page.route)}${fragment}`;
+    // `pathname:///llms.txt`: a file at the site root, not a page.
+    if (path.startsWith('pathname://')) return `${siteUrl}${path.slice('pathname://'.length)}${fragment}`;
     if (/^[a-z][a-z0-9+.-]*:/i.test(path)) return null;
     if (path.startsWith('/')) {
       const route = path.endsWith('/') ? path : `${path}/`;

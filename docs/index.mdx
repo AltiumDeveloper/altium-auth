@@ -1,0 +1,58 @@
+# Altium 365 Authentication
+
+Sign users in to **Altium 365** from your own application and call the Altium 365 API on their behalf. Altium
+Identity is a standard OAuth 2.0 / OpenID Connect provider; this site covers the parts that are specific to Altium:
+the **ActionWait** desktop sign-in, workspace token exchange, **GovCloud** and **AES** (on-prem) installations. Client
+libraries for TypeScript, .NET and Python implement it all, each validated against one shared specification.
+
+<div className="hero-actions">
+
+[Get started](./guides/overview.md)
+[Register your application](./guides/register-your-application.md)
+[Read the specification](../spec/SPEC.md)
+
+</div>
+
+## Choose your flow
+
+The flow depends on whether your application can host an HTTPS redirect. Both end with a workspace access token for
+the Altium 365 API.
+
+<div className="bc-grid">
+
+[<i className="bc-icon bc-desktop"></i><strong>Desktop apps</strong> <em>public client · ActionWait</em> <span>Browser sign-in with PKCE for apps that cannot host a redirect; the result arrives over a long-poll</span>](./guides/desktop-apps.md)
+
+[<i className="bc-icon bc-web"></i><strong>Web &amp; server apps</strong> <em>confidential client · redirect</em> <span>The standard authorization-code flow for backends that host a callback and keep a client secret</span>](./guides/web-and-server-apps.md)
+
+</div>
+
+Workspaces in **GovCloud** and on customer-hosted **AES** servers change where tokens are issued; see
+[GovCloud](./guides/govcloud.md) and [AES (on-prem)](./guides/aes.md). What is inside a token is in
+[Access token claims](./guides/token-claims.md).
+
+## Use a library
+
+Each library is a hand-written, idiomatic client with no runtime dependencies. All three are in **preview**: the API
+may change as the specification evolves.
+
+<div className="bc-grid">
+
+[<i className="bc-icon bc-typescript"></i><strong>TypeScript</strong> <em>npm install @altium-developer/altium-auth</em> <span>Node 20+, Bun and Deno: sign-in, code exchange, workspace tokens, refresh and revocation</span>](../libs/typescript/README.md)
+
+[<i className="bc-icon bc-dotnet"></i><strong>.NET</strong> <em>dotnet add package Altium.Auth</em> <span>.NET 8 and 10, .NET Framework 4.6.1+ through netstandard2.0, and PowerShell</span>](../libs/dotnet/README.md)
+
+[<i className="bc-icon bc-python"></i><strong>Python</strong> <em>pip install altium-auth</em> <span>Python 3.10+, standard library only; call it from async code with asyncio.to_thread</span>](../libs/python/README.md)
+
+</div>
+
+## How the libraries stay in sync
+
+The [integration specification](../spec/SPEC.md) defines the behavior, and the
+[conformance vectors](../spec/conformance/README.md) prove it: every library runs the same
+`spec/conformance/vectors.json` and asserts the same requests and outcomes, so the implementations cannot drift.
+
+## For AI assistants
+
+Every page is also available as Markdown (add `.md` to its URL, or use **View as Markdown**).
+[`llms.txt`](pathname:///llms.txt) indexes the site, and [`llms-full.txt`](pathname:///llms-full.txt) has every page
+in one file.
