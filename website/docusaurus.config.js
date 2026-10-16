@@ -31,7 +31,7 @@ function sidebarItems() {
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'Altium 365 Authentication',
+  title: 'Altium Authentication',
   tagline: 'OAuth 2.0 / OpenID Connect client libraries and specification for Altium 365',
   url: 'https://altiumdeveloper.github.io',
   baseUrl: '/altium-auth/',
@@ -98,7 +98,7 @@ const config = {
     ({
       colorMode: { respectPrefersColorScheme: true },
       navbar: {
-        title: 'Altium 365 Authentication',
+        title: 'Altium Authentication',
         logo: { alt: 'Altium', src: 'img/altium-logo.svg', width: 90, height: 20 },
         items: [
           { href: DEVELOPER_CENTER, label: 'Developer Center', position: 'right' },
