@@ -44,6 +44,9 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: website/package-lock.json
+      # Node 22 bundles npm 10; install with the npm contributors use, so a change in npm's install rules (npm 12
+      # refuses URL dependencies unless website/.npmrc allows them) fails here rather than on their machines.
+      - run: npm install -g npm@12
       # The READMEs are also published to npm, NuGet and PyPI, where repo-relative links break: link the site instead.
       - run: "! grep -rn '](\\.\\./\\.\\./docs/' ../libs/*/README.md"
       - run: npm ci
