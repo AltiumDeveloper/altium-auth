@@ -32,6 +32,7 @@ libs/
     tests/conformance/        pytest conformance runner over the shared vectors.
 website/                      Docusaurus site over docs/, spec/ and libs/*/README.md (read in place, nothing
                               copied). pages.cjs lists every published page: URL, sidebar section, order, label.
+                              The look is AltiumDeveloper/docusaurus-theme, installed from a GitHub Release tarball URL.
 .github/workflows/            Per-library, path-filtered CI + tag-prefixed release; docs.yml builds + deploys the site.
 ```
 
@@ -159,7 +160,7 @@ The site renders the sources as they are:
   sidebar labels, order and descriptions come from `website/pages.cjs`. The one exception is
   the home page, `docs/index.mdx`: MDX for its call-to-action buttons and cards (the same
   `hero-actions` / `bc-grid` markup as the other Altium reference sites).
-- **A new page is added to `website/pages.cjs`,** in its sidebar section (Home, Guides,
+- **A new page is added to `website/pages.cjs`,** in its sidebar section (Overview, Guides,
   Libraries, Specification). Only listed files are published (the equivalent of the old
   MkDocs `nav`); a link to an unlisted page fails the build.
 - **Links:** from `docs/`, relative `.md` links to the file (`./govcloud.md#separate-issuer`,

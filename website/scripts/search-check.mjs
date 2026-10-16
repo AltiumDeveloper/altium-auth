@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Runs after `docusaurus build`: checks the search index the build shipped. The content-hashed index named by
-// plugins/search-index.cjs exists exactly once, matches its hash and equals build/search-index.json; record ids are
+// the theme (@altium-developer/docusaurus-theme) publishes exists exactly once, matches its hash and equals build/search-index.json; record ids are
 // 0..n-1, kinds are valid, and every record URL resolves to a built page and an existing anchor (so the anchors
 // scripts/lib/markdown.mjs computes stay the ones Docusaurus generates).
 import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { KINDS } from '../src/search/engine.mjs';
 
 const require = createRequire(import.meta.url);
-const { hashedName } = require('../plugins/search-index.cjs');
+const { hashedName } = require('@altium-developer/docusaurus-theme');
 
 const HASHED = /^search-index\.[0-9a-f]+\.json$/;
 const ID_ATTR = /\sid="([^"]*)"/g;

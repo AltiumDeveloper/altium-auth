@@ -33,6 +33,7 @@
     ]
   },
   "dependencies": {
+    "@altium-developer/docusaurus-theme": "https://github.com/AltiumDeveloper/docusaurus-theme/releases/download/v0.1.0/altium-developer-docusaurus-theme-0.1.0.tgz",
     "@docusaurus/core": "^3.10.2",
     "@docusaurus/preset-classic": "^3.10.2",
     "@docusaurus/theme-mermaid": "^3.10.2",

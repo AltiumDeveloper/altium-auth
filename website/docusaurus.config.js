@@ -2,9 +2,11 @@
 // Docusaurus site for docs/ (guides), spec/ (SPEC.md + conformance README) and libs/*/README.md, read in place: one
 // docs plugin over the repository root that includes only the pages listed in pages.cjs, so nothing is copied,
 // relative links between the files work as they do on GitHub, and "Edit this page" opens the real source.
-// The look (src/css, src/theme, search) follows the other Altium developer reference sites:
-// https://github.com/AltiumDeveloper/ad-sdk-docs and https://github.com/AltiumDeveloper/platform-api-docs.
+// The look (CSS, fonts, logo, "View as Markdown", the search UI) is the theme shared with the other Altium developer
+// sites, https://github.com/AltiumDeveloper/docusaurus-theme (installed from its GitHub Release tarball; to update,
+// change the version in the package.json URL); search ranking (src/search/engine.mjs) is this site's.
 const { themes } = require('prism-react-renderer');
+const altiumTheme = require('@altium-developer/docusaurus-theme');
 const { REPO_ROOT, SECTIONS, allPages, docId, frontMatterFor } = require('./pages.cjs');
 
 const REPO = 'https://github.com/AltiumDeveloper/altium-auth';
@@ -12,14 +14,18 @@ const BRANCH = 'main';
 const DEVELOPER_CENTER = 'https://developer.altium.com/';
 const DEVELOPER_CENTER_DOCS = 'https://www.altium.com/documentation/altium-developer-center';
 
-// The sidebar: the Home link, then one group per section, in pages.cjs order. Like the namespaces of the Altium
-// Designer SDK reference, each carries a coloured icon (`bc-<icon>` in src/css/custom.css). There is little content,
-// so the groups are always expanded and their titles are labels, not links (`section-root`).
+// The sidebar, laid out like the other Altium developer sites: the home page link, then one small-caps heading per
+// section over its pages, always expanded (the theme styles level-1 categories as headings). Pages with an `icon`
+// get its swatch before the label (`bc-<icon>` in src/css/custom.css).
 function sidebarItems() {
   return SECTIONS.map((section) => {
-    const docs = section.pages.map((page) => ({ type: 'doc', id: docId(page.file) }));
-    if (section.id === 'home') return { ...docs[0], className: `bc-${section.icon}` };
-    return { type: 'category', label: section.label, collapsible: false, className: `bc-${section.icon} section-root`, items: docs };
+    const docs = section.pages.map((page) => ({
+      type: 'doc',
+      id: docId(page.file),
+      ...(page.icon && { className: `bc-${page.icon}` }),
+    }));
+    if (section.id === 'home') return docs[0];
+    return { type: 'category', label: section.label, collapsible: false, items: docs };
   });
 }
 
@@ -47,11 +53,27 @@ const config = {
       return { ...result, frontMatter: { ...frontMatterFor(params.filePath), ...result.frontMatter } };
     },
   },
-  themes: ['@docusaurus/theme-mermaid'],
-  plugins: [
-    // Search: src/theme/SearchBar over static/search-index.json (npm run search:index), also published under a
-    // content-hashed name (usePluginData('search-index').file).
-    './plugins/search-index.cjs',
+  // The theme's img/ (logo, favicon) next to this site's static/.
+  staticDirectories: ['static', altiumTheme.staticDir],
+  themes: [
+    '@docusaurus/theme-mermaid',
+    [
+      '@altium-developer/docusaurus-theme',
+      {
+        // The theme's SearchBar over static/search-index.json (npm run search:index), ranked by src/search/engine.mjs.
+        search: {
+          engine: 'src/search/engine.mjs',
+          recentKey: 'altium-auth-search-recent',
+          placeholder: 'Search guides, the specification and the libraries',
+          examples: [
+            { query: 'actionwait', text: 'the desktop sign-in flow' },
+            { query: ['secure=1', 'gov'], text: 'GovCloud tokens' },
+            { query: 'refresh token', text: 'refreshing and revoking' },
+            { query: 'signIntoWorkspace', text: 'a library method' },
+          ],
+        },
+      },
+    ],
   ],
   presets: [
     [

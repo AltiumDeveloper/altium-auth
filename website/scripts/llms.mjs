@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Runs after `docusaurus build`: writes the site's Markdown surface for AI assistants into build/ (https://llmstxt.org).
 //   <route>.md     a Markdown twin of every page (/guides/overview/ → /guides/overview.md, the home page → /index.md),
-//                  from its source with links made absolute; src/theme links each page to its twin
+//                  from its source with links made absolute; the theme links each page to its twin
 //   llms.txt       the index: every page, by section, with its description (pages.cjs)
 //   llms-full.txt  every twin, concatenated in site order
 import { mkdirSync, realpathSync, writeFileSync } from 'node:fs';

@@ -12,27 +12,25 @@ const path = require('node:path');
 
 const REPO_ROOT = path.resolve(__dirname, '..');
 
-// The sidebar sections, in sidebar order, like the namespaces of the Altium Designer SDK reference: each has a
-// coloured icon (`icon` → `.bc-<icon>` in src/css/custom.css, which sets `--bc-img` and `--bc-bg`). Home is a single
-// link; the others are always-expanded groups of their pages. `kind` is the search kind (src/search/engine.mjs KINDS).
-// Page `file`s are repository-relative; `route` is the page URL below the base URL.
+// The sidebar sections, in sidebar order, laid out like the other Altium developer sites: the home page is a single
+// link, the others are small-caps headings over their pages. `kind` is the search kind (src/search/engine.mjs KINDS).
+// Page `file`s are repository-relative; `route` is the page URL below the base URL; `icon` puts a swatch before the
+// page's sidebar label (`.bc-<icon>` in src/css/custom.css, the same icons as the home page cards).
 const SECTIONS = [
   {
     id: 'home',
-    label: 'Home',
+    label: 'Overview',
     kind: 'guide',
-    icon: 'home',
     pages: [
-      { file: 'docs/index.mdx', route: '/', label: 'Home', description: 'Client libraries and specification for Altium 365 authentication.' },
+      { file: 'docs/index.mdx', route: '/', label: 'Overview', description: 'Client libraries and specification for Altium 365 authentication.' },
     ],
   },
   {
     id: 'guides',
     label: 'Guides',
     kind: 'guide',
-    icon: 'guides',
     pages: [
-      { file: 'docs/guides/overview.md', route: '/guides/overview/', label: 'Overview', description: 'Endpoints, key terms, and the recommended authentication flow.' },
+      { file: 'docs/guides/overview.md', route: '/guides/overview/', label: 'Authentication', description: 'Endpoints, key terms, and the recommended authentication flow.' },
       { file: 'docs/guides/web-and-server-apps.md', route: '/guides/web-and-server-apps/', label: 'Web & server apps', description: 'The authorization-code redirect flow for confidential clients.' },
       { file: 'docs/guides/desktop-apps.md', route: '/guides/desktop-apps/', label: 'Desktop apps', description: 'Browser sign-in with PKCE over the ActionWait long-poll, for public clients.' },
       { file: 'docs/guides/govcloud.md', route: '/guides/govcloud/', label: 'GovCloud', description: 'Commercial vs Gov and the secure=1 two-token model.' },
@@ -45,18 +43,16 @@ const SECTIONS = [
     id: 'libraries',
     label: 'Libraries',
     kind: 'library',
-    icon: 'libraries',
     pages: [
-      { file: 'libs/typescript/README.md', route: '/libraries/typescript/', label: 'TypeScript', description: '@altium-developer/altium-auth on npm: installation, quick start, and API reference.' },
-      { file: 'libs/dotnet/README.md', route: '/libraries/dotnet/', label: '.NET', description: 'Altium.Auth on NuGet: installation, quick start, PowerShell use, and API reference.' },
-      { file: 'libs/python/README.md', route: '/libraries/python/', label: 'Python', description: 'altium-auth on PyPI: installation, quick start, and API reference.' },
+      { file: 'libs/typescript/README.md', route: '/libraries/typescript/', label: 'TypeScript', icon: 'typescript', description: '@altium-developer/altium-auth on npm: installation, quick start, and API reference.' },
+      { file: 'libs/dotnet/README.md', route: '/libraries/dotnet/', label: '.NET', icon: 'dotnet', description: 'Altium.Auth on NuGet: installation, quick start, PowerShell use, and API reference.' },
+      { file: 'libs/python/README.md', route: '/libraries/python/', label: 'Python', icon: 'python', description: 'altium-auth on PyPI: installation, quick start, and API reference.' },
     ],
   },
   {
     id: 'specification',
     label: 'Specification',
     kind: 'spec',
-    icon: 'specification',
     pages: [
       { file: 'spec/SPEC.md', route: '/specification/spec/', label: 'Integration spec', description: 'The normative Altium delta over standard OAuth 2.0 / OIDC that every library implements.' },
       { file: 'spec/conformance/README.md', route: '/specification/conformance/', label: 'Conformance vectors', description: 'The language-neutral vectors every library runs, and their matchers.' },

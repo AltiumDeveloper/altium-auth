@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Writes static/search-index.json for src/theme/SearchBar (ranking: src/search/engine.mjs) from the pages listed in
+// Writes static/search-index.json for the theme's SearchBar (ranking: src/search/engine.mjs) from the pages listed in
 // pages.cjs: one record per page and one per `##` / `###` section. Runs before `docusaurus build`; search:check then
 // proves every record's URL and anchor exist in the built site.
 //

@@ -8,7 +8,7 @@ import { buildIndex } from '../scripts/search-index.mjs';
 import { loadIndex, search } from '../src/search/engine.mjs';
 
 const require = createRequire(import.meta.url);
-const { SECTIONS, allPages } = require('../pages.cjs');
+const { allPages } = require('../pages.cjs');
 
 // The URLs of the former MkDocs site. Package READMEs on npm, NuGet and PyPI link to them, so they must not move.
 const PUBLISHED_ROUTES = [
@@ -23,11 +23,13 @@ test('every page of the former site keeps its URL', () => {
   assert.deepEqual(allPages().map((page) => page.route).sort(), [...PUBLISHED_ROUTES].sort());
 });
 
-test('every sidebar section has its icon rule', () => {
+test('every page icon has its rule', () => {
   const css = readFileSync(new URL('../src/css/custom.css', import.meta.url), 'utf8');
-  for (const section of SECTIONS) {
-    const rule = new RegExp(`\\.bc-${section.icon} \\{([^}]*)\\}`).exec(css)?.[1];
-    assert.ok(rule?.includes('--bc-img') && rule.includes('--bc-bg'), `.bc-${section.icon} needs --bc-img and --bc-bg`);
+  const icons = allPages().map((page) => page.icon).filter(Boolean);
+  assert.ok(icons.length > 0);
+  for (const icon of icons) {
+    const rule = new RegExp(`\\.bc-${icon} \\{([^}]*)\\}`).exec(css)?.[1];
+    assert.ok(rule?.includes('--bc-img') && rule.includes('--bc-bg'), `.bc-${icon} needs --bc-img and --bc-bg`);
   }
 });
 
