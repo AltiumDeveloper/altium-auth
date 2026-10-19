@@ -48,6 +48,10 @@ jobs:
 
       - run: npm run build
 
+      # The E2E harness on the built package, offline: it only builds an authorize URL (see the runtimes job).
+      - name: E2E harness smoke (offline)
+        run: npx tsx scripts/test-signin.ts --authorize-url --redirect-uri https://app.example.com/cb ci-client
+
   # The README declares Bun and Deno support: the unit tests and the conformance vectors run inside each runtime, and
   # the built package must load there. Dependencies come from the npm lockfile, as on Node.
   runtimes:
@@ -82,10 +86,12 @@ jobs:
 
       - run: npm run build
 
-      - name: Load the built package
+      # The E2E harness on the built package, offline: it only builds an authorize URL. Proves the harness and dist/
+      # load in this runtime (the live sign-in needs a browser and is never run in CI).
+      - name: E2E harness smoke (offline)
         run: |
           if [ "${{ matrix.runtime }}" = bun ]; then
-            bun -e "const m = await import('./dist/index.js'); if (typeof m.signIn !== 'function') process.exit(1)"
+            bun scripts/test-signin.ts --authorize-url --redirect-uri https://app.example.com/cb ci-client
           else
-            deno eval "const m = await import('./dist/index.js'); if (typeof m.signIn !== 'function') Deno.exit(1)"
+            deno run -A scripts/test-signin.ts --authorize-url --redirect-uri https://app.example.com/cb ci-client
           fi

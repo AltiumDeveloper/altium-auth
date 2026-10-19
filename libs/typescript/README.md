@@ -381,7 +381,7 @@ npm run build   # compile to dist/
 
 ### E2E sign-in test
 
-Run the sign-in flow against a live Altium environment. It opens your browser, waits for the ActionWait callback, and prints the resulting tokens (and optionally exercises workspace exchange and refresh).
+Run the sign-in flow against a live Altium environment. It opens your browser, waits for the ActionWait callback, and prints the resulting tokens (and optionally exercises workspace exchange and refresh). It drives the built package in `dist/`, so `npm run test:e2e` builds first. On Bun or Deno, build, then run the script with the same options: `bun scripts/test-signin.ts …` or `deno run -A scripts/test-signin.ts …`.
 
 ```bash
 # Commercial Cloud, public client

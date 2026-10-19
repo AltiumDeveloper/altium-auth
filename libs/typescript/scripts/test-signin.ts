@@ -8,6 +8,11 @@
  * Usage:
  *   npm run test:e2e -- [options] <clientId>
  *
+ * It drives the built package (dist/, what is published), so `npm run test:e2e` builds first. On Bun or Deno, build
+ * and run the script directly with the same options:
+ *   npm run build && bun scripts/test-signin.ts [options] <clientId>
+ *   npm run build && deno run -A scripts/test-signin.ts [options] <clientId>
+ *
  * Options:
  *   --env <prod|gov|dev-gov|aes>    Sign-in environment           (default: prod)
  *   --workspace-env <prod|gov|dev-gov>  Endpoint for the workspace exchange (default: --env).
@@ -63,7 +68,7 @@ import {
   getClientScopes,
   type OAuthConfig,
   type TokenSet,
-} from "../src/index";
+} from "../dist/index.js";
 
 type Env = "prod" | "dev" | "gov" | "dev-gov" | "aes";
 
