@@ -14,6 +14,9 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   that dropped `getRandomValues`, which Deno's `node:crypto.randomBytes` relies on, so
   the copy broke 18 unit tests and 7 conformance vectors on Deno.
 
+- **The README states the Node versions that are supported:** Node ≥22, as `engines`
+  in package.json already required and CI tests (22, 24, 26). It used to say Node ≥20.
+
 ## [0.2.1] — 2026-10-07
 
 - **TLS failures during the ActionWait poll are detected again.** `fetch` reports a

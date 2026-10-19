@@ -12,7 +12,7 @@ Altium 365 OAuth2 / OpenID Connect authentication library. Supports both client 
 - **Confidential clients** (web/server backends with a secret) — the standard **authorization-code redirect** flow via composable steps: <a href="#createauthorizationurlconfig-options"><code>createAuthorizationUrl</code></a> + <a href="#exchangecodeconfig-params"><code>exchangeCode</code></a>.
 - **Workspace tokens**, **token refresh**, and first-class **GovCloud** and **AES** (on-prem) support.
 
-**Zero runtime dependencies.** Runs on Node ≥20, Bun, and Deno (and bundled apps that polyfill Node's `crypto`).
+**Zero runtime dependencies.** Runs on Node ≥22, Bun, and Deno (and bundled apps that polyfill Node's `crypto`).
 
 ## Documentation
 
@@ -363,7 +363,7 @@ The library throws descriptive `Error` objects in these scenarios:
 
 ## Compatibility
 
-- **Node.js ≥20** — uses the global `fetch`, the global Web `crypto` (`randomUUID`), and the `crypto` module (`randomBytes`, `createHash`). Node 18 is EOL and not supported.
+- **Node.js ≥22** (`engines` in package.json) — uses the global `fetch`, the global Web `crypto` (`randomUUID`), and the `crypto` module (`randomBytes`, `createHash`). CI tests Node 22, 24 and 26; Node 20 and older are not supported.
 - **Bun / Deno** — supported through their Node-compatible `fetch` and `crypto`. CI runs the unit tests and the conformance vectors inside the latest Bun and Deno 2.x, and checks that the built package loads in each one.
 - **Browsers / bundlers** — works where your bundler polyfills Node's `crypto` and `Buffer`.
 
