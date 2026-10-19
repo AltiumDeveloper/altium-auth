@@ -29,6 +29,8 @@
     "lint": "eslint src test scripts",
     "test": "vitest run",
     "test:conformance": "vitest run --config test/conformance/vitest.config.ts",
+    "test:bun": "bun --bun vitest run && bun --bun vitest run --config test/conformance/vitest.config.ts",
+    "test:deno": "deno run -A node_modules/vitest/vitest.mjs run && deno run -A node_modules/vitest/vitest.mjs run --config test/conformance/vitest.config.ts",
     "test:e2e": "tsx scripts/test-signin.ts",
     "prepublishOnly": "npm run clean && npm run lint && npm run test && npm run build"
   },

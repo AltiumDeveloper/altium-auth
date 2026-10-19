@@ -7,6 +7,13 @@ and this package adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+- **Bun and Deno are tested, not just declared.** CI now runs the unit tests and the
+  conformance vectors inside the latest Bun and Deno 2.x (`npm run test:bun`,
+  `npm run test:deno`), and checks that the built package loads in each one. The
+  library itself is unchanged. The tests had stubbed `crypto` with a partial copy
+  that dropped `getRandomValues`, which Deno's `node:crypto.randomBytes` relies on, so
+  the copy broke 18 unit tests and 7 conformance vectors on Deno.
+
 ## [0.2.1] — 2026-10-07
 
 - **TLS failures during the ActionWait poll are detected again.** `fetch` reports a

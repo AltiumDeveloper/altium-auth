@@ -47,3 +47,45 @@ jobs:
       - run: npm run test:conformance
 
       - run: npm run build
+
+  # The README declares Bun and Deno support: the unit tests and the conformance vectors run inside each runtime, and
+  # the built package must load there. Dependencies come from the npm lockfile, as on Node.
+  runtimes:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [bun, deno]
+    name: ${{ matrix.runtime == 'bun' && 'Bun' || 'Deno' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: libs/typescript/package-lock.json
+
+      - if: matrix.runtime == 'bun'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - if: matrix.runtime == 'deno'
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - run: npm ci
+
+      - run: npm run test:${{ matrix.runtime }}
+
+      - run: npm run build
+
+      - name: Load the built package
+        run: |
+          if [ "${{ matrix.runtime }}" = bun ]; then
+            bun -e "const m = await import('./dist/index.js'); if (typeof m.signIn !== 'function') process.exit(1)"
+          else
+            deno eval "const m = await import('./dist/index.js'); if (typeof m.signIn !== 'function') Deno.exit(1)"
+          fi

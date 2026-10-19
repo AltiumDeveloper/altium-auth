@@ -364,7 +364,7 @@ The library throws descriptive `Error` objects in these scenarios:
 ## Compatibility
 
 - **Node.js ≥20** — uses the global `fetch`, the global Web `crypto` (`randomUUID`), and the `crypto` module (`randomBytes`, `createHash`). Node 18 is EOL and not supported.
-- **Bun / Deno** — supported (Node-compatible `fetch` + `crypto`).
+- **Bun / Deno** — supported through their Node-compatible `fetch` and `crypto`. CI runs the unit tests and the conformance vectors inside the latest Bun and Deno 2.x, and checks that the built package loads in each one.
 - **Browsers / bundlers** — works where your bundler polyfills Node's `crypto` and `Buffer`.
 
 ## Development
@@ -372,6 +372,9 @@ The library throws descriptive `Error` objects in these scenarios:
 ```bash
 npm install     # install dev dependencies
 npm test        # run unit tests
+npm run test:conformance   # run the shared conformance vectors
+npm run test:bun           # both suites inside Bun (needs bun on PATH)
+npm run test:deno          # both suites inside Deno (needs deno on PATH)
 npm run lint    # lint src/
 npm run build   # compile to dist/
 ```
