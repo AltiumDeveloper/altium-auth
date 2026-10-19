@@ -47,3 +47,51 @@ jobs:
       - run: npm run test:conformance
 
       - run: npm run build
+
+      # The E2E harness on the built package, offline: it only builds an authorize URL (see the runtimes job).
+      - name: E2E harness smoke (offline)
+        run: npx tsx scripts/test-signin.ts --authorize-url --redirect-uri https://app.example.com/cb ci-client
+
+  # The README declares Bun and Deno support: the unit tests and the conformance vectors run inside each runtime, and
+  # the built package must load there. Dependencies come from the npm lockfile, as on Node.
+  runtimes:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [bun, deno]
+    name: ${{ matrix.runtime == 'bun' && 'Bun' || 'Deno' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: libs/typescript/package-lock.json
+
+      - if: matrix.runtime == 'bun'
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - if: matrix.runtime == 'deno'
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - run: npm ci
+
+      - run: npm run test:${{ matrix.runtime }}
+
+      - run: npm run build
+
+      # The E2E harness on the built package, offline: it only builds an authorize URL. Proves the harness and dist/
+      # load in this runtime (the live sign-in needs a browser and is never run in CI).
+      - name: E2E harness smoke (offline)
+        run: |
+          if [ "${{ matrix.runtime }}" = bun ]; then
+            bun scripts/test-signin.ts --authorize-url --redirect-uri https://app.example.com/cb ci-client
+          else
+            deno run -A scripts/test-signin.ts --authorize-url --redirect-uri https://app.example.com/cb ci-client
+          fi

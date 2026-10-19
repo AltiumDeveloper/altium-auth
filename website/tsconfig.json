@@ -1,0 +1,9 @@
+{
+  "extends": "@docusaurus/tsconfig",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "noEmit": true,
+    "types": ["@docusaurus/module-type-aliases", "@docusaurus/theme-classic"]
+  },
+  "include": ["src"]
+}

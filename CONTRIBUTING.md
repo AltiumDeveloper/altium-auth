@@ -19,6 +19,8 @@ spec/            Normative spec (SPEC.md) + JSON Schemas + conformance vectors
 docs/            Conceptual, language-neutral guides
 libs/typescript/ @altium-developer/altium-auth  (npm)
 libs/dotnet/     Altium.Auth                    (nuget.org)
+libs/python/     altium-auth                    (PyPI)
+website/         Documentation site (Docusaurus) over docs/, spec/ and the library READMEs
 .github/workflows/  Per-library, path-filtered CI + tag-prefixed release
 ```
 

@@ -39,15 +39,21 @@ needs to build/test/publish lives under that library's `libs/<lang>/` directory.
 
 ## Documentation
 
-The conceptual guides in [`docs/`](docs/) and the specification are published as a
-[Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) site at
-**<https://altiumdeveloper.github.io/altium-auth/>**. The site is built **from source in
-CI** (`.github/workflows/docs.yml`) — nothing generated is committed. Preview locally:
+The conceptual guides in [`docs/`](docs/), the specification and the library READMEs are
+published as a [Docusaurus](https://docusaurus.io/) site at
+**<https://altiumdeveloper.github.io/altium-auth/>**, in the same style as the other Altium
+developer references ([Altium 365 API](https://altiumdeveloper.github.io/platform-api-docs/),
+[Altium Designer SDK](https://altiumdeveloper.github.io/ad-sdk-docs/)). It reads the sources in
+place, and adds site search and an [`llms.txt`](https://altiumdeveloper.github.io/altium-auth/llms.txt)
+for AI assistants. The site is built **from source in CI** (`.github/workflows/docs.yml`) —
+nothing generated is committed. Preview locally (Node 22+):
 
 ```bash
-pip install -r requirements-docs.txt
-mkdocs serve
+cd website && npm ci && npm start
 ```
+
+`npm run build` runs the same checks as CI: broken links and anchors, the search index, and
+the `llms.txt` surface.
 
 ## How the libraries stay in sync
 

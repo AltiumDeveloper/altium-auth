@@ -1,5 +1,7 @@
 # Altium.Auth
 
+[![NuGet](https://img.shields.io/nuget/v/Altium.Auth?label=nuget)](https://www.nuget.org/packages/Altium.Auth)
+[![NuGet downloads](https://img.shields.io/nuget/dt/Altium.Auth.svg)](https://www.nuget.org/packages/Altium.Auth)
 [![CI](https://github.com/AltiumDeveloper/altium-auth/actions/workflows/dotnet-ci.yml/badge.svg)](https://github.com/AltiumDeveloper/altium-auth/actions/workflows/dotnet-ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/AltiumDeveloper/altium-auth/blob/main/LICENSE)
 
