@@ -12,7 +12,7 @@ Altium 365 OAuth2 / OpenID Connect authentication library. Supports both client 
 - **Confidential clients** (web/server backends with a secret) — the standard **authorization-code redirect** flow via composable steps: <a href="#createauthorizationurlconfig-options"><code>createAuthorizationUrl</code></a> + <a href="#exchangecodeconfig-params"><code>exchangeCode</code></a>.
 - **Workspace tokens**, **token refresh**, and first-class **GovCloud** and **AES** (on-prem) support.
 
-**Zero runtime dependencies.** Runs on Node ≥20, Bun, and Deno (and bundled apps that polyfill Node's `crypto`).
+**Zero runtime dependencies.** Runs on Node ≥22, Bun, and Deno (and bundled apps that polyfill Node's `crypto`).
 
 ## Documentation
 
@@ -363,8 +363,8 @@ The library throws descriptive `Error` objects in these scenarios:
 
 ## Compatibility
 
-- **Node.js ≥20** — uses the global `fetch`, the global Web `crypto` (`randomUUID`), and the `crypto` module (`randomBytes`, `createHash`). Node 18 is EOL and not supported.
-- **Bun / Deno** — supported (Node-compatible `fetch` + `crypto`).
+- **Node.js ≥22** (`engines` in package.json) — uses the global `fetch`, the global Web `crypto` (`randomUUID`), and the `crypto` module (`randomBytes`, `createHash`). CI tests Node 22, 24 and 26; Node 20 and older are not supported.
+- **Bun / Deno** — supported through their Node-compatible `fetch` and `crypto`. CI runs the unit tests and the conformance vectors inside the latest Bun and Deno 2.x, and checks that the built package loads in each one.
 - **Browsers / bundlers** — works where your bundler polyfills Node's `crypto` and `Buffer`.
 
 ## Development
@@ -372,13 +372,16 @@ The library throws descriptive `Error` objects in these scenarios:
 ```bash
 npm install     # install dev dependencies
 npm test        # run unit tests
+npm run test:conformance   # run the shared conformance vectors
+npm run test:bun           # both suites inside Bun (needs bun on PATH)
+npm run test:deno          # both suites inside Deno (needs deno on PATH)
 npm run lint    # lint src/
 npm run build   # compile to dist/
 ```
 
 ### E2E sign-in test
 
-Run the sign-in flow against a live Altium environment. It opens your browser, waits for the ActionWait callback, and prints the resulting tokens (and optionally exercises workspace exchange and refresh).
+Run the sign-in flow against a live Altium environment. It opens your browser, waits for the ActionWait callback, and prints the resulting tokens (and optionally exercises workspace exchange and refresh). It drives the built package in `dist/`, so `npm run test:e2e` builds first. On Bun or Deno, build, then run the script with the same options: `bun scripts/test-signin.ts …` or `deno run -A scripts/test-signin.ts …`.
 
 ```bash
 # Commercial Cloud, public client

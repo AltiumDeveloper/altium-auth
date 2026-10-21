@@ -12,6 +12,14 @@ import {
   createAesEndpoints,
 } from "./auth.js";
 
+// Makes crypto.randomUUID() (the sign-in state and the ActionWait connection token) return `value`. Spies on that one
+// method of the real Web Crypto object, so the rest of it keeps working, and vi.restoreAllMocks() undoes it. Replacing
+// the whole global (`{ ...crypto, randomUUID }`) drops crypto's prototype methods such as getRandomValues; Deno's
+// node:crypto.randomBytes depends on them, and the replacement was never undone.
+function stubRandomUUID(value: string): void {
+  vi.spyOn(crypto, "randomUUID").mockReturnValue(value as ReturnType<typeof crypto.randomUUID>);
+}
+
 // ── Test fixtures ───────────────────────────────────────────────
 
 const validConfig: OAuthConfig = {
@@ -95,7 +103,7 @@ describe("config validation", () => {
     const openMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     vi.stubGlobal("open", openMock);
-    vi.stubGlobal("crypto", { ...crypto, randomUUID: () => "conn-1" });
+    stubRandomUUID("conn-1");
 
     // Only the two required fields — endpoints come from COMMERCIAL_CLOUD_ENDPOINTS.
     await signIn({ clientId: "id", scopes: "openid profile" });
@@ -137,7 +145,7 @@ describe("signIn", () => {
       );
     }));
 
-    vi.stubGlobal("crypto", { ...crypto, randomUUID: () => "conn-token-1" });
+    stubRandomUUID("conn-token-1");
 
     const result = await signIn(validConfig);
 
@@ -189,7 +197,7 @@ describe("signIn", () => {
 
   it("uses a custom browser opener while the library owns ActionWait polling", async () => {
     const openBrowser = vi.fn().mockResolvedValue(undefined);
-    vi.stubGlobal("crypto", { ...crypto, randomUUID: () => "hook-state" });
+    stubRandomUUID("hook-state");
     vi.stubGlobal("fetch", vi.fn().mockImplementation(async (url: string) => {
       if (url.includes("await")) {
         return {
@@ -221,7 +229,7 @@ describe("signIn", () => {
   });
 
   it("reconnects when the HTTP client's request timeout fires mid-poll", async () => {
-    vi.stubGlobal("crypto", { ...crypto, randomUUID: () => "net-state" });
+    stubRandomUUID("net-state");
     let polls = 0;
     vi.stubGlobal("fetch", vi.fn().mockImplementation(async (url: string) => {
       if (url.includes("await")) {
@@ -430,7 +438,7 @@ describe("createAuthorizationUrl", () => {
   });
 
   it("generates a random state when none is provided", () => {
-    vi.stubGlobal("crypto", { ...crypto, randomUUID: () => "random-state" });
+    stubRandomUUID("random-state");
     const { state } = createAuthorizationUrl(validConfig);
     expect(state).toBe("random-state");
     vi.restoreAllMocks();

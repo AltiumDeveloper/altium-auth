@@ -139,7 +139,9 @@ describe("conformance: actionWait", () => {
   for (const v of (vectors as Any).actionWait) {
     it(v.id, async () => {
       const CONN = "conn-token";
-      vi.stubGlobal("crypto", { ...crypto, randomUUID: () => CONN });
+      // Only randomUUID (the connection token), on the real Web Crypto object: a `{ ...crypto }` copy loses
+      // getRandomValues, which Deno's node:crypto.randomBytes needs. afterEach restores it.
+      vi.spyOn(crypto, "randomUUID").mockReturnValue(CONN as ReturnType<typeof crypto.randomUUID>);
       vi.stubGlobal("open", vi.fn());
 
       let idx = 0;
