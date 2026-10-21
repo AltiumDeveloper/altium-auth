@@ -1,0 +1,41 @@
+name: Go Release
+
+# Go modules have no registry upload: a module version IS a git tag. Because the
+# module lives in a subdirectory, the tag must carry that path, e.g.
+# `libs/go/v0.2.0` → github.com/AltiumDeveloper/altium-auth/libs/go@v0.2.0.
+#
+# Push the tag only after main is green. This workflow re-runs the conformance
+# gate on the tagged commit, then asks proxy.golang.org to fetch the version so
+# it is immediately installable and appears on pkg.go.dev. No secrets needed.
+on:
+  push:
+    tags:
+      - "libs/go/v*"
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: go
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: libs/go
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache: false
+
+      - run: go vet ./...
+
+      # Gate on the conformance suite passing.
+      - run: go test -race ./...
+
+      - name: Publish to the Go module proxy
+        run: |
+          version="${GITHUB_REF_NAME#libs/go/}"
+          GOPROXY=https://proxy.golang.org GOFLAGS=-mod=mod \
+            go list -m "github.com/AltiumDeveloper/altium-auth/libs/go@${version}"

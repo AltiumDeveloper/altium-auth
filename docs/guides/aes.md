@@ -44,6 +44,11 @@ from altium_auth import aes_endpoints
 endpoints = aes_endpoints("https://aes.server.example:9785")
 ```
 
+```go
+import altiumauth "github.com/AltiumDeveloper/altium-auth/libs/go"
+endpoints := altiumauth.AESEndpoints("https://aes.server.example:9785")
+```
+
 ## Single workspace
 
 AES hosts a single workspace, so its ID is known up front and there is nothing

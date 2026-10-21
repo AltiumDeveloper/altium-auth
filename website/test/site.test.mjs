@@ -17,6 +17,7 @@ const PUBLISHED_ROUTES = [
   '/guides/token-claims/', '/guides/register-your-application/',
   '/specification/spec/', '/specification/conformance/',
   '/libraries/typescript/', '/libraries/dotnet/', '/libraries/python/',
+  '/libraries/go/',
 ];
 
 test('every page of the former site keeps its URL', () => {

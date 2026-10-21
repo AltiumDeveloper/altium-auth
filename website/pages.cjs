@@ -47,6 +47,7 @@ const SECTIONS = [
       { file: 'libs/typescript/README.md', route: '/libraries/typescript/', label: 'TypeScript', icon: 'typescript', description: '@altium-developer/altium-auth on npm: installation, quick start, and API reference.' },
       { file: 'libs/dotnet/README.md', route: '/libraries/dotnet/', label: '.NET', icon: 'dotnet', description: 'Altium.Auth on NuGet: installation, quick start, PowerShell use, and API reference.' },
       { file: 'libs/python/README.md', route: '/libraries/python/', label: 'Python', icon: 'python', description: 'altium-auth on PyPI: installation, quick start, and API reference.' },
+      { file: 'libs/go/README.md', route: '/libraries/go/', label: 'Go', icon: 'go', description: 'The Go module github.com/AltiumDeveloper/altium-auth/libs/go: installation, quick start, and API reference.' },
     ],
   },
   {
